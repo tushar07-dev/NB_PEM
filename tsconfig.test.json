@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "module": "node16",
+    "moduleResolution": "node16",
+    "types": ["jest", "@testing-library/jest-dom", "vite/client"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "verbatimModuleSyntax": false
+  },
+  "include": [
+    "src/**/*",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/__tests__/**/*"
+  ]
+}

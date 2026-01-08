@@ -18,7 +18,18 @@ const TooltipContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        "z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-tooltip-content-transform-origin]",
+        // Core Layout
+        "z-50 overflow-hidden inline-flex items-center justify-center gap-1",
+        // Sizing & Spacing (Padding: 4px 10px)
+        "px-2.5 py-1 rounded-lg",
+        // Light Theme: Background #FFF + Shadow
+        "bg-[#FFF] text-[#394B5B] shadow-[0_0_20px_0_rgba(0,0,0,0.06)]",
+        // Dark Theme: Background #203446
+        "dark:bg-[#203446] dark:text-white dark:border dark:border-[#2D455C]",
+        // Typography
+        "text-xs font-medium",
+        // Animations
+        "animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
         className
       )}
       {...props}

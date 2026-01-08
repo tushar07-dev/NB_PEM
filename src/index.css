@@ -1,18 +1,53 @@
 @import "tailwindcss";
-@import 'tw-animate-css';
+
+/* 1. Core Plugins */
+@plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
 
-/* @plugin "tailwindcss-animate"; */
-
 @theme inline {
+  /* --- 2. Brand Font Families --- */
+  --font-family-base: "Helvetica Now Text", sans-serif;
+  --font-family-heading: "Solutioneer", sans-serif;
+
+  /* --- 3. Fluid Typography (Scales between 1280px and 1920px) --- */
+  /* Formula: clamp(min_px, preferred_vw, max_px) */
+  --font-size-50: 0.625rem;  /* Constant 10px */
+  --font-size-100: 0.75rem;  /* Constant 12px */
+  --font-size-200: clamp(0.75rem, 0.5rem + 0.3125vw, 0.875rem);   /* 12px -> 14px */
+  --font-size-300: clamp(0.875rem, 0.625rem + 0.3125vw, 1rem);   /* 14px -> 16px */
+  --font-size-400: clamp(1rem, 0.75rem + 0.3125vw, 1.125rem);    /* 16px -> 18px */
+  --font-size-450: clamp(1.125rem, 0.875rem + 0.3125vw, 1.25rem);/* 18px -> 20px */
+  --font-size-500: clamp(1.25rem, 0.75rem + 0.625vw, 1.5rem);    /* 20px -> 24px */
+  --font-size-550: clamp(1.5rem, 1rem + 0.625vw, 1.75rem);       /* 24px -> 28px */
+  --font-size-600: clamp(1.75rem, 1.25rem + 0.625vw, 2rem);      /* 28px -> 32px */
+  --font-size-650: clamp(2rem, 1.5rem + 0.625vw, 2.25rem);       /* 32px -> 36px */
+  --font-size-700: clamp(2.25rem, 1.75rem + 0.625vw, 2.5rem);    /* 36px -> 40px */
+  --font-size-750: clamp(2.5rem, 2rem + 0.625vw, 2.75rem);       /* 40px -> 44px */
+  --font-size-800: clamp(2.75rem, 2.25rem + 0.625vw, 3rem);      /* 44px -> 48px */
+
+  /* --- 4. Fluid Font Weights --- */
+  /* Maps the weight jumps (e.g., Weight 900 jumping from 500 to 900) */
+  --font-weight-100: 400;
+  --font-weight-200: 400;
+  --font-weight-300: 400;
+  --font-weight-400: 400;
+  --font-weight-500: 400;
+  --font-weight-600: 500;
+  --font-weight-700: clamp(500, 100 + 31.25vw, 700); /* 500 -> 700 */
+  --font-weight-800: clamp(500, -100 + 46.875vw, 800); /* 500 -> 800 */
+  --font-weight-900: clamp(500, -300 + 62.5vw, 900); /* 500 -> 900 */
+
+  /* --- 5. Fluid Layout Scale --- */
+  --spacing-header-h: clamp(4rem, 3.2rem + 1vw, 5.625rem);
+  --spacing-sidebar-w: clamp(15rem, 13.5rem + 2vw, 18.75rem);
+
+  /* --- 6. Shadcn UI Mappings --- */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -31,32 +66,62 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
 
-
-
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-muted: var(--sidebar-muted);
-  --color-sidebar-muted-foreground: var(--sidebar-muted-foreground);
-
+  /* Sidebar Specific Mapping */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-hover: var(--sidebar-hover-bg);
   --color-sidebar-hover-foreground: var(--sidebar-hover-foreground);
 
+/* --- Height: 60px -> 90px --- */
+  --header-height: clamp(3.75rem, -0.003rem + 4.69vw, 5.625rem);
+  
+  /* --- Vertical Padding: 13.3px -> 20px --- */
+  --header-py: clamp(0.831rem, -0.019rem + 1.05vw, 1.25rem);
+  
+  /* --- Horizontal Padding: 20px -> 30px --- */
+  --header-px: clamp(1.25rem, -0.001rem + 1.56vw, 1.875rem);
+
+  /* --- Logo Size: 30.7px -> 46px --- */
+  --header-logo-size: clamp(1.918rem, -0.003rem + 2.39vw, 2.875rem);
+
+  /* --- Gap: 16px -> 24px --- */
+  --header-gap-logo-text: clamp(1rem, -0.001rem + 1.25vw, 1.5rem);
+
+  /* --- Text Line Height: 20px -> 31px --- */
+  --header-text-lh: clamp(1.25rem, -0.125rem + 1.72vw, 1.937rem);
+  /* Text Spacing & Search */
+  --header-search-w: clamp(12.5rem, 5rem + 9.38vw, 18.75rem); /* 200px -> 300px */
+  --header-actions-gap: clamp(0.5rem, 0.25rem + 0.31vw, 0.75rem); /* 8px -> 12px */
+  --header-profile-gap: clamp(0.833rem, 0.41rem + 0.52vw, 1.25rem); /* 13.33px -> 20px */
+
+  /* Icon Sizes: 30px -> 44px */
+  --header-icon-size: clamp(1.875rem, 1.125rem + 0.94vw, 2.75rem);
+  
+  /* Profile Prefix: 33.33px -> 50px */
+  --header-prefix-size: clamp(2.083rem, 1.04rem + 1.3vw, 3.125rem);
+  /* font-size-300: 14px -> 16px */
+  --font-size-300: clamp(0.875rem, 0.625rem + 0.31vw, 1rem);
+  
+  /* --- Fluid Weights (from image_669683.png) --- */
+  --weight-700: clamp(500, 100 + 31.25vw, 700);
+
+  /* --- Search Bar Dimensions --- */
+  --search-width: clamp(12.5rem, 5.625rem + 8.59vw, 18.75rem); /* 200px to 300px */
+  --search-height: clamp(2rem, 1.06rem + 1.17vw, 2.75rem); /* 32px to 44px */
 }
 
+/* --- 7. Variable Definitions --- */
 :root {
   --radius: 0.625rem;
+  
+  /* Standard UI Colors (OKLCH) */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -75,26 +140,18 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  /* Sidebar Core */
+
+  /* Sidebar Design Tokens (Figma Brand Values) */
   --sidebar: #FFFFFF;
-  --sidebar-foreground: #394B5B;
-  /* Sidebar States (Hover & Selected) */
-  --sidebar-accent: #081E32;               /* Background for Hover & Selected */
-  --sidebar-accent-foreground: #FFFFFF;    /* Text for Hover & Selected */
-
+  --sidebar-foreground: #394B5B;           /* Dark Blue 400 */
+  --sidebar-hover-bg: #F6F6F6;             /* Grey 200 */
+  --sidebar-hover-foreground: #203446;     /* Dark Blue 500 */
+  --sidebar-accent: #081E32;               /* Dark Blue 600 (Selected) */
+  --sidebar-accent-foreground: #FFFFFF;    /* Grey 50 */
   --sidebar-border: #F6F6F6;
-  --sidebar-ring: oklch(0.708 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-
-  --sidebar-muted: #F1F5F9; /* Light gray for badges */
-  --sidebar-muted-foreground: #64748B;
-
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-ring: var(--ring);
 }
 
 .dark {
@@ -106,29 +163,13 @@
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  
   --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-foreground: #A0AEC0;
+  --sidebar-accent: #081E32;
+  --sidebar-accent-foreground: #FFFFFF;
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
 }
 
 @layer base {
@@ -136,34 +177,10 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-family-base);
   }
-    :root {
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
-
-    /* 1. Default State (Normal) */
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #394B5B;           /* Primary Color/Dark Blue/400 */
-  
-  /* 2. Hover State */
-  --sidebar-hover-bg: #F6F6F6;             /* Secondary Colors/Grey/200 */
-  --sidebar-hover-foreground: #203446;     /* Primary Color/Dark Blue/500 */
-  
-  /* 3. Active/Selected State */
-  --sidebar-accent: #081E32;               /* Primary Color/Dark Blue/600 */
-  --sidebar-accent-foreground: #FFFFFF;    /* Secondary Colors/Grey/50 */
-  
-  --sidebar-border: #F6F6F6;
+  h1, h2, h3, h4, h5, h6, .font-heading {
+    font-family: var(--font-family-heading);
   }
-
-.dark {
-  /* Dark mode maintains the high contrast for selected/hover states */
-  --sidebar: oklch(0.145 0 0);
-  --sidebar-foreground: #A0AEC0;           
-  --sidebar-accent: #081E32;               /* Deep navy matches the brand image */
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: oklch(1 0 0 / 10%);
-}
 }

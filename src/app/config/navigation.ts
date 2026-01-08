@@ -15,14 +15,14 @@ export type RoleNavigation = Record<"admin" | "user", NavItem[]>;
 
 export const ROLE_NAVIGATION: RoleNavigation = {
   admin: [
-    { title: "Home", url: "/dashboard", icon: Icons.Home },
-    { title: "PEM Requirements", url: "/pem-requirements", icon: Icons.Edit },
-    { title: "Discipline Activity List", url: "/discipline-activity-list", icon: Icons.UserCard },
-    { title: "Control Object Checklist", url: "/control-object-checklist", icon: Icons.Nodes },
-    { title: "Document Checklist", url: "/document-checklist", icon: Icons.Documents },
+    { title: "Home", url: "/dashboard", icon: Icons.HomeIcon },
+    { title: "PEM Requirements", url: "/pem-requirements", icon: Icons.PEMRequirementsIcon },
+    { title: "Discipline Activity List", url: "/discipline-activity-list", icon: Icons.DisciplineActivityListIcon },
+    { title: "Control Object Checklist", url: "/control-object-checklist", icon: Icons.ControlObjectChecklistIcon },
+    { title: "Document Checklist", url: "/document-checklist", icon: Icons.DocumentsChecklistIcon },
   ],
   user: [
-    { title: "Home", url: "/dashboard", icon: Icons.Home },
-    { title: "My Profile", url: "/profile", icon: Icons.UserCard },
+    { title: "Home", url: "/dashboard", icon: Icons.HomeIcon },
+    { title: "My Profile", url: "/profile", icon: Icons.DisciplineActivityListIcon },
   ],
 } as const;

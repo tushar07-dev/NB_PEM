@@ -18,7 +18,7 @@ const AppShell = ({ children }: AppShellProps) => {
           {/* <SidebarInset>
             {children}
           </SidebarInset> */}
-          <main className="flex-1">
+          <main className="flex-1 bg-amber-50">
             {children}
           </main>
         </div>

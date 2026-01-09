@@ -17,6 +17,9 @@ const config: Config = {
       // boxShadow: {
       //   'tooltip': '0 0 20px 0 rgba(0, 0, 0, 0.06)',
       // },
+      screens: {
+        'monitor': '1600px', // Targets screens wider than 1600px (like 1920x1080)
+      },
     },
   },
   plugins: [],

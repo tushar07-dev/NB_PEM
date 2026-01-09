@@ -71,7 +71,7 @@ const ActionButton = ({ icon: Icon }: { icon: any }) => (
 export function TopHeader() {
   return (
     <header 
-      className="flex items-center justify-between bg-sidebar-accent w-full border-none shadow-sm"
+      className="flex items-center justify-between bg-sidebar-accent w-full border-none shadow-sm shrink-0"
       style={{ height: 'var(--header-height)', padding: '0 var(--header-px)' }}
     >
       {/* Left Section: Logo & Fluid Title */}
@@ -81,13 +81,13 @@ export function TopHeader() {
         </div>
         
         <h1 
-          className="text-white capitalize whitespace-nowrap"
+          className="text-(--header-font-size-logo) tracking-(--header-letter-spacing-logo) font-(--font-family-heading) text-white capitalize whitespace-nowrap"
           style={{ 
             marginLeft: 'var(--header-gap-logo-text)',
-            fontFamily: 'Solutioneer',
-            fontSize: 'var(--font-size-300)',
-            fontWeight: 'var(--weight-700)',
-            letterSpacing: '-0.32px'
+            // fontFamily: 'Solutioneer',
+            // fontSize: 'var(--font-size-300)',
+            // fontWeight: 'var(--weight-700)',
+            // letterSpacing: '-0.32px'
           }}
         >
           PEM knowledge Base and Check Lists

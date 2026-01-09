@@ -27,7 +27,7 @@ export function AppSidebar() {
     : [];
 
   return (
-    <Sidebar collapsible="icon" variant="sidebar">
+    <Sidebar collapsible="icon">
       <SidebarContent className="p-2">
         <SidebarMenu>
           {menuItems.map((item) => (
@@ -36,17 +36,17 @@ export function AppSidebar() {
                 asChild
                 tooltip={item.title}
                 isActive={pathname === item.url}
-                className="h-15"
+                // className="h-15"
               >
                 <Link to={item.url} className="flex items-center w-full ">
                   <div
-                    className="flex items-center justify-center shrink-0"
-                    style={{
-                      width: "52px",
-                      height: "52px",
-                      padding: "10px 14px",
-                      borderRadius: "8px",
-                    }}
+                    className="flex items-center justify-center shrink-0 w-[var(--sidebar-width-icon)]"
+                    // style={{
+                    //   width: "52px",
+                    //   height: "52px",
+                    //   padding: "10px 14px",
+                    //   borderRadius: "8px",
+                    // }}
                   >
                     <item.icon size={24} strokeWidth={1.5} />
                   </div>

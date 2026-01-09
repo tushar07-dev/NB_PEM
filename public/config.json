@@ -1,24 +1,22 @@
 {
-  "api": {
-    "baseUrl": "https://api.example.com",
-    "timeout": 10000
-  },
-  "auth": {
-    "clientId": "your-msal-client-id",
-    "tenantId": "your-tenant-id",
-    "authority": "https://login.microsoftonline.com/your-tenant-id",
-    "redirectUri": "http://localhost:5173"
-  },
-  "monitoring": {
-    "appInsightsConnectionString": "InstrumentationKey=your-key-here;IngestionEndpoint=https://your-region.in.applicationinsights.azure.com/;LiveEndpoint=https://your-region.livediagnostics.monitor.azure.com/",
-    "enableMonitoring": false
-  },
-  "features": {
-    "enableDebugMode": false,
+  "appName": "PEM Knowledge Base and Check Lists",
+  "apiBaseUrl": "https://api.example.com",
+  "featureFlags": {
+    "enableDarkMode": true,
+    "enableNotifications": true,
     "enableAnalytics": false
   },
-  "environment": {
-    "name": "development",
-    "version": "1.0.0"
+  "theme": {
+    "primaryColor": "#081E32",
+    "secondaryColor": "#394B5B",
+    "accentColor": "#F6F6F6"
+  },
+  "pagination": {
+    "defaultPageSize": 10,
+    "pageSizeOptions": [10, 25, 50, 100]
+  },
+  "session": {
+    "timeout": 30,
+    "refreshTokenBeforeExpiry": 5
   }
 }

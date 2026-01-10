@@ -6,10 +6,15 @@ import { cn } from "@/shared/lib/utils"
 import { Button } from "@/shared/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/components/ui/tooltip"
 
-const SIDEBAR_WIDTH = "250px"
-const SIDEBAR_WIDTH_MONITOR = "270px"
-const SIDEBAR_WIDTH_ICON = "60px"         // For small/standard screens
-const SIDEBAR_WIDTH_ICON_MONITOR = "90px" // For large screens
+// Design tokens from index.css - fallback values if not defined
+
+const SIDEBAR_WIDTH = "222px" //not collapsed
+const SIDEBAR_WIDTH_MONITOR = "270px" //not collapsed on monitor
+const SIDEBAR_WIDTH_ICON = "60px" //collapsed
+const SIDEBAR_WIDTH_ICON_MONITOR = "90px" //collapsed on monitor
+
+console.log("SIDEBAR_WIDTH_ICON_MONITOR:", SIDEBAR_WIDTH_ICON, SIDEBAR_WIDTH_ICON_MONITOR);
+console.log("SIDEBAR_WIDTH_MONITOR:", SIDEBAR_WIDTH, SIDEBAR_WIDTH_MONITOR);
 
 type SidebarContextProps = {
   state: "expanded" | "collapsed"
@@ -59,18 +64,38 @@ export const SidebarProvider = React.forwardRef<HTMLDivElement, React.ComponentP
 // --- MAIN SIDEBAR CONTAINER ---
 export const Sidebar = React.forwardRef<HTMLDivElement, React.ComponentProps<"div"> & { collapsible?: "icon" | "none" }>(
   ({ collapsible = "icon", className, children, ...props }, ref) => {
-    const { state } = useSidebar()
+    const { state } = useSidebar();
+
+    // Internal ref to access the DOM element for measuring
+    const internalRef = React.useRef<HTMLDivElement>(null);
+    
+    // Merge the forwarded ref with our internal ref
+    React.useImperativeHandle(ref, () => internalRef.current!);
+
+    React.useEffect(() => {
+      // Small timeout to allow the CSS transition (200ms) to complete
+      const timer = setTimeout(() => {
+        if (internalRef.current) {
+          const width = internalRef.current.getBoundingClientRect().width;
+          console.log(`Sidebar State: ${state} | Current Width: ${width.toFixed(2)}px`);
+        }
+      }, 250); // Slightly longer than transition duration
+
+      return () => clearTimeout(timer);
+    }, [state]); // Runs every time the sidebar expands or collapses
 
     return (
       <div
-        ref={ref}
+        ref={internalRef}
         className={cn(
-          "group peer flex h-full flex-col border-r bg-sidebar text-sidebar-foreground transition-[width] duration-200 ease-linear shrink-0",
+          "group peer flex h-full flex-col bg-sidebar text-sidebar-foreground transition-[width] duration-200 ease-linear shrink-0",
           // Expanded Widths
-          "w-[var(--sidebar-width)]", 
-          // Collapsed Widths (Fixed logic here)
+          "w-[var(--sidebar-width)]",
+          "monitor:w-[var(--sidebar-width-monitor)]",
+          // Collapsed Widths
           "data-[state=collapsed]:w-[var(--sidebar-width-icon)]",
-          "monitor:data-[state=collapsed]:w-[var(--sidebar-width-icon-monitor)]",className
+          "monitor:data-[state=collapsed]:w-[var(--sidebar-width-icon-monitor)]",
+          className
         )}
         data-state={state}
         data-collapsible={state === "collapsed" ? collapsible : ""}
@@ -114,14 +139,14 @@ export const SidebarMenuItem = ({ className, ...props }: React.ComponentProps<"l
 
 // --- BUTTON LOGIC ---
 const sidebarMenuButtonVariants = cva(
-  "flex w-full items-center gap-3 px-4 h-[60px] text-base transition-all duration-200 overflow-hidden outline-none disabled:opacity-50",
+  "flex w-full items-center h-[60px] text-base transition-all duration-200 overflow-hidden outline-none disabled:opacity-50",
   {
     variants: {
       variant: {
         default: [
-          "bg-transparent text-[#394B5B] rounded-none",
-          "hover:bg-[#F6F6F6] hover:text-[#203446] hover:rounded-[4px]",
-          "data-[active=true]:bg-[#081E32] data-[active=true]:text-[#FFF] data-[active=true]:rounded-[8px] data-[active=true]:border-[#051320]",
+          "bg-transparent text-sidebar-foreground rounded-none",
+          "hover:bg-sidebar-hover hover:text-sidebar-hover-foreground hover:rounded-[4px]",
+          "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:rounded-[8px] data-[active=true]:border-[#051320]",
         ].join(" "),
       },
     },

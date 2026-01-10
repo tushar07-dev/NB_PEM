@@ -13,7 +13,7 @@ const AppShell = ({ children }: AppShellProps) => {
     // Outer wrapper: Stack Header on top of the Content Area
     <div className="flex flex-col h-screen w-full overflow-hidden">
       <TopHeader />
-      <SidebarProvider defaultOpen={true} className="flex flex-row flex-1 overflow-hidden">
+      <SidebarProvider defaultOpen={true} className="flex flex-row  overflow-hidden">
         <AppSidebar />
         <SidebarInset className="flex-1 overflow-y-auto bg-amber-50">
           <main className="h-full">

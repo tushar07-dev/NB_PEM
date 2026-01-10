@@ -1,94 +1,124 @@
+import { useEffect, useRef } from "react";
 import { Bell, Search, Settings } from "lucide-react";
-import { Input } from "@/shared/components/ui/input";
+// import { Input } from "@/shared/components/ui/input";
 import { Icons } from "./icons";
-
-import { cn } from "@/shared/lib/utils";
-
-// const HeaderLogo = () => (
-//   <div className="flex items-center shrink-0" style={{ width: 'var(--header-logo-size)', height: 'var(--header-logo-size)' }}>
-//     <Icons.ProjectLogo className="w-full h-full" />
-//   </div>
-// );
-
-// const HeaderTitle = () => (
-//   <span 
-//     className="whitespace-nowrap text-white capitalize font-heading"
-//     style={{ 
-//       marginLeft: 'var(--header-gap-logo-text)',
-//       fontSize: '1rem', // 16px constant as per your request
-//       fontWeight: 700,
-//       letterSpacing: '-0.32px'
-//     }}
-//   >
-//     PEM knowledge Base and Check Lists
-//   </span>
-// );
+import { cn } from "@/lib/utils";
 
 const HeaderSearch = () => (
   <div 
-    className="flex items-center justify-between border bg-white"
-    style={{ 
-      width: 'var(--search-width)', 
-      height: 'var(--search-height)',
-      padding: '0 16px', // Standardized horizontal padding
-      borderRadius: '100px',
-      borderColor: '#EBEBEB'
-    }}
+    className={cn(
+      "flex items-center justify-between border bg-accent-grey-50 px-4 transition-all duration-200",
+      "border-accent-grey-275 rounded-fully-rounded", // #EBEBEB mapping
+      
+      // --- RESPONSIVE SIZING (No Clamp) ---
+      "w-[var(--header-search-width-sm)] h-[var(--header-search-height-sm)]",
+      "monitor:w-[var(--header-search-width-lg)] monitor:h-[var(--header-search-height-lg)]"
+    )}
   >
     <input
       type="text"
       placeholder="Search Anything..."
-      className="bg-transparent border-none outline-none w-full"
-      style={{ 
-        // Color mapping with your specific fallbacks
-        color: 'var(--Primary-Color-Dark-Blue-600, #081E32)',
+      className={cn(
+        "bg-transparent border-none outline-none w-full",
+        "placeholder:text-accent-grey-500",
         
-        // Typography: Body Medium/Medium
-        fontFamily: 'var(--Font-Family-Font-Name, "Helvetica Now Text")',
-        fontSize: 'var(--Font-Family-Font-Size-font-size-100, 12px)',
-        fontStyle: 'normal',
-        fontWeight: 'var(--Font-Family-Weight-weight-500, 400)',
-        lineHeight: 'var(--Font-Family-Line-height-lh-300, 19px)',
+        // --- TYPOGRAPHY ---
+        "text-primary-dark-blue-600",
+        "font-family-base tracking-[-0.32px]",
         
-        // Retaining your design letter-spacing
-        letterSpacing: '-0.32px'
-      }}
+        // SMALL (Laptop)
+        "text-[12px] font-weight-400 leading-[19px]",
+        
+        // BIG (Monitor)
+        "monitor:text-font-size-200 monitor:font-weight-500"
+      )}
     />
-    {/* Search Icon on the right as per your Figma image */}
-    <Search size={20} className="text-[#919191] shrink-0 ml-2" />
+
+    {/* Search Icon */}
+    <Search 
+      className={cn(
+        "text-accent-grey-600 shrink-0 ml-2 transition-all", 
+        
+        // --- RESPONSIVE ICON SIZE ---
+        "w-[var(--header-search-icon-sm)] h-[var(--header-search-icon-sm)]",
+        "monitor:w-[var(--header-search-icon-lg)] monitor:h-[var(--header-search-icon-lg)]"
+      )} 
+    />
   </div>
 );
 
-const ActionButton = ({ icon: Icon }: { icon: any }) => (
-  <button 
-    className="flex items-center justify-center rounded-full bg-white text-slate-600 hover:bg-slate-100 transition-colors"
-    style={{ width: 'var(--header-icon-size)', height: 'var(--header-icon-size)' }}
-  >
-    <Icon size={20} />
-  </button>
-);
+function ActionButton({ icon: Icon }: { icon: any }) {
+  return (
+    <button
+      className={cn(
+        "flex items-center justify-center border-none cursor-pointer transition-all",
+        
+        // --- COLORS ---
+        "bg-accent-grey-50 text-primary-dark-blue-600 hover:bg-accent-grey-100",
+
+        // --- SMALL (Laptop/Default) ---
+        "w-[var(--header-action-btn-size-sm)]",
+        "h-[var(--header-action-btn-size-sm)]",
+        "p-[var(--header-action-btn-padding-sm)]",
+        "rounded-[var(--header-action-btn-radius-sm)]",
+        "gap-[var(--header-action-btn-gap-sm)]",
+
+        // --- LARGE (Monitor) ---
+        "monitor:w-[var(--header-action-btn-size-lg)]",
+        "monitor:h-[var(--header-action-btn-size-lg)]",
+        "monitor:p-[var(--header-action-btn-padding-lg)]",
+        "monitor:rounded-[var(--header-action-btn-radius-lg)]",
+        "monitor:gap-[var(--header-action-btn-gap-lg)]"
+      )}
+    >
+      <Icon className="w-full h-full" />
+    </button>
+  );
+}
 
 export function TopHeader() {
+    const headerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!headerRef.current) return;
+
+    const computedHeight = getComputedStyle(headerRef.current).height;
+    console.log("Resolved header height:", computedHeight);
+  }, []);
+
   return (
     <header 
+      ref={headerRef}
       className="flex items-center justify-between bg-sidebar-accent w-full border-none shadow-sm shrink-0"
       style={{ height: 'var(--header-height)', padding: '0 var(--header-px)' }}
     >
       {/* Left Section: Logo & Fluid Title */}
       <div className="flex items-center">
-        <div style={{ width: 'var(--header-logo-size)', height: 'var(--header-logo-size)' }}>
+        <div 
+          className={cn(
+            "flex items-center justify-center shrink-0 transition-all duration-200",
+            // --- SMALL SIZE (Laptop/Default) ---
+            "w-[var(--header-logo-icon-sm)] h-[var(--header-logo-icon-sm)]",
+            // --- BIG SIZE (Monitor) ---
+            "monitor:w-[var(--header-logo-icon-lg)] monitor:h-[var(--header-logo-icon-lg)]"
+          )}
+        >
           <Icons.ProjectLogo className="w-full h-full" />
         </div>
-        
         <h1 
-          className="text-(--header-font-size-logo) tracking-(--header-letter-spacing-logo) font-(--font-family-heading) text-white capitalize whitespace-nowrap"
-          style={{ 
-            marginLeft: 'var(--header-gap-logo-text)',
-            // fontFamily: 'Solutioneer',
-            // fontSize: 'var(--font-size-300)',
-            // fontWeight: 'var(--weight-700)',
-            // letterSpacing: '-0.32px'
-          }}
+          className={cn(
+            "font-family-heading capitalize whitespace-nowrap leading-normal transition-all duration-200",
+            
+            // Laptop (Small)
+            "text-[16px] tracking-[var(--header-logo-letter-spacing-sm)] font-bold", 
+            
+            // Monitor (Large)
+            "monitor:text-[24px] monitor:tracking-[var(--header-logo-letter-spacing-lg)]",
+
+            // FORCE COLOR AT THE END
+            "!text-white" 
+          )}
+          style={{ marginLeft: 'var(--header-gap-logo-text)' }}
         >
           PEM knowledge Base and Check Lists
         </h1>
@@ -105,12 +135,23 @@ export function TopHeader() {
 
         {/* Profile Prefix */}
         <div 
-          className="bg-white rounded-full flex items-center justify-center font-bold text-slate-900 border"
-          style={{ 
-            width: 'var(--header-prefix-size)', 
-            height: 'var(--header-prefix-size)',
-            fontSize: 'calc(var(--font-size-300) * 0.9)'
-          }}
+          className={cn(
+            "flex items-center justify-center shrink-0 border",
+            
+            // --- COLORS ---
+            "bg-accent-grey-50 text-primary-dark-blue-900", 
+            
+            // --- SMALL SCREEN (Default / Laptop) ---
+            "w-[var(--header-prefix-small)] h-[var(--header-prefix-small)]",
+            "rounded-[var(--header-prefix-radius-small)]",
+            "text-font-size-200 font-weight-600",
+            
+            // --- BIG SCREEN (Monitor: 1600px+) ---
+            "monitor:w-[var(--header-prefix-big)]",
+            "monitor:h-[var(--header-prefix-big)]",
+            "monitor:rounded-[var(--header-prefix-radius-big)]",
+            "monitor:text-font-size-400 monitor:font-weight-700"
+          )}
         >
           XF
         </div>

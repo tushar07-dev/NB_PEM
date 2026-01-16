@@ -15,7 +15,7 @@ const AppShell = ({ children }: AppShellProps) => {
       <TopHeader />
       <SidebarProvider defaultOpen={true} className="flex flex-row  overflow-hidden">
         <AppSidebar />
-        <SidebarInset className="flex-1 overflow-y-auto bg-amber-50">
+        <SidebarInset className="flex-1 overflow-y-auto">
           <main className="h-full">
             {children}
           </main>

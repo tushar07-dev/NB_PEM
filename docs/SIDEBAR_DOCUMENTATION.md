@@ -121,7 +121,7 @@ const AppShell = ({ children }: AppShellProps) => {
       <TopHeader />
       <div className="flex flex-1">
         <AppSidebar />
-        <main className="flex-1 bg-amber-50">
+        <main className="flex-1">
           {children}
         </main>
       </div>

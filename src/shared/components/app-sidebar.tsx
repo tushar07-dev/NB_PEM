@@ -1,5 +1,4 @@
 import { Link, useLocation } from "react-router-dom";
-
 import {
   Sidebar,
   SidebarContent,
@@ -17,61 +16,34 @@ import { cn } from "@/lib/utils";
 export function AppSidebar() {
   const { state, toggleSidebar } = useSidebar();
   const { pathname } = useLocation();
+  const { currentUser } = useAuth();
   const isCollapsed = state === "collapsed";
 
-  // 1. Get the current user's role from AuthProvider
-  const { currentUser } = useAuth();
-
-  // 2. Get the specific menu items for this role (fallback to empty array)
   const menuItems = currentUser?.role
     ? ROLE_NAVIGATION[currentUser.role as keyof typeof ROLE_NAVIGATION]
     : [];
 
   return (
-    <Sidebar collapsible="icon" className="bg-accent-grey-50 shadow-sidebar border-r-accent-grey-275">
-      <SidebarContent className="p-1 monitor:p-2">
+    <Sidebar collapsible="icon">
+      <SidebarContent className="monitor:p-2 p-1">
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
                 asChild
                 tooltip={item.title}
-                isActive={pathname === item.url}
-                className="h-[40px] monitor:h-[60px]"
+                isActive={pathname === item.url} // Logic trigger
+                className="monitor:h-[60px] h-[40px]"
               >
-                <Link to={item.url} className="flex items-center w-full">
-                  <div
-                    className={cn(
-                      "flex items-center justify-center shrink-0 overflow-hidden",
-
-                      // --- SMALL SCREEN (34.667px) ---
-                      "w-[34.667px] h-[34.667px] p-[6.667px_8px] gap-[6.667px] rounded-[30px]",
-
-                      // --- BIG SCREEN (52px) ---
-                      "monitor:w-[52px] monitor:h-[52px] monitor:p-[10px_12px] monitor:gap-[10px] monitor:rounded-[30px]",
-
-                      // Optional: Background/Border if needed to see the container shape
-                      "bg-transparent"
-                    )}
-                  >
-                    <item.icon
-                      className="w-full h-full aspect-square"
-                      strokeWidth={1.5}
-                    />
+                <Link to={item.url} className="flex w-full items-center">
+                  {/* ICON BOX: Size jumps on monitor */}
+                  <div className="monitor:h-[52px] monitor:w-[52px] flex h-[34.667px] w-[34.667px] shrink-0 items-center justify-center">
+                    <item.icon className="aspect-square h-full w-full p-2" />
                   </div>
+
+                  {/* LABEL: Typography jumps on monitor */}
                   {!isCollapsed && (
-                    <span className={cn(
-                      "truncate text-[16px] leading-normal",
-                      
-                      // --- COLORS ---
-                      // "text-white", // Mapping to FFF / Grey-50
-                      
-                      // --- SMALL (Laptop) ---
-                      "font-normal", // Weight 400
-                      
-                      // --- BIG (Monitor) ---
-                      "monitor:font-medium monitor:text-center" // Weight 500 & Centered
-                    )}>
+                    <span className="monitor:text-[16px] leading-lh-300 monitor:leading-lh-400 truncate text-[14px]">
                       {item.title}
                     </span>
                   )}
@@ -82,40 +54,31 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-[6px] flex flex-col items-center justify-center">
-        <SidebarMenu className="items-center">
-          <SidebarMenuItem className="flex items-center justify-center w-full">
+      <SidebarFooter className="monitor:p-2 p-1">
+        <SidebarMenu>
+          <SidebarMenuItem>
             <SidebarMenuButton
               tooltip={isCollapsed ? "Expand" : "Collapse"}
               onClick={toggleSidebar}
               className={cn(
-                "flex items-center transition-all duration-200",
-                // --- COLORS (Same for both) ---
-                "bg-accent-grey-100 border border-accent-grey-250 rounded-radius-large",
-
-                // --- SMALL SCREEN (Laptop) ---
-                "rounded-[8px] border-[0.667px]",
-
-                // --- BIG SCREEN (Monitor) ---
-                "monitor:rounded-[12px] monitor:border-[1px]",
-
-                // --- SPACING & SIZING ---
-                "p-f-sm gap-f-xs",
-                isCollapsed
-                  ? "w-[49px] h-[40px] monitor:w-[74px] monitor:h-[60px] justify-center"
-                  : "w-[197px] h-[40px] px-3 monitor:w-[254px] monitor:h-[60px]"
+                // Visual container (from design)
+                "border-grey-250 bg-grey-100 border",
+                "rounded-xl",
+                // Same vertical rhythm as menu items
+                "monitor:h-15 h-10"
               )}
             >
-              <div className="flex items-center justify-center shrink-0 w-[17px] h-[17px] monitor:w-[26px] monitor:h-[26px]">
+              {/* Icon box */}
+              <div className="monitor:h-[52px] monitor:w-[52px] flex h-[34.667px] w-[34.667px] shrink-0 items-center justify-center">
                 <Icons.SidebarToggle
-                  isCollapsed={isCollapsed}
-                  className="w-[14.44px] h-[14.44px] monitor:w-[21.66px] monitor:h-[21.66px] transition-all duration-200"
+                  isCollapsed={!isCollapsed}
+                  className="h-full w-full p-2"
                 />
               </div>
 
-              {/* Text using Fluid Typography and Responsive Weight/Case */}
+              {/* Label (only when expanded) */}
               {!isCollapsed && (
-                <span className="ml-f-sm truncate text-sidebar-foreground text-[16px] font-normal monitor:font-medium monitor:uppercase">
+                <span className="monitor:text-[16px] leading-lh-300 monitor:leading-lh-400 truncate text-[14px]">
                   Collapse
                 </span>
               )}

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Trash2 } from "lucide-react"; // Matching the "Clear All" icon
+import { Trash2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import {
   Accordion,
@@ -16,10 +16,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { cn } from "@/lib/utils"; // Ensure you have this utility for class merging
+import { cn } from "@/lib/utils";
+import { SearchableFilterSelect } from "@/shared/components/ui/SearchableFilterSelect";
+import { MultiSelectWithChips } from "@/shared/components/ui/MultiSelectWithChips";
+
+// Define discipline options
+const disciplineOptions = [
+  { value: "hvac", label: "HVAC" },
+  { value: "electrical", label: "Electrical" },
+  { value: "plumbing", label: "Plumbing" },
+  { value: "mechanical", label: "Mechanical" },
+  { value: "civil", label: "Civil" },
+  { value: "structural", label: "Structural" },
+];
 
 export function DashboardFilter() {
-  const handleReset = () => console.log("Filters Reset");
+  // Add state for multi-select
+  const [selectedDisciplines, setSelectedDisciplines] = React.useState<
+    string[]
+  >([]);
+
+  const handleReset = () => {
+    console.log("Filters Reset");
+    setSelectedDisciplines([]); // Clear disciplines on reset
+  };
 
   return (
     <Accordion
@@ -34,7 +54,7 @@ export function DashboardFilter() {
               Global Filter
             </span>
 
-            {/* Visual Chips: These hide when the accordion is open via the CSS class above */}
+            {/* Visual Chips: These hide when the accordion is open */}
             <div className="filter-chips flex gap-2">
               <BadgeChip label="Project 1" />
               <BadgeChip label="HVAC" />
@@ -45,36 +65,40 @@ export function DashboardFilter() {
         <AccordionContent className="px-6 pt-2 pb-6">
           <div className="flex items-end gap-4">
             {/* 5-Column Grid for Selects */}
-            <div className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-5">
-              <FilterSelect label="Project" placeholder="Eg. Project 1">
-                <SelectItem value="p1">Project 1</SelectItem>
-                <SelectItem value="p2">Project 2</SelectItem>
-              </FilterSelect>
+            <div className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-3">
+              <SearchableFilterSelect
+                label="Project"
+                placeholder="Eg. Project 1"
+                required
+                options={[
+                  { value: "p1", label: "Project 1" },
+                  { value: "p2", label: "Project 2" },
+                ]}
+              />
 
-              <FilterSelect label="Discipline" placeholder="Eg. HVAC">
-                <SelectItem value="hvac">HVAC</SelectItem>
-                <SelectItem value="electrical">Electrical</SelectItem>
-              </FilterSelect>
-
-              <FilterSelect label="PEM Stage" placeholder="EG. 2B">
-                <SelectItem value="2b">2B</SelectItem>
-              </FilterSelect>
-
-              <FilterSelect label="Role" placeholder="Eg. Area Engineering">
-                <SelectItem value="ae">Area Engineering</SelectItem>
-              </FilterSelect>
+              <MultiSelectWithChips
+                label="Discipline"
+                placeholder="Eg. HVAC"
+                options={disciplineOptions}
+                value={selectedDisciplines}
+                onValueChange={setSelectedDisciplines}
+                required
+                maxDisplay={3}
+                searchPlaceholder="Search disciplines..."
+                emptyMessage="No disciplines found"
+              />
 
               <FilterSelect label="Key Deliverables" placeholder="Eg. 3D">
                 <SelectItem value="3d">3D</SelectItem>
               </FilterSelect>
             </div>
 
-            {/* Clear All Button - Positioned at the end of the row */}
+            {/* Clear All Button */}
             <Button
               variant="outline"
               size="lg"
               onClick={handleReset}
-              className="h-10 gap-2  text-xs font-bold tracking-wider uppercase hover:bg-slate-50"
+              className="h-10 gap-2 text-xs font-bold tracking-wider uppercase hover:bg-slate-50"
             >
               <Trash2 className="h-4 w-4" />
               Clear All
@@ -95,7 +119,7 @@ function BadgeChip({ label }: { label: string }) {
   );
 }
 
-// Updated Helper with the red asterisk and placeholder styling
+// Helper component for regular select
 function FilterSelect({
   label,
   placeholder,

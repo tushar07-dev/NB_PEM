@@ -178,7 +178,7 @@ const sidebarMenuButtonVariants = cva(
       variant: {
         default: [
           // BASE / DEFAULT STATE
-          "bg-transparent text-[var(--color-primary-500)] font-medium text-[16px] leading-normal",
+          "bg-transparent text-[var(--color-primary-400)] font-medium text-[16px] leading-normal",
           "hover:rounded-[4px]",
           "hover:bg-[var(--color-grey-100)]",
 

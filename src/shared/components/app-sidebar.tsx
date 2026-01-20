@@ -63,7 +63,7 @@ export function AppSidebar() {
               className={cn(
                 // Visual container (from design)
                 "border-grey-250 bg-grey-100 border",
-                "rounded-xl",
+                "rounded-lg",
                 // Same vertical rhythm as menu items
                 "monitor:h-15 h-10"
               )}

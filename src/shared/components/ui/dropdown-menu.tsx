@@ -54,6 +54,28 @@ const DropdownMenuSubContent = React.forwardRef<
 DropdownMenuSubContent.displayName =
   DropdownMenuPrimitive.SubContent.displayName
 
+const DropdownMenuSearch = React.forwardRef<
+  HTMLInputElement,
+  React.InputHTMLAttributes<HTMLInputElement>
+>(({ className, ...props }, ref) => {
+  return (
+    <div className="px-2 py-2">
+      <input
+        ref={ref}
+        className={cn(
+          "bg-background w-full rounded-md border px-3 py-2 text-sm outline-none",
+          "placeholder:text-muted-foreground",
+          "focus:ring-ring focus:ring-2 focus:ring-offset-1",
+          className
+        )}
+        {...props}
+      />
+    </div>
+  );
+});
+
+DropdownMenuSearch.displayName = "DropdownMenuSearch";
+
 const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>

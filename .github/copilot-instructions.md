@@ -1,0 +1,1 @@
+visit index.css and use shadcn variables for colors and fonts.

@@ -72,6 +72,7 @@ export function AppSidebar() {
               <div className="monitor:h-[52px] monitor:w-[52px] flex h-[34.667px] w-[34.667px] shrink-0 items-center justify-center">
                 <Icons.SidebarToggle
                   isCollapsed={!isCollapsed}
+                  size="md"
                   className="h-full w-full p-2"
                 />
               </div>

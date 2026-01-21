@@ -8,12 +8,12 @@ export function TopHeader() {
   return (
     <header
       className={cn(
-        "monitor:px-6 monitor:py-5 flex w-full shrink-0 items-center justify-between border-0 bg-[var(--color-primary-700)] px-5 py-3.5"
+        "monitor:px-6 monitor:py-5 flex w-full shrink-0 items-center justify-between border-0 bg-primary px-5 py-3.5"
       )}
     >
       {/* LEFT: Branding with ProjectLogo */}
       <div className="monitor:gap-6 flex items-center gap-4">
-        <Icons.ProjectLogo className="monitor:size-10 size-8" />
+        <Icons.ProjectLogo className="monitor:size-10 size-8" size="md" />
 
         <h1 className={cn("text-title hidden sm:block")}>
           PEM Knowledge Base And Check Lists
@@ -40,7 +40,7 @@ export function TopHeader() {
             className="relative rounded-full text-white hover:bg-white/10"
           >
             <Bell className="size-5" />
-            <span className="absolute top-0 right-1.5 size-2 rounded-full border-2 border-[var(--color-primary-700)] bg-[var(--color-error-500)]">
+            <span className="absolute top-0 right-1.5 size-2 rounded-full border-2 border-[var(primary)] bg-[var(--color-error-500)]">
               1
             </span>
           </Button>
@@ -55,7 +55,7 @@ export function TopHeader() {
         </div>
 
         {/* Profile Avatar */}
-        <div className="monitor:h-12 monitor:w-12 flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-bold text-[var(--color-primary-700)] shadow-sm">
+        <div className="monitor:h-12 monitor:w-12 flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-bold text-[var(primary)] shadow-sm">
           XF
         </div>
       </div>

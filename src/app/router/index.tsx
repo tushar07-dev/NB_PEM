@@ -1,11 +1,11 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom"
-import DashboardPage from "@/features/dashboard/pages/DashboardPage"
 import LoginPage from "@/features/auth/pages/LoginPage"
 import UnauthorizedPage from "@/features/auth/pages/UnauthorizedPage"
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute"
 import { RoleGuard } from "@/app/router/RoleGuard"
 import { RoleBasedLayout } from "@/app/layouts/RoleBasedLayout"
 import RouterError from "./RouterError"
+import { DocumentChecklist } from "@/features/document-checklist/pages/DocumentChecklist"
 
 // Admin pages
 const DocsPage = () => <div>Document page</div>
@@ -26,7 +26,7 @@ export const router = createBrowserRouter([
     path: "/unauthorized",
     element: <UnauthorizedPage />,
   },
-// 2. PROTECTED APP ROUTES (Wrapped in App Shell/Sidebar)
+  // 2. PROTECTED APP ROUTES (Wrapped in App Shell/Sidebar)
   {
     path: "/",
     element: (
@@ -34,7 +34,7 @@ export const router = createBrowserRouter([
         <RoleBasedLayout />
       </ProtectedRoute>
     ),
-    errorElement: <RouterError />,  
+    errorElement: <RouterError />,
     children: [
       // Default landing page
       { index: true, element: <Navigate to="/dashboard" replace /> },
@@ -42,9 +42,9 @@ export const router = createBrowserRouter([
         path: "dashboard",
         element: (
           <RoleGuard allowedRoles={["admin", "user"]}>
-            <DashboardPage />
+            <DocumentChecklist />
           </RoleGuard>
-        )
+        ),
       },
 
       // 🔐 ADMIN ONLY (No prefix in URL)
@@ -56,10 +56,16 @@ export const router = createBrowserRouter([
         ),
         children: [
           { path: "pem-requirements", element: <PemRequirementsPage /> },
-          { path: "discipline-activity-list", element: <DisciplineActivityListPage /> },
-          { path: "control-object-checklist", element: <ControlObjectChecklistPage /> },
+          {
+            path: "discipline-activity-list",
+            element: <DisciplineActivityListPage />,
+          },
+          {
+            path: "control-object-checklist",
+            element: <ControlObjectChecklistPage />,
+          },
           { path: "document-checklist", element: <DocsPage /> },
-        ]
+        ],
       },
 
       // 🔐 USER ONLY (No prefix in URL)
@@ -69,9 +75,7 @@ export const router = createBrowserRouter([
             <Outlet />
           </RoleGuard>
         ),
-        children: [
-          { path: "profile", element: <UserProfilePage /> },
-        ]
+        children: [{ path: "profile", element: <UserProfilePage /> }],
       },
     ],
   },
@@ -81,4 +85,4 @@ export const router = createBrowserRouter([
     path: "*",
     element: <div className="p-10 text-center">404 - Page Not Found</div>,
   },
-])
+]);

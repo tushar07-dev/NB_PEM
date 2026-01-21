@@ -17,6 +17,8 @@ type Option = {
   disabled?: boolean;
 };
 
+type Size = "sm" | "md" | "lg";
+
 type Props = {
   label: string;
   placeholder: string;
@@ -30,7 +32,69 @@ type Props = {
   searchPlaceholder?: string;
   emptyMessage?: string;
   clearable?: boolean;
+  size?: Size;
 };
+
+// Size variant configurations
+const SIZE_VARIANTS = {
+  sm: {
+    trigger: "h-8 px-2 text-xs",
+    label: "text-[10px] gap-1",
+    input: "h-7 text-xs pl-7 pr-7",
+    searchIcon: "size-3 left-2",
+    clearIcon: "size-3",
+    clearButton: "right-2",
+    item: "py-1.5 px-2 text-xs",
+    itemIcon: "size-3",
+    maxHeight: "max-h-48",
+    searchContainer: "p-2",
+    footer: "px-2 py-1.5 text-[10px]",
+    error: "text-[10px]",
+    errorIcon: "size-3",
+    emptyIcon: "size-4 p-2",
+    emptyText: "text-xs",
+    emptySubtext: "text-[10px]",
+    gap: "gap-1",
+  },
+  md: {
+    trigger: "h-10 px-3 text-sm",
+    label: "text-xs gap-1.5",
+    input: "h-9 text-sm pl-9 pr-9",
+    searchIcon: "size-4 left-3",
+    clearIcon: "size-3.5",
+    clearButton: "right-2.5",
+    item: "py-2.5 px-3 text-sm",
+    itemIcon: "size-4",
+    maxHeight: "max-h-64",
+    searchContainer: "p-3",
+    footer: "px-3 py-2 text-xs",
+    error: "text-xs",
+    errorIcon: "size-3.5",
+    emptyIcon: "size-5 p-3",
+    emptyText: "text-sm",
+    emptySubtext: "text-xs",
+    gap: "gap-1.5",
+  },
+  lg: {
+    trigger: "h-12 px-4 text-base",
+    label: "text-sm gap-2",
+    input: "h-11 text-base pl-11 pr-11",
+    searchIcon: "size-5 left-3.5",
+    clearIcon: "size-4",
+    clearButton: "right-3",
+    item: "py-3 px-4 text-base",
+    itemIcon: "size-5",
+    maxHeight: "max-h-80",
+    searchContainer: "p-4",
+    footer: "px-4 py-2.5 text-sm",
+    error: "text-sm",
+    errorIcon: "size-4",
+    emptyIcon: "size-6 p-4",
+    emptyText: "text-base",
+    emptySubtext: "text-sm",
+    gap: "gap-2",
+  },
+} as const;
 
 export function SearchableFilterSelect({
   label,
@@ -45,10 +109,13 @@ export function SearchableFilterSelect({
   searchPlaceholder = "Search...",
   emptyMessage = "No results found",
   clearable = false,
+  size = "md",
 }: Props) {
   const [search, setSearch] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  const sizeClasses = SIZE_VARIANTS[size];
 
   const filteredOptions = React.useMemo(() => {
     if (!search) return options;
@@ -75,9 +142,14 @@ export function SearchableFilterSelect({
   };
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      {/* Label with better typography */}
-      <label className="font-500 color-primary-500 text-[length:var(--font-size-50)] tracking-wide uppercase">
+    <div className={cn("flex flex-col", sizeClasses.gap, className)}>
+      {/* Label with responsive typography */}
+      <label
+        className={cn(
+          "text-primary-500 font-medium tracking-wide",
+          sizeClasses.label
+        )}
+      >
         {label}
         {required && (
           <span className="text-destructive ml-1 transition-colors">*</span>
@@ -93,11 +165,11 @@ export function SearchableFilterSelect({
       >
         <SelectTrigger
           className={cn(
-            // Base styles (Default State)
-            "group relative h-10 w-full px-3 text-sm shadow-sm backdrop-blur-sm transition-all duration-200",
-            "border-grey-200 bg-grey-100 rounded-xl border", // Using --color-grey-200 and --color-grey-100
+            // Base styles
+            "group relative w-full shadow-sm backdrop-blur-sm transition-all duration-200",
+            "border-grey-200 bg-grey-100 rounded-xl border",
 
-            // Focused state (Matches --color-primary-100: #848F99)
+            // Focused state
             "focus:ring-ring/20 focus:border-primary-100 focus:ring-2 focus:outline-none",
 
             // Hover state
@@ -110,8 +182,11 @@ export function SearchableFilterSelect({
             // Disabled state
             disabled && "cursor-not-allowed opacity-60 grayscale",
 
-            // Value state (If selected, use --color-primary-500: #203446)
-            value ? "font-500 text-color-primary-100" : "text-color-primary-500"
+            // Value state
+            value ? "text-primary-100 font-medium" : "text-primary-500",
+
+            // Size variant
+            sizeClasses.trigger
           )}
         >
           <div className="flex w-full items-center justify-between gap-2">
@@ -121,13 +196,13 @@ export function SearchableFilterSelect({
                 type="button"
                 onClick={handleClear}
                 className={cn(
-                  "text-color-primary-300 rounded-md p-0.5 transition-all duration-200",
-                  "hover:text-primary-500 hover:bg-grey-200", // Replaced slate-100 with grey-200
+                  "text-primary-300 rounded-md p-0.5 transition-all duration-200",
+                  "hover:text-primary-500 hover:bg-grey-200",
                   "focus:ring-primary-100/50 focus:ring-2 focus:outline-none"
                 )}
                 aria-label="Clear selection"
               >
-                <X className="size-3.5" />
+                <X className={sizeClasses.clearIcon} />
               </button>
             )}
           </div>
@@ -146,20 +221,31 @@ export function SearchableFilterSelect({
             }
           }}
         >
-          {/* Search Input with enhanced styling */}
-          <div className="bg-grey-100 sticky top-0 z-10 border-b border-slate-100 p-3 backdrop-blur-sm">
+          {/* Search Input */}
+          <div
+            className={cn(
+              "bg-grey-100 border-grey-200 sticky top-0 z-10 border-b backdrop-blur-sm",
+              sizeClasses.searchContainer
+            )}
+          >
             <div className="relative">
-              <Search className="text-color-primary-300 pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 transition-colors" />
+              <Search
+                className={cn(
+                  "text-primary-300 pointer-events-none absolute top-1/2 -translate-y-1/2 transition-colors",
+                  sizeClasses.searchIcon
+                )}
+              />
               <input
                 ref={searchInputRef}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={searchPlaceholder}
                 className={cn(
-                  "border-grey-300 bg-grey-100 h-9 w-full rounded-xl border pr-9 pl-9 text-sm transition-all duration-200",
-                  "placeholder:text-color-primary-300",
-                  "focus:border-border focus:ring-ring/20 focus:bg-grey-100 focus:ring-2 focus:outline-none",
-                  "hover:border-border hover:bg-grey-100"
+                  "border-grey-300 bg-grey-100 w-full rounded-xl border transition-all duration-200",
+                  "placeholder:text-primary-300",
+                  "focus:border-primary-100 focus:ring-ring/20 focus:bg-grey-100 focus:ring-2 focus:outline-none",
+                  "hover:border-primary-100 hover:bg-grey-100",
+                  sizeClasses.input
                 )}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -172,32 +258,48 @@ export function SearchableFilterSelect({
                   type="button"
                   onClick={() => setSearch("")}
                   className={cn(
-                    "text-color-primary-300 absolute top-1/2 right-2.5 -translate-y-1/2 rounded-xl p-0.5 transition-all duration-200",
-                    "hover:color-primary-500 hover:bg-slate-100",
-                    "focus:ring-2 focus:ring-slate-300/50 focus:outline-none"
+                    "text-primary-300 absolute top-1/2 -translate-y-1/2 rounded-xl p-0.5 transition-all duration-200",
+                    "hover:text-primary-500 hover:bg-grey-200",
+                    "focus:ring-primary-100/50 focus:ring-2 focus:outline-none",
+                    sizeClasses.clearButton
                   )}
                   aria-label="Clear search"
                 >
-                  <X className="size-3.5" />
+                  <X className={sizeClasses.clearIcon} />
                 </button>
               )}
             </div>
           </div>
 
-          {/* Results with scroll gradient */}
-          <div className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300 relative max-h-64 overflow-y-auto">
+          {/* Results */}
+          <div
+            className={cn(
+              "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-grey-300 hover:scrollbar-thumb-grey-400 relative overflow-y-auto",
+              sizeClasses.maxHeight
+            )}
+          >
             {/* Top gradient fade */}
-            <div className="pointer-events-none sticky top-0 z-10 h-3 bg-gradient-to-b from-white to-transparent" />
+            <div className="from-grey-100 pointer-events-none sticky top-0 z-10 h-3 bg-gradient-to-b to-transparent" />
 
             {filteredOptions.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-2 px-4 py-8 text-center">
-                <div className="rounded-full bg-slate-100 p-3">
-                  <Search className="text-color-primary-300 size-5" />
+                <div
+                  className={cn(
+                    "bg-grey-200 rounded-full",
+                    sizeClasses.emptyIcon
+                  )}
+                >
+                  <Search className="text-primary-300 size-full" />
                 </div>
-                <p className="font-500 color-primary-500 text-sm">
+                <p
+                  className={cn(
+                    "text-primary-500 font-medium",
+                    sizeClasses.emptyText
+                  )}
+                >
                   {emptyMessage}
                 </p>
-                <p className="text-color-primary-300 text-xs">
+                <p className={cn("text-primary-300", sizeClasses.emptySubtext)}>
                   Try adjusting your search
                 </p>
               </div>
@@ -209,20 +311,20 @@ export function SearchableFilterSelect({
                 value={opt.value}
                 disabled={opt.disabled}
                 className={cn(
-                  //   "cursor-pointer px-3 py-2.5 transition-colors duration-150",
-                  "cursor-pointer px-3 py-2.5 transition-colors duration-150 outline-none",
-                  // 1. highlighted state: color-grey-100 (#F9F9F9)
+                  "cursor-pointer transition-colors duration-150 outline-none",
+                  // Highlighted state
                   "data-[highlighted]:bg-grey-900 data-[highlighted]:text-white",
-
-                  // 2. Selected state: color-primary-100 (#848F99)
+                  // Selected state
                   "data-[state=checked]:bg-primary-100 data-[state=checked]:text-white",
-
-                  // Font and Disabled logic
-                  "font-400 data-[state=checked]:font-500",
+                  // Font weight
+                  "font-normal data-[state=checked]:font-medium",
+                  // Disabled
                   opt.disabled &&
                     "cursor-not-allowed opacity-50 hover:bg-transparent",
-                  // Subtle animation delay for staggered effect
-                  search && "animate-in fade-in-0 slide-in-from-top-1"
+                  // Animation
+                  search && "animate-in fade-in-0 slide-in-from-top-1",
+                  // Size variant
+                  sizeClasses.item
                 )}
                 style={{
                   animationDelay: search ? `${index * 20}ms` : undefined,
@@ -234,14 +336,19 @@ export function SearchableFilterSelect({
             ))}
 
             {/* Bottom gradient fade */}
-            <div className="pointer-events-none sticky bottom-0 z-10 h-3 bg-gradient-to-t from-white to-transparent" />
+            <div className="from-grey-100 pointer-events-none sticky bottom-0 z-10 h-3 bg-gradient-to-t to-transparent" />
           </div>
 
           {/* Result count footer */}
           {search && filteredOptions.length > 0 && (
-            <div className="bg-grey-100 border-t border-slate-100 px-3 py-2 backdrop-blur-sm">
-              <p className="font-500 text-color-primary-500 text-xs">
-                <span className="text-color-primary-700">
+            <div
+              className={cn(
+                "bg-grey-100 border-grey-200 border-t backdrop-blur-sm",
+                sizeClasses.footer
+              )}
+            >
+              <p className="text-primary-500 font-medium">
+                <span className="text-primary-700">
                   {filteredOptions.length}
                 </span>{" "}
                 of {options.length} results
@@ -251,11 +358,14 @@ export function SearchableFilterSelect({
         </SelectContent>
       </Select>
 
-      {/* Error message with icon */}
+      {/* Error message */}
       {error && (
         <div className="animate-in fade-in-0 slide-in-from-top-1 flex items-start gap-1.5">
           <svg
-            className="text-destructive mt-0.5 size-3.5 flex-shrink-0"
+            className={cn(
+              "text-destructive mt-0.5 flex-shrink-0",
+              sizeClasses.errorIcon
+            )}
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -265,7 +375,10 @@ export function SearchableFilterSelect({
               clipRule="evenodd"
             />
           </svg>
-          <p className="font-500 text-xs text-red-600" role="alert">
+          <p
+            className={cn("font-medium text-red-600", sizeClasses.error)}
+            role="alert"
+          >
             {error}
           </p>
         </div>

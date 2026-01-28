@@ -123,17 +123,22 @@ export const Icons = {
         height={iconSize}
         viewBox="0 0 47 47"
         fill="none"
-        className={cn("shrink-0", className)}
+        className={cn(
+          "shrink-0",
+          // Default responsive sizing: 31px small, 46px large
+          !size && "size-[31px] lg:size-[46px] xl:size-[46px]",
+          className
+        )}
         aria-hidden="true"
         {...props}
       >
         <path
           d="M33.69 0H24.7131V21.3228H46.0466V12.3565H33.69V0Z"
-          fill="white"
+          fill="currentColor"
         />
         <path
           d="M21.3334 0H0V46.0465H46.0465V24.7237H21.3334V0Z"
-          fill="white"
+          fill="currentColor"
         />
         <path d="M46.0467 0H37.0805V8.96622H46.0467V0Z" fill="#FF9900" />
       </svg>

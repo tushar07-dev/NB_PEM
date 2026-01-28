@@ -35,64 +35,69 @@ type Props = {
   size?: Size;
 };
 
-// Size variant configurations
+/**
+ * Simplified size variants - Industry best practices
+ * Max 2-3 breakpoints per property for maintainability
+ */
 const SIZE_VARIANTS = {
   sm: {
-    trigger: "h-8 px-2 text-xs",
-    label: "text-[10px] gap-1",
-    input: "h-7 text-xs pl-7 pr-7",
-    searchIcon: "size-3 left-2",
-    clearIcon: "size-3",
-    clearButton: "right-2",
-    item: "py-1.5 px-2 text-xs",
-    itemIcon: "size-3",
-    maxHeight: "max-h-48",
-    searchContainer: "p-2",
-    footer: "px-2 py-1.5 text-[10px]",
-    error: "text-[10px]",
-    errorIcon: "size-3",
-    emptyIcon: "size-4 p-2",
-    emptyText: "text-xs",
-    emptySubtext: "text-[10px]",
-    gap: "gap-1",
+    // Mobile → Tablet (max 2 breakpoints)
+    trigger: "h-8 md:h-9 px-2 md:px-2.5 text-xs md:text-sm",
+    label: "text-[10px] md:text-lg gap-1 md:gap-1.5",
+    input: "h-7 md:h-8 text-xs md:text-sm pl-7 md:pl-8 pr-7 md:pr-8",
+    searchIcon: "size-3 md:size-3.5 left-2 md:left-2.5",
+    clearIcon: "size-3 md:size-3.5",
+    clearButton: "right-2 md:right-2.5",
+    item: "py-1.5 md:py-2 px-2 md:px-2.5 text-xs md:text-sm",
+    maxHeight: "max-h-48 md:max-h-64",
+    searchContainer: "p-2 md:p-2.5",
+    footer: "px-2 md:px-2.5 py-1.5 md:py-2 text-[10px] md:text-xs",
+    error: "text-[10px] md:text-xs",
+    errorIcon: "size-3 md:size-3.5",
+    emptyIcon: "size-4 md:size-5 p-2 md:p-2.5",
+    emptyText: "text-xs md:text-sm",
+    emptySubtext: "text-[10px] md:text-xs",
+    gap: "gap-1 md:gap-1.5",
   },
   md: {
-    trigger: "h-10 px-3 text-sm",
-    label: "text-xs gap-1.5",
-    input: "h-9 text-sm pl-9 pr-9",
-    searchIcon: "size-4 left-3",
-    clearIcon: "size-3.5",
-    clearButton: "right-2.5",
-    item: "py-2.5 px-3 text-sm",
-    itemIcon: "size-4",
-    maxHeight: "max-h-64",
-    searchContainer: "p-3",
-    footer: "px-3 py-2 text-xs",
-    error: "text-xs",
-    errorIcon: "size-3.5",
-    emptyIcon: "size-5 p-3",
-    emptyText: "text-sm",
-    emptySubtext: "text-xs",
-    gap: "gap-1.5",
+    // Mobile → Tablet → Desktop (max 3 breakpoints)
+    trigger: "h-10 md:h-11 lg:h-12 px-3 md:px-3.5 lg:px-4 text-sm md:text-base",
+    label: "text-xs md:text-sm gap-1.5 md:gap-2",
+    input:
+      "h-9 md:h-10 lg:h-11 text-sm md:text-base pl-9 md:pl-10 lg:pl-11 pr-9 md:pr-10 lg:pr-11",
+    searchIcon: "size-4 md:size-4.5 lg:size-5 left-3 md:left-3.5 lg:left-4",
+    clearIcon: "size-3.5 md:size-4",
+    clearButton: "right-2.5 md:right-3",
+    item: "py-2.5 md:py-3 lg:py-3.5 px-3 md:px-3.5 lg:px-4 text-sm md:text-base",
+    maxHeight: "max-h-64 md:max-h-72 lg:max-h-80",
+    searchContainer: "p-3 md:p-3.5 lg:p-4",
+    footer: "px-3 md:px-3.5 lg:px-4 py-2 md:py-2.5 text-xs md:text-sm",
+    error: "text-xs md:text-sm",
+    errorIcon: "size-3.5 md:size-4",
+    emptyIcon: "size-5 md:size-6 p-3 md:p-3.5",
+    emptyText: "text-sm md:text-base",
+    emptySubtext: "text-xs md:text-sm",
+    gap: "gap-1.5 md:gap-2",
   },
   lg: {
-    trigger: "h-12 px-4 text-base",
-    label: "text-sm gap-2",
-    input: "h-11 text-base pl-11 pr-11",
-    searchIcon: "size-5 left-3.5",
-    clearIcon: "size-4",
-    clearButton: "right-3",
-    item: "py-3 px-4 text-base",
-    itemIcon: "size-5",
-    maxHeight: "max-h-80",
-    searchContainer: "p-4",
-    footer: "px-4 py-2.5 text-sm",
-    error: "text-sm",
-    errorIcon: "size-4",
-    emptyIcon: "size-6 p-4",
-    emptyText: "text-base",
-    emptySubtext: "text-sm",
-    gap: "gap-2",
+    // Mobile → Tablet → Desktop
+    trigger: "h-12 md:h-14 lg:h-16 px-4 md:px-5 lg:px-6 text-base md:text-lg",
+    label: "text-base md:text-lg gap-2 md:gap-2.5",
+    input:
+      "h-11 md:h-12 lg:h-14 text-base md:text-lg pl-11 md:pl-12 lg:pl-14 pr-11 md:pr-12 lg:pr-14",
+    searchIcon: "size-5 md:size-5.5 lg:size-6 left-3.5 md:left-4",
+    clearIcon: "size-4 md:size-4.5",
+    clearButton: "right-3 md:right-3.5",
+    item: "py-3 md:py-3.5 lg:py-4 px-4 md:px-5 lg:px-6 text-base md:text-lg",
+    maxHeight: "max-h-72 md:max-h-80 lg:max-h-96",
+    searchContainer: "p-4 md:p-5",
+    footer: "px-4 md:px-5 py-2.5 md:py-3 text-sm md:text-base",
+    error: "text-sm md:text-base",
+    errorIcon: "size-4 md:size-4.5",
+    emptyIcon: "size-6 md:size-7 p-4 md:p-5",
+    emptyText: "text-base md:text-lg",
+    emptySubtext: "text-sm md:text-base",
+    gap: "gap-2 md:gap-2.5",
   },
 } as const;
 
@@ -142,8 +147,8 @@ export function SearchableFilterSelect({
   };
 
   return (
-    <div className={cn("flex flex-col", sizeClasses.gap, className)}>
-      {/* Label with responsive typography */}
+    <div className={cn("flex w-full flex-col", sizeClasses.gap, className)}>
+      {/* Label */}
       <label
         className={cn(
           "text-primary-500 font-medium tracking-wide",
@@ -152,7 +157,9 @@ export function SearchableFilterSelect({
       >
         {label}
         {required && (
-          <span className="text-destructive ml-1 transition-colors">*</span>
+          <span className="text-destructive ml-0.5 transition-colors md:ml-1">
+            *
+          </span>
         )}
       </label>
 
@@ -167,36 +174,34 @@ export function SearchableFilterSelect({
           className={cn(
             // Base styles
             "group relative w-full shadow-sm backdrop-blur-sm transition-all duration-200",
-            "border-grey-200 bg-grey-100 rounded-xl border",
+            "border-grey-200 bg-grey-100 rounded-lg border md:rounded-xl",
 
-            // Focused state
+            // States
             "focus:ring-ring/20 focus:border-primary-100 focus:ring-2 focus:outline-none",
-
-            // Hover state
             "hover:border-primary-100 hover:bg-grey-100",
 
             // Error state
             error &&
               "border-destructive bg-destructive/5 focus:border-destructive focus:ring-destructive/20",
 
-            // Disabled state
+            // Disabled
             disabled && "cursor-not-allowed opacity-60 grayscale",
 
             // Value state
             value ? "text-primary-100 font-medium" : "text-primary-500",
 
-            // Size variant
+            // Responsive size
             sizeClasses.trigger
           )}
         >
-          <div className="flex w-full items-center justify-between gap-2">
+          <div className="flex w-full items-center justify-between gap-1.5 md:gap-2">
             <SelectValue placeholder={placeholder} />
             {clearable && value && !disabled && (
               <button
                 type="button"
                 onClick={handleClear}
                 className={cn(
-                  "text-primary-300 rounded-md p-0.5 transition-all duration-200",
+                  "text-primary-300 rounded-md p-0.5 transition-all duration-200 md:p-1",
                   "hover:text-primary-500 hover:bg-grey-200",
                   "focus:ring-primary-100/50 focus:ring-2 focus:outline-none"
                 )}
@@ -210,10 +215,12 @@ export function SearchableFilterSelect({
 
         <SelectContent
           className={cn(
-            "border-grey-300 bg-grey-100 overflow-hidden rounded-xl border p-0 shadow-xl",
+            "border-grey-300 bg-grey-100 overflow-hidden rounded-lg border p-0 shadow-xl md:rounded-xl",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-            "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+            "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+            // Responsive width
+            "w-[var(--radix-select-trigger-width)] min-w-[200px] md:min-w-[280px]"
           )}
           onCloseAutoFocus={(e) => {
             if (search) {
@@ -241,7 +248,7 @@ export function SearchableFilterSelect({
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={searchPlaceholder}
                 className={cn(
-                  "border-grey-300 bg-grey-100 w-full rounded-xl border transition-all duration-200",
+                  "border-grey-300 bg-grey-100 w-full rounded-lg border transition-all duration-200 md:rounded-xl",
                   "placeholder:text-primary-300",
                   "focus:border-primary-100 focus:ring-ring/20 focus:bg-grey-100 focus:ring-2 focus:outline-none",
                   "hover:border-primary-100 hover:bg-grey-100",
@@ -258,7 +265,7 @@ export function SearchableFilterSelect({
                   type="button"
                   onClick={() => setSearch("")}
                   className={cn(
-                    "text-primary-300 absolute top-1/2 -translate-y-1/2 rounded-xl p-0.5 transition-all duration-200",
+                    "text-primary-300 absolute top-1/2 -translate-y-1/2 rounded-lg p-0.5 transition-all duration-200 md:rounded-xl md:p-1",
                     "hover:text-primary-500 hover:bg-grey-200",
                     "focus:ring-primary-100/50 focus:ring-2 focus:outline-none",
                     sizeClasses.clearButton
@@ -278,11 +285,11 @@ export function SearchableFilterSelect({
               sizeClasses.maxHeight
             )}
           >
-            {/* Top gradient fade */}
-            <div className="from-grey-100 pointer-events-none sticky top-0 z-10 h-3 bg-gradient-to-b to-transparent" />
+            {/* Top gradient */}
+            <div className="from-grey-100 pointer-events-none sticky top-0 z-10 h-2 bg-gradient-to-b to-transparent md:h-3" />
 
             {filteredOptions.length === 0 && (
-              <div className="flex flex-col items-center justify-center gap-2 px-4 py-8 text-center">
+              <div className="flex flex-col items-center justify-center gap-2 px-3 py-6 text-center md:gap-3 md:px-4 md:py-8">
                 <div
                   className={cn(
                     "bg-grey-200 rounded-full",
@@ -312,18 +319,12 @@ export function SearchableFilterSelect({
                 disabled={opt.disabled}
                 className={cn(
                   "cursor-pointer transition-colors duration-150 outline-none",
-                  // Highlighted state
                   "data-[highlighted]:bg-grey-900 data-[highlighted]:text-white",
-                  // Selected state
                   "data-[state=checked]:bg-primary-100 data-[state=checked]:text-white",
-                  // Font weight
                   "font-normal data-[state=checked]:font-medium",
-                  // Disabled
                   opt.disabled &&
                     "cursor-not-allowed opacity-50 hover:bg-transparent",
-                  // Animation
                   search && "animate-in fade-in-0 slide-in-from-top-1",
-                  // Size variant
                   sizeClasses.item
                 )}
                 style={{
@@ -335,11 +336,11 @@ export function SearchableFilterSelect({
               </SelectItem>
             ))}
 
-            {/* Bottom gradient fade */}
-            <div className="from-grey-100 pointer-events-none sticky bottom-0 z-10 h-3 bg-gradient-to-t to-transparent" />
+            {/* Bottom gradient */}
+            <div className="from-grey-100 pointer-events-none sticky bottom-0 z-10 h-2 bg-gradient-to-t to-transparent md:h-3" />
           </div>
 
-          {/* Result count footer */}
+          {/* Footer */}
           {search && filteredOptions.length > 0 && (
             <div
               className={cn(
@@ -351,7 +352,7 @@ export function SearchableFilterSelect({
                 <span className="text-primary-700">
                   {filteredOptions.length}
                 </span>{" "}
-                of {options.length} results
+                of {options.length} result{options.length !== 1 ? "s" : ""}
               </p>
             </div>
           )}
@@ -360,7 +361,7 @@ export function SearchableFilterSelect({
 
       {/* Error message */}
       {error && (
-        <div className="animate-in fade-in-0 slide-in-from-top-1 flex items-start gap-1.5">
+        <div className="animate-in fade-in-0 slide-in-from-top-1 flex items-start gap-1 md:gap-1.5">
           <svg
             className={cn(
               "text-destructive mt-0.5 flex-shrink-0",

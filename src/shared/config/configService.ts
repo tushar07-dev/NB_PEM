@@ -46,7 +46,7 @@ class ConfigService {
 
       return this.config
     } catch (error) {
-      console.error('Failed to load runtime config:', error)
+      console.error('Failed to load runtime config:', error);
 
       // Fallback to environment variables if config.json fails to load
       this.config = this.getFallbackConfig()

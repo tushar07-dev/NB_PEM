@@ -6,8 +6,8 @@
 @font-face {
   font-family: "Helvetica Now Text";
   src:
-    url("/fonts/HelveticaNowText-Regular.woff2") format("woff2"),
-    url("/fonts/HelveticaNowText-Regular.woff") format("woff");
+    url("../public/fonts/HelveticaNowText-Regular.woff2") format("woff2"),
+    url("../public/fonts/HelveticaNowText-Regular.woff") format("woff");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -16,8 +16,8 @@
 @font-face {
   font-family: "Helvetica Now Text";
   src:
-    url("/fonts/HelveticaNowText-Medium.woff2") format("woff2"),
-    url("/fonts/HelveticaNowText-Medium.woff") format("woff");
+    url("../public/fonts/HelveticaNowText-Medium.woff2") format("woff2"),
+    url("../public/fonts/HelveticaNowText-Medium.woff") format("woff");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -26,8 +26,8 @@
 @font-face {
   font-family: "Helvetica Now Text";
   src:
-    url("/fonts/HelveticaNowText-Bold.woff2") format("woff2"),
-    url("/fonts/HelveticaNowText-Bold.woff") format("woff");
+    url("../public/fonts/HelveticaNowText-Bold.woff2") format("woff2"),
+    url("../public/fonts/HelveticaNowText-Bold.woff") format("woff");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -38,45 +38,47 @@
    ========================================================= */
 @theme {
   /* ---------------- ShadCN ---------------- */
-  --radius-sm: calc(var(--radius) - 4px);   /* 6px */
-  --radius-md: calc(var(--radius) - 2px);   /* 8px */
-  --radius-lg: var(--radius);                /* 10px */
-  --radius-xl: calc(var(--radius) + 4px);   /* 14px */
-  --radius-2xl: calc(var(--radius) + 8px);  /* 18px */
-  --radius-3xl: calc(var(--radius) + 12px); /* 22px */
-  --radius-4xl: calc(var(--radius) + 16px); /* 26px */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  /* ---------------- Border Radius ---------------- */
+  --border-radius-full: 100px;
 
   /* ---------------- Breakpoints ---------------- */
-  /* SINGLE SOURCE OF TRUTH */
-  --breakpoint-monitor: 1300px;
+  --breakpoint-sm: 800px;
+  /* laptop */
+  --breakpoint-lg: 1500px;
+  /* monitor */
+  --breakpoint-xl: 1800px;
 
   /* ---------------- Fonts ---------------- */
   --font-solutioneer: "Solutioneer", ui-sans-serif, system-ui;
   --font-helvetica-now: "Helvetica Now Text", ui-sans-serif, system-ui;
 
-  /* =========================================================
-    PRIMARY COLOR SCALE (Brand Blue)
-    ========================================================= */
-
+  /* ---------------- Primary Color Scale (Brand Blue) ---------------- */
   --color-primary-50: #9ca5ad;
   --color-primary-100: #848f99;
   --color-primary-200: #6b7884;
@@ -88,11 +90,11 @@
   --color-primary-800: #05111c;
   --color-primary-900: #040f19;
 
-  /* ---------------- Greys ---------------- */
-  --color-grey-50: #ffffff;
+  --color-grey-50: #fff;
   --color-grey-100: #f9f9f9;
   --color-grey-200: #f6f6f6;
   --color-grey-250: #f3f3f3;
+  --color-grey-275: #ebebeb;
   --color-grey-300: #cccccc;
   --color-grey-400: #b3b3b3;
   --color-grey-500: #999999;
@@ -119,7 +121,7 @@
   --color-success-200: #a6f4c5;
   --color-success-300: #6ce9a6;
   --color-success-400: #32d583;
-  --color-success-500: #12b76a; /* Base */
+  --color-success-500: #12b76a;
   --color-success-600: #039855;
   --color-success-700: #027a48;
   --color-success-800: #05603a;
@@ -137,11 +139,36 @@
   --color-error-800: #991b1b;
   --color-error-900: #7f1d1d;
 
-  /* ---------------- Font sizes (BASE = 1300) ---------------- */
+  /* ---------------- Responsive Component Sizing ---------------- */
+  --component-sm-height: 2rem;
+  --component-sm-height-md: 2.25rem;
+  --component-sm-px: 0.5rem;
+  --component-sm-px-md: 0.625rem;
+  --component-sm-text: 0.75rem;
+  --component-sm-text-md: 0.875rem;
+
+  --component-md-height: 2.5rem;
+  --component-md-height-md: 2.75rem;
+  --component-md-height-lg: 3rem;
+  --component-md-px: 0.75rem;
+  --component-md-px-md: 1rem;
+  --component-md-text: 0.875rem;
+  --component-md-text-md: 1rem;
+
+  --component-lg-height: 3rem;
+  --component-lg-height-md: 3.5rem;
+  --component-lg-height-lg: 4rem;
+  --component-lg-px: 1rem;
+  --component-lg-px-md: 1.25rem;
+  --component-lg-px-lg: 1.5rem;
+  --component-lg-text: 1rem;
+  --component-lg-text-md: 1.125rem;
+
+  /* ---------------- Font sizes ---------------- */
   --font-size-50: 10px;
   --font-size-100: 12px;
-  --font-size-200: 12px;
-  --font-size-300: 14px;
+  --font-size-200: 14px;
+  --font-size-300: 15px;
   --font-size-400: 16px;
   --font-size-450: 18px;
   --font-size-500: 20px;
@@ -152,16 +179,16 @@
   --font-size-750: 40px;
   --font-size-800: 44px;
 
-  /* ---------------- Font Size Aliases (Tailwind Convention) ---------------- */
-  --font-size-xs: var(--font-size-50); /* 10px */
-  --font-size-sm: var(--font-size-100); /* 12px */
-  --font-size-base: var(--font-size-300); /* 14px */
-  --font-size-lg: var(--font-size-400); /* 16px */
-  --font-size-xl: var(--font-size-500); /* 20px */
-  --font-size-2xl: var(--font-size-550); /* 24px */
-  --font-size-3xl: var(--font-size-600); /* 28px */
+  /* ---------------- Font Size Aliases ---------------- */
+  --font-size-xs: var(--font-size-50);
+  --font-size-sm: var(--font-size-100);
+  --font-size-base: var(--font-size-200);
+  --font-size-lg: var(--font-size-400);
+  --font-size-xl: var(--font-size-500);
+  --font-size-2xl: var(--font-size-550);
+  --font-size-3xl: var(--font-size-600);
 
-  /* ---------------- Font weights (BASE = 1300) ---------------- */
+  /* ---------------- Font weights ---------------- */
   --font-weight-100: 400;
   --font-weight-200: 400;
   --font-weight-300: 400;
@@ -172,9 +199,9 @@
   --font-weight-800: 500;
   --font-weight-900: 500;
 
-  /* ---------------- Tracking ---------------- */
-  --tracking-tight-sm: -0.32px;
-  --tracking-tight-lg: -0.48px;
+  /* ---------------- Line Heights ---------------- */
+  --line-height-300: 19px;
+  --line-height-400: 20px;
 
   /* ---------------- Transitions ---------------- */
   --transition-fast: 150ms;
@@ -182,71 +209,91 @@
   --transition-slow: 300ms;
 
   /* ---------------- Spacing ---------------- */
-  --spacing-1: 0.25rem; /* 4px */
-  --spacing-2: 0.5rem; /* 8px */
-  --spacing-3: 0.75rem; /* 12px */
-  --spacing-4: 1rem; /* 16px */
-  --spacing-5: 1.25rem; /* 20px */
-  --spacing-6: 1.5rem; /* 24px */
-  --spacing-8: 2rem; /* 32px */
-  --spacing-10: 2.5rem; /* 40px */
-  --spacing-12: 3rem; /* 48px */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
 }
 
 /* =========================================================
-   ROOT COLORS (LIGHT)
+   ROOT COLORS (LIGHT MODE) - HSL FORMAT
    ========================================================= */
 :root {
-  --background: #f4f7f9;
-  --foreground: #0d1b2a;
-  --card: #ffffff;
-  --card-foreground: #0d1b2a;
-  --popover: #ffffff;
-  --popover-foreground: #0d1b2a;
-  --primary: #0a192f;
-  --primary-foreground: #ffffff;
-  --secondary: #f8fafc;
-  --secondary-foreground: #334155;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #0a192f;
-  --destructive: #dc2626;
-  --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #f8fafc;
-  --ring: #0a192f;
-  --chart-1: #b2b2b2;
-  --chart-2: #e2e8f0;
-  --chart-3: #94a3b8;
-  --chart-4: #cbd5e1;
-  --chart-5: #e2e8f0;
-  --sidebar: #0a192f;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: #0a192f;
-  --sidebar-accent: #112240;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #1d2d44;
-  --sidebar-ring: #ffffff;
+  /* ShadCN Theme Colors - HSL format (H S% L%) */
+  --background: 0 0% 100%; /* #fff */
+  --foreground: 203 64% 16%; /* #081e32 */
+  --card: 0 0% 100%; /* #fff */
+  --card-foreground: 206 72% 11%; /* #0d1b2a */
+  --popover: 0 0% 100%; /* #fff */
+  --popover-foreground: 206 72% 11%; /* #0d1b2a */
+  --primary: 210 50% 11%; /* #0a192f */
+  --primary-foreground: 0 0% 100%; /* #fff */
+  --secondary: 210 20% 98%; /* #f8fafc */
+  --secondary-foreground: 215 25% 27%; /* #334155 */
+  --muted: 210 40% 96%; /* #f1f5f9 */
+  --muted-foreground: 215 16% 47%; /* #64748b */
+  --accent: 210 40% 96%; /* #f1f5f9 */
+  --accent-foreground: 210 50% 11%; /* #0a192f */
+  --destructive: 0 79% 50%; /* #dc2626 */
+  --destructive-foreground: 0 0% 100%; /* #fff */
+  --border: 214 32% 91%; /* #e2e8f0 */
+  --input: 210 20% 98%; /* #f8fafc */
+  --ring: 210 50% 11%; /* #0a192f */
+
+  /* Chart Colors */
+  --chart-1: 0 0% 70%; /* #b2b2b2 */
+  --chart-2: 214 32% 91%; /* #e2e8f0 */
+  --chart-3: 214 17% 61%; /* #94a3b8 */
+  --chart-4: 214 20% 81%; /* #cbd5e1 */
+  --chart-5: 214 32% 91%; /* #e2e8f0 */
+
+  /* Sidebar Colors */
+  --sidebar: 210 50% 11%; /* #0a192f */
+  --sidebar-foreground: 0 0% 100%; /* #fff */
+  --sidebar-primary: 0 0% 100%; /* #fff */
+  --sidebar-primary-foreground: 210 50% 11%; /* #0a192f */
+  --sidebar-accent: 212 41% 15%; /* #112240 */
+  --sidebar-accent-foreground: 0 0% 100%; /* #fff */
+  --sidebar-border: 211 29% 19%; /* #1d2d44 */
+  --sidebar-ring: 0 0% 100%; /* #fff */
+
+  /* Font Families */
   --font-sans: Inter, system-ui, sans-serif;
   --font-serif: Playfair Display, Georgia, serif;
   --font-mono: JetBrains Mono, monospace;
+
+  /* Border Radius */
   --radius: 0.75rem;
+
+  /* Shadow Settings */
   --shadow-x: 0px;
   --shadow-y: 4px;
   --shadow-blur: 12px;
   --shadow-spread: 0px;
   --shadow-opacity: 0.04;
   --shadow-color: 0, 0, 0;
-  --shadow-2xs: 0px 4px 12px 0px hsl(0, 0, 0 / 0.02);
-  --shadow-xs: 0px 4px 12px 0px hsl(0, 0, 0 / 0.02);
-  --shadow-sm: 0px 4px 12px 0px hsl(0, 0, 0 / 0.04), 0px 1px 2px -1px hsl(0, 0, 0 / 0.04);
-  --shadow: 0px 4px 12px 0px hsl(0, 0, 0 / 0.04), 0px 1px 2px -1px hsl(0, 0, 0 / 0.04);
-  --shadow-md: 0px 4px 12px 0px hsl(0, 0, 0 / 0.04), 0px 2px 4px -1px hsl(0, 0, 0 / 0.04);
-  --shadow-lg: 0px 4px 12px 0px hsl(0, 0, 0 / 0.04), 0px 4px 6px -1px hsl(0, 0, 0 / 0.04);
-  --shadow-xl: 0px 4px 12px 0px hsl(0, 0, 0 / 0.04), 0px 8px 10px -1px hsl(0, 0, 0 / 0.04);
-  --shadow-2xl: 0px 4px 12px 0px hsl(0, 0, 0 / 0.10);
+
+  /* Shadow Utilities */
+  --shadow-2xs: 0px 4px 12px 0px hsl(0 0% 0% / 0.02);
+  --shadow-xs: 0px 4px 12px 0px hsl(0 0% 0% / 0.02);
+  --shadow-sm:
+    0px 4px 12px 0px hsl(0 0% 0% / 0.04), 0px 1px 2px -1px hsl(0 0% 0% / 0.04);
+  --shadow:
+    0px 4px 12px 0px hsl(0 0% 0% / 0.04), 0px 1px 2px -1px hsl(0 0% 0% / 0.04);
+  --shadow-md:
+    0px 4px 12px 0px hsl(0 0% 0% / 0.04), 0px 2px 4px -1px hsl(0 0% 0% / 0.04);
+  --shadow-lg:
+    0px 4px 12px 0px hsl(0 0% 0% / 0.04), 0px 4px 6px -1px hsl(0 0% 0% / 0.04);
+  --shadow-xl:
+    0px 4px 12px 0px hsl(0 0% 0% / 0.04), 0px 8px 10px -1px hsl(0 0% 0% / 0.04);
+  --shadow-2xl: 0px 4px 12px 0px hsl(0 0% 0% / 0.1);
+
+  /* Typography */
   --tracking-normal: -0.011em;
   --spacing: 0.25rem;
 }
@@ -255,38 +302,38 @@
    DARK MODE
    ========================================================= */
 .dark {
-  --background: #020617;
-  --foreground: #f8fafc;
-  --card: #0f172a;
-  --card-foreground: #f8fafc;
-  --popover: #0f172a;
-  --popover-foreground: #f8fafc;
-  --primary: #f8fafc;
-  --primary-foreground: #020617;
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
-  --destructive: #7f1d1d;
-  --destructive-foreground: #f8fafc;
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #cbd5e1;
-  --chart-1: #ffffff;
-  --chart-2: #334155;
-  --chart-3: #475569;
-  --chart-4: #64748b;
-  --chart-5: #94a3b8;
-  --sidebar: #020617;
-  --sidebar-foreground: #94a3b8;
-  --sidebar-primary: #3b82f6;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1e293b;
-  --sidebar-accent-foreground: #f8fafc;
-  --sidebar-border: #1e293b;
-  --sidebar-ring: #3b82f6;
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 21% 70%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 210 40% 98%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 212.7 26.8% 83.9%;
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
+  --sidebar: 0 0% 3.9%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-primary: 0 0% 98%;
+  --sidebar-primary-foreground: 240 5.9% 10%;
+  --sidebar-accent: 240 3.7% 15.9%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 240 3.7% 15.9%;
+  --sidebar-ring: 217.2 91.2% 59.8%;
   --font-sans: Inter, system-ui, sans-serif;
   --font-serif: Playfair Display, Georgia, serif;
   --font-mono: JetBrains Mono, monospace;
@@ -297,14 +344,19 @@
   --shadow-spread: 0px;
   --shadow-opacity: 0.3;
   --shadow-color: 0, 0, 0;
-  --shadow-2xs: 0px 8px 16px 0px hsl(0, 0, 0 / 0.15);
-  --shadow-xs: 0px 8px 16px 0px hsl(0, 0, 0 / 0.15);
-  --shadow-sm: 0px 8px 16px 0px hsl(0, 0, 0 / 0.30), 0px 1px 2px -1px hsl(0, 0, 0 / 0.30);
-  --shadow: 0px 8px 16px 0px hsl(0, 0, 0 / 0.30), 0px 1px 2px -1px hsl(0, 0, 0 / 0.30);
-  --shadow-md: 0px 8px 16px 0px hsl(0, 0, 0 / 0.30), 0px 2px 4px -1px hsl(0, 0, 0 / 0.30);
-  --shadow-lg: 0px 8px 16px 0px hsl(0, 0, 0 / 0.30), 0px 4px 6px -1px hsl(0, 0, 0 / 0.30);
-  --shadow-xl: 0px 8px 16px 0px hsl(0, 0, 0 / 0.30), 0px 8px 10px -1px hsl(0, 0, 0 / 0.30);
-  --shadow-2xl: 0px 8px 16px 0px hsl(0, 0, 0 / 0.75);
+  --shadow-2xs: 0px 8px 16px 0px hsl(0 0% 0% / 0.15);
+  --shadow-xs: 0px 8px 16px 0px hsl(0 0% 0% / 0.15);
+  --shadow-sm:
+    0px 8px 16px 0px hsl(0 0% 0% / 0.3), 0px 1px 2px -1px hsl(0 0% 0% / 0.3);
+  --shadow:
+    0px 8px 16px 0px hsl(0 0% 0% / 0.3), 0px 1px 2px -1px hsl(0 0% 0% / 0.3);
+  --shadow-md:
+    0px 8px 16px 0px hsl(0 0% 0% / 0.3), 0px 2px 4px -1px hsl(0 0% 0% / 0.3);
+  --shadow-lg:
+    0px 8px 16px 0px hsl(0 0% 0% / 0.3), 0px 4px 6px -1px hsl(0 0% 0% / 0.3);
+  --shadow-xl:
+    0px 8px 16px 0px hsl(0 0% 0% / 0.3), 0px 8px 10px -1px hsl(0 0% 0% / 0.3);
+  --shadow-2xl: 0px 8px 16px 0px hsl(0 0% 0% / 0.75);
 }
 
 /* =========================================================
@@ -325,36 +377,156 @@
    UTILITIES
    ========================================================= */
 @layer utilities {
-  /* ---------- TITLE (0 → 1279px) ---------- */
-  .text-title {
+  /* ---------- FOCUS STYLES ---------- */
+  .focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* ---------- BRAND TEXT ---------- */
+  .brand-text {
+    color: hsl(var(--primary-foreground));
     font-family: var(--font-solutioneer);
-    font-weight: var(--font-weight-700);
-    font-size: var(--font-size-400);
-    letter-spacing: var(--tracking-tight-sm);
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    letter-spacing: -0.48px;
     text-transform: capitalize;
-    color: var(--color-grey-50);
+  }
+
+  .top-header {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--foreground));
+  }
+
+  /* ---------- DROPDOWN ---------- */
+  .header-dropdown-trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    width: 160px;
+    border: 1px solid hsl(var(--border));
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--border-radius-full);
+    background: hsl(var(--background));
+    cursor: pointer;
+    height: 32px;
+  }
+  .header-dropdown-trigger-button {
+    display: flex;
+    width: 30px;
+    height: 30px;
+    padding: var(--spacing-4);
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-2.5);
+    border-radius: 30px;
+    background: hsl(var(--background));
+    cursor: pointer;
+    color: hsl(var(--foreground));
+  }
+
+  /* top Header */
+  .top-header-bar {
+    @apply flex w-full shrink-0 items-center justify-between px-4 py-3 lg:py-5 lg:px-8;
+    background-color: hsl(var(--foreground));
+  }
+  .header-pill {
+    @apply rounded-full border-none bg-white/90 transition-all hover:bg-white focus-visible:ring-1;
+    font-family: var(--font-helvetica-now);
+  }
+  .header-search-container {
+    @apply relative mx-4 max-w-md flex-1 lg:mx-6;
+  }
+  .header-icon-btn {
+    @apply flex items-center justify-center rounded-full transition-all duration-200; /* Base Colors */
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border) / 0.5); /* Subtle border */
+
+    /* Hover State */
+    &:hover {
+      background-color: hsl(var(--accent));
+      color: hsl(var(--accent-foreground));
+      transform: translateY(-1px); /* Subtle lift */
+      box-shadow: 0 4px 12px hsl(var(--shadow-color) / 0.1);
+
+      /* Adds a soft glow using the theme's ring color */
+      outline: 2px solid hsl(var(--ring) / 0.15);
+      outline-offset: 1px;
+    }
+  }
+
+/* -- Document List UI -- */
+  .doc-list-container {
+    @apply flex flex-col h-full bg-white border border-slate-200 shadow-sm transition-all duration-300;
+  }
+
+  .doc-list-item {
+    @apply flex items-center cursor-pointer transition-all duration-200 rounded-lg;
+    font-family: var(--font-helvetica-now);
+  }
+
+  .doc-list-item-active {
+    background-color: #E8EEF9; 
+    @apply shadow-sm border border-blue-100;
+  }
+
+  .doc-list-item-hover {
+    @apply hover:bg-slate-50;
+  }
+
+  .doc-icon-box {
+    @apply flex shrink-0 items-center justify-center rounded-lg border bg-white shadow-2xs;
+    border-color: var(--color-grey-275);
+  }
+
+  .doc-title {
+    @apply font-bold text-slate-900 leading-tight truncate;
+  }
+
+  .doc-code {
+    @apply font-medium text-slate-500 leading-normal break-all;
   }
 }
 
 /* =========================================================
-   MONITOR OVERRIDES (≥ 1300px)
+   RESPONSIVE UTILITIES
    ========================================================= */
-@media (min-width: 1300px) {
-  @theme {
-    --font-weight-700: 700;
-    --font-weight-800: 800;
-    --font-weight-900: 900;
-  }
-  :root {
-    /* Expand hierarchy ONLY */
-    --font-weight-700: 700;
-    --font-weight-800: 800;
-    --font-weight-900: 900;
-  }
 
-  .text-title {
-    font-size: var(--font-size-600);
-    letter-spacing: var(--tracking-tight-lg);
-    /* color: var(--destructive); */
+@media (min-width: 800px) {
+  .top-header-bar {
+    background-color: var(--color-primary-600); /* Testing color */
+  }
+}
+
+@media (min-width: 1500px) {
+  .header-dropdown-trigger-button {
+    width: 44px;
+    height: 44px;
+  }
+  .header-dropdown-trigger-button-profile {
+    width: 50px;
+    height: 50px;
+  }
+  .avatar-fallback {
+    font-size: var(--font-size-lg);
+  }
+  .header-dropdown-trigger {
+    padding: var(--spacing-3) var(--spacing-5);
+    height: 48px;
+  }
+  .top-header-bar {
+    background-color: var(--color-success-800); /* Testing color */
+  }
+}
+
+@media (min-width: 1800px) {
+  .brand-text {
+    font-size: 1.5rem; /* 28px for large monitor */
+  }
+  .top-header-bar {
+    background-color: hsl(280, 50%, 30%); /* Testing color */
   }
 }

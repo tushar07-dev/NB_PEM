@@ -9,8 +9,12 @@ import { Button } from "@/shared/components/ui/button";
 import { Progress } from "@/shared/components/ui/progress"; // Shadcn progress bar
 import { ChecklistTableRow } from "./ChecklistTableRow";
 import { Clock4 } from "lucide-react";
+import { useSidebar } from "@/shared/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 export const ChecklistTable = () => {
+  const { state } = useSidebar();
+  const isExpanded = state === "expanded";
   // Example data based on the image
   const checklistItems = [
     {
@@ -78,7 +82,7 @@ export const ChecklistTable = () => {
       isHighlighted: true,
     },
     {
-      id: 7,
+      id: 9,
       checkpoint:
         "Drawing Made In Accordance With Project Requirements (Client Template).",
       value: "YES",
@@ -86,7 +90,7 @@ export const ChecklistTable = () => {
       date: "02-12-25",
     },
     {
-      id: 8,
+      id: 10,
       checkpoint: "Included And Checked: All Relevant Information Included.",
       value: "NO",
       signature: "Sofia Martinez",
@@ -96,7 +100,12 @@ export const ChecklistTable = () => {
   ];
 
   return (
-    <div className="h-full rounded-lg border bg-white p-4 shadow-sm">
+    <div
+      className={cn(
+        "h-full rounded-lg border bg-white shadow-sm transition-all duration-300",
+        isExpanded ? "p-2 sm:p-2" : "p-4" // Reduce padding when sidebar is open
+      )}
+    >
       <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <h3 className="text-sm font-semibold text-slate-700">
           Document Checklist Table

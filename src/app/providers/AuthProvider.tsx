@@ -1,13 +1,13 @@
-import { getUser, login } from '@/api/auth';
-import type { User } from '@/types/user';
-import { setAuthToken } from '@/shared/services/axios';
+import { getUser, login } from "@/api/auth";
+import type { User } from "@/types/user";
+import { setAuthToken } from "@/shared/services/axios";
 import {
   createContext,
   useContext,
   useEffect,
   useState,
   type PropsWithChildren,
-} from 'react';
+} from "react";
 
 type AuthContext = {
   authToken: string | null;
@@ -30,19 +30,17 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   }, [authToken]);
 
   useEffect(() => {
-    async function fetchUser() {
-      try {
-        const response = await getUser();
+    // Temporary bypass: directly set admin user
+    const mockAdminUser: User = {
+      name: "Admin User",
+      id: 1,
+      email: "admin@example.com",
+      role: "admin",
+    };
+    const mockAuthToken = "mock-admin-token";
 
-        setAuthTokenState(response.authToken);
-        setCurrentUser(response.user);
-      } catch {
-        setAuthTokenState(null);
-        setCurrentUser(null);
-      }
-    }
-
-    fetchUser();
+    setAuthTokenState(mockAuthToken);
+    setCurrentUser(mockAdminUser);
   }, []);
 
   async function handleLogin(email: string, password: string) {
@@ -81,7 +79,7 @@ export function useAuth() {
   const context = useContext(AuthContext);
 
   if (context === undefined) {
-    throw new Error('useAuth must be used inside of a AuthProvider');
+    throw new Error("useAuth must be used inside of a AuthProvider");
   }
 
   return context;

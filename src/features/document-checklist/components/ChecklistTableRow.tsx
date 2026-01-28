@@ -2,7 +2,14 @@ import { TableCell, TableRow } from "@/shared/components/ui/table";
 import { Input } from "@/shared/components/ui/input";
 // You'll likely need a ToggleGroup or custom buttons for YES/NO/NA
 
-export const ChecklistTableRow = ({ item }) => {
+interface ChecklistItem {
+  checkpoint: string;
+  isHighlighted?: boolean;
+  signature: string;
+  date: string;
+}
+
+export const ChecklistTableRow = ({ item }: { item: ChecklistItem }) => {
   return (
     <TableRow className={item.isHighlighted ? "bg-blue-50/50" : ""}>
       <TableCell className="text-xs font-medium text-slate-700">

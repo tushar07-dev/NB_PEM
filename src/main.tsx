@@ -6,6 +6,7 @@ import AuthProvider from "@/app/providers/AuthProvider"
 import { ErrorProvider } from "@/app/providers/ErrorProvider"
 import { ErrorBoundary } from "@/shared/errors/ErrorBoundary"
 import { MsalProvider } from "@azure/msal-react"
+import { ThemeProvider } from "next-themes"
 import "./index.css"
 import { configService } from "@/shared/config/configService"
 import { initializeMsalInstance } from "@/shared/config/msalConfig"
@@ -14,18 +15,20 @@ import { initMonitoring } from "@/shared/services/monitoring"
 
 // App component that requires config
 function App() {
-  const msalInstance = initializeMsalInstance()
+  // const msalInstance = initializeMsalInstance()
 
   return (
-    <MsalProvider instance={msalInstance}>
-      <ErrorProvider>
-        <ErrorBoundary> 
-          <AuthProvider>
-            <RouterProvider router={router} />
-          </AuthProvider>
-        </ErrorBoundary>
-      </ErrorProvider>
-    </MsalProvider>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      {/* <MsalProvider instance={msalInstance}> */}
+        <ErrorProvider>
+          <ErrorBoundary> 
+            <AuthProvider>
+              <RouterProvider router={router} />
+            </AuthProvider>
+          </ErrorBoundary>
+        </ErrorProvider>
+      {/* </MsalProvider> */}
+    </ThemeProvider>
   )
 }
 
@@ -33,11 +36,11 @@ function App() {
 async function initializeApp() {
   try {
     // Load runtime configuration first
-    await configService.loadConfig()
+    // await configService.loadConfig()
 
     // Initialize services that depend on config
-    initializeApi()
-    initMonitoring()
+    // initializeApi()
+    // initMonitoring()
 
     // Render the app
     ReactDOM.createRoot(document.getElementById("root")!).render(

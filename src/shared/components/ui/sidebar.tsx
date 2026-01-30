@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
-import { cva } from "class-variance-authority";
+import { cva, type VariantProps } from "class-variance-authority";
 import { PanelLeft } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/button";
@@ -13,9 +13,8 @@ import {
 
 /**
  * SIDEBAR DIMENSIONS
- * Managed via CSS variables for responsive jumps on 'monitor' breakpoint
  */
-const SIDEBAR_WIDTH = "222px";
+const SIDEBAR_WIDTH = "250px";
 const SIDEBAR_WIDTH_MONITOR = "270px";
 const SIDEBAR_WIDTH_ICON = "60px";
 const SIDEBAR_WIDTH_ICON_MONITOR = "90px";
@@ -78,52 +77,65 @@ export const Sidebar = React.forwardRef<
   React.ComponentProps<"div"> & { collapsible?: "icon" | "none" }
 >(({ collapsible = "icon", className, children, ...props }, ref) => {
   const { state } = useSidebar();
-  const internalRef = React.useRef<HTMLDivElement>(null);
-  React.useImperativeHandle(ref, () => internalRef.current!);
 
   return (
     <div
-      ref={internalRef}
+      ref={ref}
       className={cn(
         "group peer flex h-full shrink-0 flex-col transition-[width] duration-200 ease-linear",
-        // THEME INTEGRATION: Using variables instead of hardcoded bg-sidebar
-        "border-[var(--color-grey-275)] bg-[var(--color-grey-50)]",
-
-        // Expanded Widths
+        "bg-background border-border border-r",
         "w-[var(--sidebar-width)]",
-        "monitor:w-[var(--sidebar-width-monitor)]",
-
-        // Collapsed Widths
+        "xl:w-[var(--sidebar-width-monitor)]",
         "data-[state=collapsed]:w-[var(--sidebar-width-icon)]",
-        "monitor:data-[state=collapsed]:w-[var(--sidebar-width-icon-monitor)]",
+        "xl:data-[state=collapsed]:w-[var(--sidebar-width-icon-monitor)]",
         className
       )}
       data-state={state}
       data-collapsible={state === "collapsed" ? collapsible : ""}
     >
-      <div
-        className={cn("flex flex-1 flex-col overflow-hidden", className)}
-        {...props}
-      >
+      <div className="flex flex-1 flex-col overflow-hidden" {...props}>
         {children}
       </div>
     </div>
   );
 });
 
-// --- INSET ---
-export const SidebarInset = React.forwardRef<
+// --- GROUPS ---
+export const SidebarGroup = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"main">
+  React.ComponentProps<"div">
 >(({ className, ...props }, ref) => (
-  <main
+  <div
     ref={ref}
-    className={cn(
-      "bg-background relative flex w-full flex-1 flex-col overflow-y-auto",
-      className
-    )}
+    data-sidebar="group"
+    className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
     {...props}
   />
+));
+
+export const SidebarGroupLabel = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div"> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : "div";
+  return (
+    <Comp
+      ref={ref}
+      className={cn(
+        "text-primary-400/70 flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium transition-[margin,opacity] duration-200 ease-linear",
+        "group-data-[state=collapsed]:-mt-8 group-data-[state=collapsed]:opacity-0",
+        className
+      )}
+      {...props}
+    />
+  );
+});
+
+export const SidebarGroupContent = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("w-full text-sm", className)} {...props} />
 ));
 
 // --- STRUCTURE COMPONENTS ---
@@ -133,7 +145,7 @@ export const SidebarContent = ({
 }: React.ComponentProps<"div">) => (
   <div
     className={cn(
-      "flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-2",
+      "flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-2 group-data-[state=collapsed]:overflow-hidden",
       className
     )}
     {...props}
@@ -153,53 +165,49 @@ export const SidebarFooter = ({
   />
 );
 
-export const SidebarMenu = ({
-  className,
-  ...props
-}: React.ComponentProps<"ul">) => (
-  <ul className={cn("flex w-full flex-col gap-2", className)} {...props} />
-);
+export const SidebarMenu = React.forwardRef<
+  HTMLUListElement,
+  React.ComponentProps<"ul">
+>(({ className, ...props }, ref) => (
+  <ul
+    ref={ref}
+    className={cn("flex w-full list-none flex-col gap-2", className)}
+    {...props}
+  />
+));
 
-export const SidebarMenuItem = ({
-  className,
-  ...props
-}: React.ComponentProps<"li">) => (
+export const SidebarMenuItem = React.forwardRef<
+  HTMLLIElement,
+  React.ComponentProps<"li">
+>(({ className, ...props }, ref) => (
   <li
+    ref={ref}
     className={cn("group/menu-item relative list-none", className)}
     {...props}
   />
-);
+));
 
-// --- BUTTON LOGIC (Theme Aware) ---
+// --- BUTTON LOGIC ---
 const sidebarMenuButtonVariants = cva(
-  "flex w-full items-center gap-1.5 monitor:gap-2.5 transition-all duration-200 px-1.5 outline-none disabled:opacity-50",
+  "flex w-full items-center gap-2.5 transition-all duration-200 px-3 py-2 outline-none disabled:opacity-50 rounded-lg",
   {
     variants: {
       variant: {
         default: [
-          // BASE / DEFAULT STATE
-          "bg-transparent text-[var(--color-primary-400)] font-medium text-[16px] leading-normal",
-          "hover:rounded-[4px]",
-          "hover:bg-[var(--color-grey-100)]",
-
-          // ACTIVE / SELECTED STATE
-          "data-[active=true]:rounded-[6px]",
-          "data-[active=true]:border-[1px] data-[active=true]:border-[var(--color-primary-700)]",
-          "data-[active=true]:bg-[var(--color-primary-600)]",
-          "data-[active=true]:text-[var(--color-grey-50)]",
-          "data-[active=true]:font-semibold",
-
-          "monitor:data-[active=true]:rounded-[8px]",
-
-          // Ensure icons inside active buttons inherit the color
-          "data-[active=true]:[&_svg]:text-[var(--color-grey-50)]",
-          "data-[active=true]:[&_div]:text-[var(--color-grey-50)]",
+          "bg-transparent text-primary-400 font-medium",
+          "hover:bg-secondary hover:text-primary",
+          // Update this part for the dark background design
+          "data-[active=true]:bg-primary data-[active=true]:text-primary-foreground",
+          "data-[active=true]:[&_svg]:text-primary-foreground",
+          "group-data-[state=open]/collapsible:bg-secondary-foreground group-data-[state=open]/collapsible:text-primary-foreground",
+          "group-data-[state=open]/collapsible:[&_svg]:text-primary-foreground",
         ].join(" "),
       },
     },
     defaultVariants: { variant: "default" },
   }
 );
+
 export const SidebarMenuButton = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<"button"> & {
@@ -221,7 +229,8 @@ export const SidebarMenuButton = React.forwardRef<
         data-active={isActive}
         className={cn(
           sidebarMenuButtonVariants(),
-          "group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:px-0",
+          // This ensures icons stay centered and the button doesn't stretch awkwardly
+          "group-data-[state=collapsed]:w-full group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:px-0",
           className
         )}
         {...props}
@@ -236,7 +245,7 @@ export const SidebarMenuButton = React.forwardRef<
         <TooltipContent
           side="right"
           align="center"
-          className="border-none bg-[var(--color-primary-700)] text-[var(--color-grey-50)]"
+          className="bg-primary text-background border-none"
         >
           {tooltip}
         </TooltipContent>
@@ -244,6 +253,91 @@ export const SidebarMenuButton = React.forwardRef<
     );
   }
 );
+
+// --- SUB MENU COMPONENTS ---
+export const SidebarMenuSub = React.forwardRef<
+  HTMLUListElement,
+  React.ComponentProps<"ul">
+>(({ className, ...props }, ref) => (
+  <ul
+    ref={ref}
+    // Add relative positioning and a slight margin-left to make room for the line
+    className={cn(
+      "border-border relative ml-6 flex flex-col gap-1 border-l py-2",
+      "group-data-[state=collapsed]:hidden",
+      className
+    )}
+    {...props}
+  />
+));
+
+export const SidebarMenuSubItem = React.forwardRef<
+  HTMLLIElement,
+  React.ComponentProps<"li">
+>(({ className, ...props }, ref) => (
+  <li
+    ref={ref}
+    className={cn(
+      "before:bg-border relative list-none before:absolute before:top-[14px] before:left-[-1px] before:h-[1px] before:w-3",
+      className
+    )}
+    {...props}
+  />
+));
+
+export const SidebarMenuSubButton = React.forwardRef<
+  HTMLAnchorElement,
+  React.ComponentProps<"a"> & {
+    asChild?: boolean;
+    isActive?: boolean;
+  }
+>(({ asChild = false, isActive, className, ...props }, ref) => {
+  const Comp = asChild ? Slot : "a";
+
+  return (
+    <Comp
+      ref={ref}
+      data-active={isActive}
+      className={cn(
+        "text-primary-400 flex h-7 min-w-0 items-center gap-2 overflow-hidden rounded-md px-2 text-sm transition-all outline-none",
+        "hover:bg-secondary hover:text-primary",
+        "data-[active=true]:text-primary data-[active=true]:font-medium",
+        "group-data-[state=collapsed]:hidden",
+        className
+      )}
+      {...props}
+    />
+  );
+});
+
+export const SidebarRail = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<"button">
+>(({ className, ...props }, ref) => {
+  const { toggleSidebar } = useSidebar();
+
+  return (
+    <button
+      ref={ref}
+      data-sidebar="rail"
+      aria-label="Toggle Sidebar"
+      tabIndex={-1}
+      onClick={toggleSidebar}
+      title="Toggle Sidebar"
+      className={cn(
+        "hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] sm:flex",
+        "[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize",
+        "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
+        "group-data-[collapsible=offcanvas]:hover:bg-sidebar group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full",
+        "[[data-side=left][data-collapsible=offcanvas]_&]:-right-2",
+        "[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
+        className
+      )}
+      {...props}
+    />
+  );
+});
+SidebarRail.displayName = "SidebarRail";
 
 export const SidebarTrigger = () => {
   const { toggleSidebar } = useSidebar();
@@ -254,7 +348,21 @@ export const SidebarTrigger = () => {
       className="h-7 w-7"
       onClick={toggleSidebar}
     >
-      <PanelLeft className="text-[var(--color-primary-700)]" />
+      <PanelLeft className="text-primary" />
     </Button>
   );
 };
+
+export const SidebarInset = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"main">
+>(({ className, ...props }, ref) => (
+  <main
+    ref={ref}
+    className={cn(
+      "bg-background relative flex w-full flex-1 flex-col overflow-y-auto",
+      className
+    )}
+    {...props}
+  />
+));

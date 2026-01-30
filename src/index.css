@@ -86,7 +86,7 @@
   --color-primary-400: #394b5b;
   --color-primary-500: #203446;
   --color-primary-600: #081e32;
-  --color-primary: #051320;
+  --color-primary-700: #051320;
   --color-primary-800: #05111c;
   --color-primary-900: #040f19;
 
@@ -231,7 +231,7 @@
   --card-foreground: hsl(206 72% 11%);
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(206 72% 11%);
-  --primary: hsl(333 43% 46%);
+  --primary: hsl(206 72% 11%);
   --primary-foreground: hsl(0 0% 100%);
   --secondary: hsl(210 20% 98%);
   --secondary-foreground: hsl(215 25% 27%);
@@ -443,7 +443,7 @@
       box-shadow: 0 4px 12px var(--shadow-color);
 
       /* Adds a soft glow using the theme's ring color */
-      outline: 2px solid var(--ring);
+      outline: 2px solid hsl(var(--ring) / 0.15);
       outline-offset: 1px;
     }
   }
@@ -549,7 +549,7 @@
   }
 
   .doc-list-item-hover {
-    @apply hover:bg-grey-100;
+    @apply hover:bg-slate-50;
   }
 
   .doc-icon-box {
@@ -594,6 +594,6 @@
     font-size: 1.5rem; /* 28px for large monitor */
   }
   .top-header-bar {
-    /* background-color: var(--foreground); Testing color */
+    /* background-color: hsl(var(--foreground)); Testing color */
   }
 }

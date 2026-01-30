@@ -1,17 +1,17 @@
-import React from "react"
-import ReactDOM from "react-dom/client"
-import { RouterProvider } from "react-router-dom"
-import { router } from "@/app/router"
-import AuthProvider from "@/app/providers/AuthProvider"
-import { ErrorProvider } from "@/app/providers/ErrorProvider"
-import { ErrorBoundary } from "@/shared/errors/ErrorBoundary"
-import { MsalProvider } from "@azure/msal-react"
-import { ThemeProvider } from "next-themes"
-import "./index.css"
-import { configService } from "@/shared/config/configService"
-import { initializeMsalInstance } from "@/shared/config/msalConfig"
-import { initializeApi } from "@/shared/services/axios"
-import { initMonitoring } from "@/shared/services/monitoring"
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { RouterProvider } from "react-router-dom";
+import { router } from "@/app/router";
+import AuthProvider from "@/app/providers/AuthProvider";
+import { ErrorProvider } from "@/app/providers/ErrorProvider";
+import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
+import { MsalProvider } from "@azure/msal-react";
+import { ThemeProvider } from "next-themes";
+import "./index.css";
+import { configService } from "@/shared/config/configService";
+import { initializeMsalInstance } from "@/shared/config/msalConfig";
+import { initializeApi } from "@/shared/services/axios";
+import { initMonitoring } from "@/shared/services/monitoring";
 
 // App component that requires config
 function App() {
@@ -20,16 +20,16 @@ function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       {/* <MsalProvider instance={msalInstance}> */}
-        <ErrorProvider>
-          <ErrorBoundary> 
-            <AuthProvider>
-              <RouterProvider router={router} />
-            </AuthProvider>
-          </ErrorBoundary>
-        </ErrorProvider>
+      <ErrorProvider>
+        <ErrorBoundary>
+          <AuthProvider>
+            <RouterProvider router={router} />
+          </AuthProvider>
+        </ErrorBoundary>
+      </ErrorProvider>
       {/* </MsalProvider> */}
     </ThemeProvider>
-  )
+  );
 }
 
 // Main initialization function
@@ -47,33 +47,34 @@ async function initializeApp() {
       <React.StrictMode>
         <App />
       </React.StrictMode>
-    )
+    );
   } catch (error) {
-    console.error('Failed to initialize app:', error)
+    console.error("Failed to initialize app:", error);
 
     // Render error fallback if config loading fails
     ReactDOM.createRoot(document.getElementById("root")!).render(
       <React.StrictMode>
         <div className="flex h-screen items-center justify-center">
-          <div className="text-center max-w-md p-6">
-            <h2 className="text-lg font-semibold text-red-600 mb-4">
+          <div className="max-w-md p-6 text-center">
+            <h2 className="text-destructive mb-4 text-lg font-semibold">
               Configuration Error
             </h2>
-            <p className="text-gray-600 mb-4">
-              Failed to load application configuration. Please check your config.json file.
+            <p className="text-primary mb-4">
+              Failed to load application configuration. Please check your
+              config.json file.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="bg-primary hover:bg-primary text-primary-foreground rounded px-4 py-2"
             >
               Retry
             </button>
           </div>
         </div>
       </React.StrictMode>
-    )
+    );
   }
 }
 
 // Start the application
-initializeApp()
+initializeApp();

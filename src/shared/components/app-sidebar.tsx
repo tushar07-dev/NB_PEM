@@ -1,85 +1,105 @@
-import { Link, useLocation } from "react-router-dom";
+"use client";
+
+import * as React from "react";
+import {
+  BookOpen,
+  Bot,
+  SquareTerminal,
+  ChevronLeft, // Standard icon fallback
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
+
+import { NavMain } from "@/shared/components/nav-main";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarRail,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuButton,
   useSidebar,
+  SidebarGroupLabel, // CRITICAL: Hook to get sidebar state
 } from "@/shared/components/ui/sidebar";
-import { ROLE_NAVIGATION } from "@/app/config/navigation";
-import { useAuth } from "@/app/providers/AuthProvider";
-import { Icons } from "./icons";
 import { cn } from "@/lib/utils";
 
-export function AppSidebar() {
+import { Home, FileText, ClipboardList, LayoutDashboard } from "lucide-react";
+
+const data = {
+  navMain: [
+    {
+      title: "Home",
+      url: "/dashboard", // Points to your index/dashboard route
+      icon: Home,
+      isActive: false,
+    },
+    {
+      title: "PEM Requirements",
+      url: "/pem-requirements", // Matches the admin route path
+      icon: FileText,
+      items: [], // Expandable but currently empty based on router
+    },
+    {
+      title: "PEM Check Lists",
+      url: "#",
+      icon: ClipboardList,
+      isActive: true, // Set to true to match the expanded state in your image
+      items: [
+        {
+          title: "Control Object Check List",
+          url: "/control-object-checklist", // Matches router path
+        },
+        {
+          title: "Document Check List",
+          url: "/document-checklist", // Matches router path
+        },
+        {
+          title: "Discipline Activity Check List",
+          url: "/discipline-activity-list", // Matches router path
+        },
+      ],
+    },
+  ],
+};
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  // 1. Extract state from the context provider
   const { state, toggleSidebar } = useSidebar();
-  const { pathname } = useLocation();
-  const { currentUser } = useAuth();
   const isCollapsed = state === "collapsed";
 
-  const menuItems = currentUser?.role
-    ? ROLE_NAVIGATION[currentUser.role as keyof typeof ROLE_NAVIGATION]
-    : [];
-
   return (
-    <Sidebar collapsible="icon">
-      <SidebarContent className="monitor:p-2 p-1">
-        <SidebarMenu>
-          {menuItems.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton
-                asChild
-                tooltip={item.title}
-                isActive={pathname === item.url} // Logic trigger
-                className="monitor:h-[60px] h-[40px]"
-              >
-                <Link to={item.url} className="flex w-full items-center">
-                  {/* ICON BOX: Size jumps on monitor */}
-                  <div className="monitor:h-[52px] monitor:w-[52px] flex h-[34.667px] w-[34.667px] shrink-0 items-center justify-center">
-                    <item.icon className="aspect-square h-full w-full p-2" />
-                  </div>
-
-                  {/* LABEL: Typography jumps on monitor */}
-                  {!isCollapsed && (
-                    <span className="monitor:text-[16px] leading-lh-300 monitor:leading-lh-400 truncate text-[14px]">
-                      {item.title}
-                    </span>
-                  )}
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarContent>
+        <NavMain items={data.navMain} />
       </SidebarContent>
 
-      <SidebarFooter className="monitor:p-2 p-1">
+      <SidebarFooter className="p-1 xl:p-2">
         <SidebarMenu>
+          <SidebarGroupLabel>fdkijnfdk</SidebarGroupLabel>
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip={isCollapsed ? "Expand" : "Collapse"}
               onClick={toggleSidebar}
               className={cn(
-                // Visual container (from design)
-                "border-grey-250 bg-grey-100 border",
-                "rounded-lg",
-                // Same vertical rhythm as menu items
-                "monitor:h-15 h-10"
+                "border-grey-250 bg-secondary border",
+                "rounded-lg transition-all duration-200",
+                "flex h-10 w-full items-center xl:h-15"
               )}
             >
-              {/* Icon box */}
-              <div className="monitor:h-[52px] monitor:w-[52px] flex h-[34.667px] w-[34.667px] shrink-0 items-center justify-center">
-                <Icons.SidebarToggle
-                  isCollapsed={!isCollapsed}
-                  size="md"
-                  className="h-full w-full p-2"
-                />
+              {/* Icon box - Centered and sized */}
+              <div className="flex h-[34.667px] w-[34.667px] shrink-0 items-center justify-center xl:h-[52px] xl:w-[52px]">
+                {/* Using Lucide icons as a fallback for Icons.SidebarToggle */}
+                {isCollapsed ? (
+                  <PanelLeftOpen className="h-5 w-5" />
+                ) : (
+                  <PanelLeftClose className="h-5 w-5" />
+                )}
               </div>
 
               {/* Label (only when expanded) */}
               {!isCollapsed && (
-                <span className="monitor:text-[16px] leading-lh-300 monitor:leading-lh-400 truncate text-[14px]">
+                <span className="truncate text-[14px] leading-none font-medium xl:ml-2 xl:text-[16px]">
                   Collapse
                 </span>
               )}
@@ -87,6 +107,7 @@ export function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }

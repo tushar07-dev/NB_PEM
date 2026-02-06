@@ -1,23 +1,35 @@
-import { createBrowserRouter, Navigate, Outlet } from "react-router-dom"
-import LoginPage from "@/features/auth/pages/LoginPage"
-import UnauthorizedPage from "@/features/auth/pages/UnauthorizedPage"
-import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute"
-import { RoleGuard } from "@/app/router/RoleGuard"
-import { RoleBasedLayout } from "@/app/layouts/RoleBasedLayout"
-import RouterError from "./RouterError"
-import { DocumentChecklist } from "@/features/document-checklist/pages/DocumentChecklist"
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import LoginPage from "@/features/auth/pages/LoginPage";
+import UnauthorizedPage from "@/features/auth/pages/UnauthorizedPage";
+import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
+import { RoleGuard } from "@/app/router/RoleGuard";
+import { RoleBasedLayout } from "@/app/layouts/RoleBasedLayout";
+import RouterError from "./RouterError";
+import { DocumentChecklist } from "@/features/document-checklist/pages/DocumentChecklist";
 
-// Admin pages
-const DocsPage = () => <div>Document page</div>
-const PemRequirementsPage = () => <div>PEM Requirements Page</div>
-const DisciplineActivityListPage = () => <div>Discipline Activity List Page</div>
-const ControlObjectChecklistPage = () => <div>Control Object Checklist Page</div>
+// --------------------
+// ADMIN PAGES
+// --------------------
+const PemRequirementsPage = () => <div>PEM Requirements Page</div>;
+const DisciplineActivityListPage = () => (
+  <div>Discipline Activity List Page</div>
+);
+const ControlObjectChecklistPage = () => (
+  <div>Control Object Checklist Page</div>
+);
 
-// User pages
-const UserProfilePage = () => <div>User Profile</div>
+// --------------------
+// USER PAGES
+// --------------------
+const UserProfilePage = () => <div>User Profile</div>;
 
+// --------------------
+// ROUTER CONFIG
+// --------------------
 export const router = createBrowserRouter([
-  // 1. PUBLIC ROUTES
+  // ====================
+  // PUBLIC ROUTES
+  // ====================
   {
     path: "/login",
     element: <LoginPage />,
@@ -26,7 +38,10 @@ export const router = createBrowserRouter([
     path: "/unauthorized",
     element: <UnauthorizedPage />,
   },
-  // 2. PROTECTED APP ROUTES (Wrapped in App Shell/Sidebar)
+
+  // ====================
+  // PROTECTED APP ROUTES
+  // ====================
   {
     path: "/",
     element: (
@@ -36,8 +51,12 @@ export const router = createBrowserRouter([
     ),
     errorElement: <RouterError />,
     children: [
-      // Default landing page
+      // Redirect root → dashboard
       { index: true, element: <Navigate to="/dashboard" replace /> },
+
+      // --------------------
+      // COMMON (ADMIN + USER)
+      // --------------------
       {
         path: "dashboard",
         element: (
@@ -47,40 +66,51 @@ export const router = createBrowserRouter([
         ),
       },
 
-      // 🔐 ADMIN ONLY (No prefix in URL)
+      // ====================
+      // ADMIN ROUTES
+      // ====================
       {
+        path: "admin",
         element: (
           <RoleGuard allowedRoles={["admin"]}>
             <Outlet />
           </RoleGuard>
         ),
         children: [
+          { index: true, element: <Navigate to="pem-requirements" replace /> },
           { path: "pem-requirements", element: <PemRequirementsPage /> },
           {
-            path: "discipline-activity-list",
+            path: "dashboard",
             element: <DisciplineActivityListPage />,
           },
           {
             path: "control-object-checklist",
             element: <ControlObjectChecklistPage />,
           },
-          { path: "document-checklist", element: <DocsPage /> },
         ],
       },
 
-      // 🔐 USER ONLY (No prefix in URL)
+      // ====================
+      // USER ROUTES
+      // ====================
       {
+        path: "user",
         element: (
           <RoleGuard allowedRoles={["user"]}>
             <Outlet />
           </RoleGuard>
         ),
-        children: [{ path: "profile", element: <UserProfilePage /> }],
+        children: [
+          { index: true, element: <Navigate to="profile" replace /> },
+          { path: "profile", element: <UserProfilePage /> },
+        ],
       },
     ],
   },
 
-  // 3. FALLBACK
+  // ====================
+  // dash
+  // ====================
   {
     path: "*",
     element: <div className="p-10 text-center">404 - Page Not Found</div>,

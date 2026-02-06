@@ -2,112 +2,229 @@
 
 import * as React from "react";
 import {
-  BookOpen,
-  Bot,
-  SquareTerminal,
-  ChevronLeft, // Standard icon fallback
+  Home,
+  FileText,
+  ClipboardList,
+  Settings,
   PanelLeftClose,
   PanelLeftOpen,
+  Building2,
 } from "lucide-react";
 
-import { NavMain } from "@/shared/components/nav-main";
+import { NavMain, type NavItem } from "@/shared/components/nav-main";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarRail,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
   useSidebar,
-  SidebarGroupLabel, // CRITICAL: Hook to get sidebar state
 } from "@/shared/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { Icons } from "./icons";
 
-import { Home, FileText, ClipboardList, LayoutDashboard } from "lucide-react";
+// Role type
+export type UserRole = "admin" | "user";
 
-const data = {
-  navMain: [
+// Navigation data for different roles
+const getNavigationData = (role: UserRole): NavItem[] => {
+  console.log("Generating navigation for role:", role);
+  const baseNavigation: NavItem[] = [
     {
       title: "Home",
-      url: "/dashboard", // Points to your index/dashboard route
-      icon: Home,
-      isActive: false,
+      url: "/dashboard",
+      icon: Icons.HomeIcon || Home,
+      roles: ["admin", "user"],
     },
     {
       title: "PEM Requirements",
-      url: "/pem-requirements", // Matches the admin route path
-      icon: FileText,
-      items: [], // Expandable but currently empty based on router
-    },
-    {
-      title: "PEM Check Lists",
-      url: "#",
-      icon: ClipboardList,
-      isActive: true, // Set to true to match the expanded state in your image
+      url: "/pem-requirements",
+      icon: Icons.PEMRequirementsIcon,
+      roles: ["admin", "user"],
       items: [
         {
-          title: "Control Object Check List",
-          url: "/control-object-checklist", // Matches router path
+          title: "Control Object Requirements",
+          url: "/control-object-requirements",
         },
         {
-          title: "Document Check List",
-          url: "/document-checklist", // Matches router path
+          title: "Document Requirements",
+          url: "/document-requirements",
         },
         {
-          title: "Discipline Activity Check List",
-          url: "/discipline-activity-list", // Matches router path
+          title: "Discipline Activity Requirements",
+          url: "/discipline-activity-requirements",
         },
       ],
     },
-  ],
+    {
+      title: "PEM Check Lists",
+      url: "/pem-checklists",
+      icon: ClipboardList,
+      roles: ["admin", "user"],
+      items: [
+        {
+          title: "Control Object Check List",
+          url: "/control-object-checklist",
+        },
+        {
+          title: "Document Check List",
+          url: "/document-checklist",
+        },
+        {
+          title: "Discipline Activity Check List",
+          url: "/discipline-activity-checklist",
+        },
+      ],
+    },
+    {
+      title: "Admin Settings",
+      url: "/admin/settings",
+      icon: Icons.SettingsIcon || Settings,
+      roles: ["admin", "user"],
+    },
+  ];
+
+  // Admin-only routes
+  const adminNavigation: NavItem[] = [
+    {
+      title: "Admin Settings",
+      url: "/admin/settings",
+      icon: Settings,
+      roles: ["admin"],
+      items: [
+        {
+          title: "User Management",
+          url: "/admin/users",
+        },
+        {
+          title: "System Configuration",
+          url: "/admin/config",
+        },
+        {
+          title: "Audit Logs",
+          url: "/admin/logs",
+        },
+      ],
+    },
+  ];
+
+  // Filter based on role
+  if (role === "admin") {
+    return [...baseNavigation, ...adminNavigation];
+  }
+
+  return baseNavigation.filter((item) => item.roles?.includes(role));
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  // 1. Extract state from the context provider
+export function AppSidebar({
+  userRole = "user",
+  userName = "User",
+  ...props
+}: React.ComponentProps<typeof Sidebar> & {
+  userRole?: UserRole;
+  userName?: string;
+}) {
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
 
+  const navigationData = React.useMemo(
+    () => getNavigationData(userRole),
+    [userRole]
+  );
+
   return (
     <Sidebar collapsible="icon" {...props}>
+      {/* Header with Logo/Brand */}
+      {/* <SidebarHeader>
+        <div className="flex items-center gap-3">
+          <div
+            className={cn(
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#0f172a] text-white",
+              "md:h-11 md:w-11"
+            )}
+          >
+            <Building2 className="h-5 w-5 md:h-6 md:w-6" />
+          </div>
+          {!isCollapsed && (
+            <div className="flex flex-col overflow-hidden">
+              <span className="truncate text-base font-bold text-grey-900 md:text-lg">
+                PEM System
+              </span>
+              <span className="truncate text-xs text-grey-500">
+                {userRole === "admin" ? "Administrator" : "User Portal"}
+              </span>
+            </div>
+          )}
+        </div>
+      </SidebarHeader> */}
+
+      {/* Main Navigation */}
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navigationData} />
       </SidebarContent>
 
-      <SidebarFooter className="p-1 xl:p-2">
+      {/* Footer with User Info and Toggle */}
+      <SidebarFooter>
         <SidebarMenu>
-          <SidebarGroupLabel>fdkijnfdk</SidebarGroupLabel>
+          {/* User Info */}
+          {/* {!isCollapsed && (
+            <SidebarMenuItem>
+              <div className="flex items-center gap-3 px-3 py-2 text-sm text-grey-600">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-grey-200 font-semibold text-grey-700">
+                  {userName.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex min-w-0 flex-col overflow-hidden">
+                  <span className="truncate text-sm font-medium text-grey-900 md:text-base">
+                    {userName}
+                  </span>
+                  <span className="truncate text-xs text-grey-500">
+                    {userRole === "admin" ? "Admin" : "User"}
+                  </span>
+                </div>
+              </div>
+            </SidebarMenuItem>
+          )} */}
+
+          {/* Collapse/Expand Button */}
           <SidebarMenuItem>
             <SidebarMenuButton
-              tooltip={isCollapsed ? "Expand" : "Collapse"}
+              tooltip={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
               onClick={toggleSidebar}
               className={cn(
-                "border-grey-250 bg-secondary border",
-                "rounded-lg transition-all duration-200",
-                "flex h-10 w-full items-center xl:h-15"
+                "border-grey-275 bg-grey-100 hover:bg-grey-200",
+                "transition-all duration-200",
+                "justify-center md:justify-start",
+                !isCollapsed && "justify-between"
               )}
             >
-              {/* Icon box - Centered and sized */}
-              <div className="flex h-[34.667px] w-[34.667px] shrink-0 items-center justify-center xl:h-[52px] xl:w-[52px]">
-                {/* Using Lucide icons as a fallback for Icons.SidebarToggle */}
-                {isCollapsed ? (
-                  <PanelLeftOpen className="h-5 w-5" />
-                ) : (
-                  <PanelLeftClose className="h-5 w-5" />
+              <div className="flex items-center gap-3">
+                <div
+                  className={cn(
+                    "flex h-8 w-8 shrink-0 items-center justify-center",
+                    "md:h-9 md:w-9"
+                  )}
+                >
+                  {isCollapsed ? (
+                    <Icons.SidebarToggle className="text-grey-700 h-5 w-5" />
+                  ) : (
+                    <Icons.SidebarToggle
+                      isCollapsed
+                      className="text-grey-700 h-5 w-5"
+                    />
+                  )}
+                </div>
+                {!isCollapsed && (
+                  <span className="text-grey-700 text-sm font-medium md:text-base">
+                    Collapse
+                  </span>
                 )}
               </div>
-
-              {/* Label (only when expanded) */}
-              {!isCollapsed && (
-                <span className="truncate text-[14px] leading-none font-medium xl:ml-2 xl:text-[16px]">
-                  Collapse
-                </span>
-              )}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
-      <SidebarRail />
     </Sidebar>
   );
 }

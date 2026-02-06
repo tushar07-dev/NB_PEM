@@ -2,14 +2,7 @@ import { useState, useEffect } from "react";
 import { Bell, Search, Settings, Sun, Moon } from "lucide-react";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu";
+import { DropdownMenuLabel } from "@/shared/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -20,14 +13,10 @@ import {
 import {
   Avatar,
   AvatarFallback,
-  AvatarImage,
 } from "@/shared/components/ui/avatar";
-import { Badge } from "@/shared/components/ui/badge";
 import { Icons } from "@/shared/components/icons";
-import { useTheme } from "next-themes";
 
 export function TopHeader() {
-  const notificationCount = 3;
 
   // State to store window dimensions
   const [dimensions, setDimensions] = useState({
@@ -61,7 +50,7 @@ export function TopHeader() {
       <div className="flex items-center gap-3">
         <Icons.ProjectLogo className="text-primary-foreground" />
         <span className="brand-text">PEM Digital</span>
-        <div className="header-search-container">
+        <div className="header-search-container" style={{width: '250px'}}>
           <Input
             type="text"
             placeholder="Search Anything..."
@@ -78,11 +67,11 @@ export function TopHeader() {
           </SelectTrigger>
 
           <SelectContent className="border-border bg-popover rounded-xl shadow-lg">
-            <DropdownMenuLabel className="text-muted-foreground px-2 py-1.5 text-[19px] font-bold tracking-wider uppercase">
+            <DropdownMenuLabel className="text-muted-foreground px-2 py-1.5 text-[12px] font-bold tracking-wider uppercase">
               Active Projects
             </DropdownMenuLabel>
             <SelectItem value="project-a" className="cursor-pointer rounded-lg">
-              PEM Phase 1
+              Project
             </SelectItem>
             <SelectItem value="project-b" className="cursor-pointer rounded-lg">
               Digital Audit 2024
@@ -97,9 +86,9 @@ export function TopHeader() {
           <Bell className="size-4 lg:size-5" />
         </Button>
 
-        <Button variant="ghost" size="icon" className="header-icon-btn">
+        {/* <Button variant="ghost" size="icon" className="header-icon-btn">
           <Settings className="size-4 xl:size-6" />
-        </Button>
+        </Button> */}
 
         <Avatar className="size-[32px] border-none ring-1 ring-white/20 hover:ring-white/40 lg:size-[50px]">
           <AvatarFallback className="avatar-fallback">XF</AvatarFallback>

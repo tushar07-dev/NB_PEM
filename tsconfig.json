@@ -13,8 +13,9 @@
     "paths": {
       "@/*": ["./src/*"],
       "@/components/*": ["./src/components/*"],
-      "@/features/*": ["./src/features/*"],
+      "@/features/*": ["./src/features/*"]
     },
+    "types": ["vitest/globals"]
   },
   "exclude": ["node_modules"]
 }

@@ -22,7 +22,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const { handleLogin: login } = useAuth();
   const { error, isError, setError, clearError } = useAsyncError();
-  navigate("/dashboard");
+  // navigate("/dashboard");
   const handleLogin = async () => {
     clearError();
     setIsLoading(true);

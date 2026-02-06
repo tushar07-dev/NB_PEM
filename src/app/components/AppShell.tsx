@@ -10,15 +10,12 @@ interface AppShellProps {
 
 const AppShell = ({ children }: AppShellProps) => {
   return (
-    // Outer wrapper: Stack Header on top of the Content Area
-    <div className="flex flex-col h-screen w-full overflow-hidden">
+    <div className="flex h-screen w-full flex-col overflow-hidden">
       <TopHeader />
-      <SidebarProvider defaultOpen={true} className="flex flex-row  overflow-hidden">
+      <SidebarProvider defaultOpen={true} className="flex flex-1">
         <AppSidebar />
-        <SidebarInset className="flex-1 overflow-y-auto">
-          <main className="h-full">
-            {children}
-          </main>
+        <SidebarInset className="overflow-y-auto p-4 md:p-6">
+          {children}
         </SidebarInset>
       </SidebarProvider>
     </div>

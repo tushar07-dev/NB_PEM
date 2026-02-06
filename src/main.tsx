@@ -3,78 +3,13 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import { router } from "@/app/router";
 import AuthProvider from "@/app/providers/AuthProvider";
-import { ErrorProvider } from "@/app/providers/ErrorProvider";
-import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
-import { MsalProvider } from "@azure/msal-react";
-import { ThemeProvider } from "next-themes";
 import "./index.css";
-import { configService } from "@/shared/config/configService";
-import { initializeMsalInstance } from "@/shared/config/msalConfig";
-import { initializeApi } from "@/shared/services/axios";
-import { initMonitoring } from "@/shared/services/monitoring";
 
-// App component that requires config
-function App() {
-  // const msalInstance = initializeMsalInstance()
-
-  return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      {/* <MsalProvider instance={msalInstance}> */}
-      <ErrorProvider>
-        <ErrorBoundary>
-          <AuthProvider>
-            <RouterProvider router={router} />
-          </AuthProvider>
-        </ErrorBoundary>
-      </ErrorProvider>
-      {/* </MsalProvider> */}
-    </ThemeProvider>
-  );
-}
-
-// Main initialization function
-async function initializeApp() {
-  try {
-    // Load runtime configuration first
-    // await configService.loadConfig()
-
-    // Initialize services that depend on config
-    // initializeApi()
-    // initMonitoring()
-
-    // Render the app
-    ReactDOM.createRoot(document.getElementById("root")!).render(
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
-    );
-  } catch (error) {
-    console.error("Failed to initialize app:", error);
-
-    // Render error fallback if config loading fails
-    ReactDOM.createRoot(document.getElementById("root")!).render(
-      <React.StrictMode>
-        <div className="flex h-screen items-center justify-center">
-          <div className="max-w-md p-6 text-center">
-            <h2 className="text-destructive mb-4 text-lg font-semibold">
-              Configuration Error
-            </h2>
-            <p className="text-primary mb-4">
-              Failed to load application configuration. Please check your
-              config.json file.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-primary hover:bg-primary text-primary-foreground rounded px-4 py-2"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      </React.StrictMode>
-    );
-  }
-}
-
-// Start the application
-initializeApp();
+// Basic Render (No async config loading)
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  </React.StrictMode>
+);

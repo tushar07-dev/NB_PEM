@@ -3,7 +3,7 @@
   "compilerOptions": {
     "module": "node16",
     "moduleResolution": "node16",
-    "types": ["jest", "@testing-library/jest-dom", "vite/client"],
+    "types": ["vitest/globals", "@testing-library/jest-dom", "vite/client"],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "verbatimModuleSyntax": false

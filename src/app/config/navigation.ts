@@ -1,28 +1,67 @@
 import { type LucideIcon } from "lucide-react";
-import { Icons } from "@/shared/components/icons";
 import React from "react";
+import { Icons } from "@/shared/components/icons";
 
-// 1. Update the interface to accept BOTH Lucide and Custom Icons
+/**
+ * NavItem used by NavMain / Sidebar
+ * icon should be a React component (Lucide icons are components too).
+ */
 export interface NavItem {
   title: string;
   url: string;
-  // This type allows any component that accepts a className string
-  icon: LucideIcon | React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string }>;
+  items?: NavItem[];
 }
 
-// 2. Define the record type
-export type RoleNavigation = Record<"admin" | "user", NavItem[]>;
+export type Role = "admin" | "user";
 
-export const ROLE_NAVIGATION: RoleNavigation = {
+/**
+ * Role-specific navigation. Keep URLs namespaced to match router:
+ * - admin pages: /admin/...
+ * - user pages:  /user/...
+ * - shared: /dashboard
+ *
+ * NOTE: Ensure the icon components exist on your `Icons` export.
+ */
+export const ROLE_NAVIGATION: Record<Role, NavItem[]> = {
   admin: [
-    { title: "Home", url: "/dashboard", icon: Icons.HomeIcon },
-    { title: "PEM Requirements", url: "/pem-requirements", icon: Icons.PEMRequirementsIcon },
-    { title: "Discipline Activity List", url: "/discipline-activity-list", icon: Icons.DisciplineActivityListIcon },
-    { title: "Control Object Checklist", url: "/control-object-checklist", icon: Icons.ControlObjectChecklistIcon },
-    { title: "Document Checklist", url: "/document-checklist", icon: Icons.DocumentsChecklistIcon },
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: Icons.HomeIcon,
+    },
+    {
+      title: "PEM Requirements",
+      url: "/admin/pem-requirements",
+      icon: Icons.PEMRequirementsIcon,
+    },
+    {
+      title: "Discipline Activity List",
+      url: "/admin/discipline-activity-list",
+      icon: Icons.DisciplineActivityListIcon,
+    },
+    {
+      title: "Control Object Checklist",
+      url: "/admin/control-object-checklist",
+      icon: Icons.ControlObjectChecklistIcon,
+    },
+    {
+      title: "Document Checklist (Admin view)",
+      url: "/dashboard",
+      icon: Icons.DocumentsChecklistIcon,
+    },
   ],
+
   user: [
-    { title: "Home", url: "/dashboard", icon: Icons.HomeIcon },
-    { title: "My Profile", url: "/profile", icon: Icons.DisciplineActivityListIcon },
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: Icons.HomeIcon,
+    },
+    {
+      title: "My Profile",
+      url: "/user/profile",
+      icon: Icons.DisciplineActivityListIcon,
+    },
   ],
 } as const;

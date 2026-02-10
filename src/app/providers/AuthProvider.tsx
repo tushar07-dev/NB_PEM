@@ -13,7 +13,8 @@ type AuthContext = {
   authToken: string | null;
   currentUser: User | null;
   handleLogin: (email: string, password: string) => Promise<void>;
-  handleLogout: () => Promise<void>;
+  handleLogout: () => void;
+  isLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContext | undefined>(undefined);
@@ -23,25 +24,35 @@ type AuthProviderProps = PropsWithChildren;
 export default function AuthProvider({ children }: AuthProviderProps) {
   const [authToken, setAuthTokenState] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Initialize auth state from localStorage
+  useEffect(() => {
+    const storedToken = localStorage.getItem("authToken");
+    const storedUser = localStorage.getItem("currentUser");
+
+    if (storedToken && storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        setAuthTokenState(storedToken);
+        setCurrentUser(user);
+        setAuthToken(storedToken);
+        console.log("🔐 User logged in:", user.role);
+      } catch (error) {
+        console.error("Failed to parse stored user data");
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("currentUser");
+      }
+    }
+    setIsLoading(false);
+  }, []);
 
   // Sync token with axios interceptor
   useEffect(() => {
-    setAuthToken(authToken);
+    if (authToken) {
+      setAuthToken(authToken);
+    }
   }, [authToken]);
-
-  useEffect(() => {
-    // Temporary bypass: directly set admin user
-    const mockAdminUser: User = {
-      name: "Admin User",
-      id: 1,
-      email: "admin@example.com",
-      role: "admin",
-    };
-    const mockAuthToken = "mock-admin-token";
-
-    setAuthTokenState(mockAuthToken);
-    setCurrentUser(mockAdminUser);
-  }, []);
 
   async function handleLogin(email: string, password: string) {
     try {
@@ -49,16 +60,28 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
       setAuthTokenState(response.authToken);
       setCurrentUser(response.user);
-    } catch {
+
+      // Persist to localStorage
+      localStorage.setItem("authToken", response.authToken);
+      localStorage.setItem("currentUser", JSON.stringify(response.user));
+
+      console.log("🔐 User logged in:", response.user.role);
+    } catch (error) {
       setAuthTokenState(null);
       setCurrentUser(null);
-      throw new Error("Login failed");
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("currentUser");
+      throw error instanceof Error ? error : new Error("Login failed");
     }
   }
 
-  async function handleLogout() {
+  function handleLogout() {
+    console.log("🔓 User logged out");
     setAuthTokenState(null);
     setCurrentUser(null);
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("currentUser");
+    setAuthToken(null);
   }
 
   return (
@@ -68,6 +91,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
         currentUser,
         handleLogin,
         handleLogout,
+        isLoading,
       }}
     >
       {children}

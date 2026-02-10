@@ -1,12 +1,29 @@
-import { Navigate } from "react-router-dom"
-import { useAuth } from "@/app/providers/AuthProvider"
-import type { ReactNode } from "react"
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/app/providers/AuthProvider";
+import type { ReactNode } from "react";
 
-export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const { authToken } = useAuth()
-  if (!authToken) {
-    return <Navigate to="/login" replace />
+interface ProtectedRouteProps {
+  children: ReactNode;
+}
+
+export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+  const { authToken, currentUser, isLoading } = useAuth();
+  const location = useLocation();
+
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
   }
 
-  return <>{children}</>
-}
+  // Not authenticated → redirect to login
+  if (!authToken || !currentUser) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Authenticated → render children
+  return <>{children}</>;
+};

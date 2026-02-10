@@ -1,28 +1,38 @@
-// src/app/router/RoleGuard.tsx
-import { Navigate, Outlet, useLocation } from "react-router-dom"
-import { useAuth } from "@/app/providers/AuthProvider"
-import type { ReactNode } from "react"
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "@/app/providers/AuthProvider";
+import type { ReactNode } from "react";
 
-interface Props {
-  children?: ReactNode // 1. Make children optional
-  allowedRoles: string[]
+interface RoleGuardProps {
+  children?: ReactNode;
+  allowedRoles: ("admin" | "user")[];
 }
 
-export const RoleGuard = ({ children, allowedRoles }: Props) => {
-  const { authToken, currentUser } = useAuth()
-  const location = useLocation()
-  // 2. Not logged in → go to login
-  // Standard practice: save the current location so you can redirect back after login
-  if (!authToken) {
-    return <Navigate to="/login" state={{ from: location }} replace />
+export const RoleGuard = ({ children, allowedRoles }: RoleGuardProps) => {
+  const { authToken, currentUser, isLoading } = useAuth();
+  const location = useLocation();
+
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
   }
 
-  // 3. Logged in but role not allowed → unauthorized
-  if (!currentUser || !allowedRoles.includes(currentUser.role)) {
-    return <Navigate to="/unauthorized" replace />
+  // Not logged in → redirect to login
+  if (!authToken || !currentUser) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // 4. Industry Standard Return:
-  // If children exist, render them. Otherwise, render the Outlet for nested routes.
-  return children ? <>{children}</> : <Outlet />
-}
+  // Logged in but role not allowed → unauthorized
+  if (!allowedRoles.includes(currentUser.role)) {
+    console.warn(
+      `🚫 Access denied: User role "${currentUser.role}" not in allowed roles [${allowedRoles.join(", ")}]`
+    );
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  // Render children if provided, otherwise render Outlet for nested routes
+  return children ? <>{children}</> : <Outlet />;
+};

@@ -120,7 +120,7 @@ export const Sidebar = React.forwardRef<
         ref={ref}
         className={cn(
           "group peer flex h-full shrink-0 flex-col transition-all duration-300 ease-in-out",
-          "border-r border-grey-200 bg-white",
+          "border-grey-200 border-r bg-white",
           // Mobile: Fixed position, slide in/out
           "fixed top-0 left-0 z-50 md:relative",
           // Default width
@@ -175,7 +175,7 @@ export const SidebarGroupLabel = React.forwardRef<
     <Comp
       ref={ref}
       className={cn(
-        "flex h-8 shrink-0 items-center px-3 text-xs font-semibold tracking-wider text-grey-500 uppercase transition-[margin,opacity] duration-200 ease-linear",
+        "text-grey-500 flex h-8 shrink-0 items-center px-3 text-xs font-semibold tracking-wider uppercase transition-[margin,opacity] duration-200 ease-linear",
         "group-data-[state=collapsed]:h-0 group-data-[state=collapsed]:overflow-hidden group-data-[state=collapsed]:opacity-0",
         className
       )}
@@ -204,7 +204,7 @@ export const SidebarHeader = ({
 }: React.ComponentProps<"div">) => (
   <div
     className={cn(
-      "flex items-center gap-3 border-b border-grey-200 p-4 md:p-5",
+      "border-grey-200 flex items-center gap-3 border-b p-4 md:p-5",
       className
     )}
     {...props}
@@ -233,7 +233,7 @@ export const SidebarFooter = ({
 }: React.ComponentProps<"div">) => (
   <div
     className={cn(
-      "mt-auto flex w-full flex-col items-start gap-2 border-grey-200 p-3 md:p-4",
+      "border-grey-200 mt-auto flex w-full flex-col items-start gap-2 p-3 md:p-4",
       className
     )}
     {...props}
@@ -275,9 +275,9 @@ const sidebarMenuButtonVariants = cva(
           "hover:bg-grey-100 hover:text-grey-900",
           "rounded-lg px-3 py-2.5 md:py-3",
           // Active state - dark background like in the image
-          "data-[active=true]:bg-[#0f172a] data-[active=true]:text-white",
-          "data-[active=true]:shadow-sm",
-          "data-[active=true]:[&_svg]:text-white",
+          // "data-[active=true]:bg-primary-600 data-[active=true]:border-primary-600 data-[active=true]:text-white",
+          // "data-[active=true]:shadow-sm",
+          // "data-[active=true]:[&_svg]:text-white",
           // Open collapsible state
           "group-data-[state=open]/collapsible:bg-grey-50",
         ].join(" "),
@@ -337,7 +337,7 @@ export const SidebarMenuButton = React.forwardRef<
         <TooltipContent
           side="right"
           align="center"
-          className="border-none bg-grey-900 font-medium text-white"
+          className="bg-grey-900 border-none font-medium text-white"
         >
           {tooltip}
         </TooltipContent>
@@ -355,7 +355,7 @@ export const SidebarMenuSub = React.forwardRef<
   <ul
     ref={ref}
     className={cn(
-      "relative ml-6 flex flex-col gap-0.5 border-l-2 border-grey-200 py-2 md:ml-8",
+      "border-grey-200 relative ml-6 flex flex-col gap-0.5 border-l-2 py-2 md:ml-8",
       "group-data-[state=collapsed]:hidden",
       className
     )}
@@ -372,8 +372,8 @@ export const SidebarMenuSubItem = React.forwardRef<
     ref={ref}
     className={cn(
       "relative list-none",
-      "before:absolute before:top-1/2 before:left-[-2px] before:-translate-y-1/2",
-      "before:h-[1px] before:w-4 before:bg-grey-200",
+      // "before:absolute before:top-1/2 before:left-[-2px] before:-translate-y-1/2",
+      // "before:h-[1px] before:w-4 before:bg-grey-200",
       className
     )}
     {...props}
@@ -395,10 +395,10 @@ export const SidebarMenuSubButton = React.forwardRef<
       ref={ref}
       data-active={isActive}
       className={cn(
-        "flex h-9 min-w-0 items-center gap-2 overflow-hidden rounded-md px-3 text-sm text-grey-600 transition-all outline-none md:h-10 md:text-font-size-100",
-        "hover:bg-grey-50 hover:text-grey-900",
+        "text-grey-600 md:text-font-size-100 flex h-9 min-w-0 items-center gap-2 overflow-hidden rounded-md text-sm transition-all outline-none md:h-10",
+        "hover:text-grey-900",
         // Active state - light background for sub-items
-        "data-[active=true]:bg-grey-100 data-[active=true]:font-semibold data-[active=true]:text-grey-900",
+        // "data-[active=true]:bg-grey-100 data-[active=true]:text-grey-900 data-[active=true]:font-semibold",
         "group-data-[state=collapsed]:hidden",
         className
       )}
@@ -450,7 +450,7 @@ export const SidebarTrigger = React.forwardRef<
       onClick={toggleSidebar}
       {...props}
     >
-      <PanelLeft className="h-5 w-5 text-grey-700" />
+      <PanelLeft className="text-grey-700 h-5 w-5" />
     </Button>
   );
 });
@@ -463,7 +463,7 @@ export const SidebarInset = React.forwardRef<
   <main
     ref={ref}
     className={cn(
-      "relative flex w-full flex-1 flex-col overflow-y-auto bg-grey-50",
+      "bg-grey-100 relative flex w-full flex-1 flex-col overflow-y-auto",
       // Add padding for mobile when sidebar is open
       "transition-all duration-300",
       className

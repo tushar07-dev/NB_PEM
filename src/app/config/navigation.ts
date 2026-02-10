@@ -1,67 +1,104 @@
-import { type LucideIcon } from "lucide-react";
+// src/shared/config/navigation.ts
 import React from "react";
 import { Icons } from "@/shared/components/icons";
+import { Settings2 } from "lucide-react";
 
 /**
- * NavItem used by NavMain / Sidebar
- * icon should be a React component (Lucide icons are components too).
+ * Navigation item type used throughout the app
  */
 export interface NavItem {
   title: string;
   url: string;
-  icon: React.ComponentType<{ className?: string }>;
-  items?: NavItem[];
+  icon?: React.ComponentType<{ className?: string }>;
+  items?: Omit<NavItem, "icon" | "items">[]; // Children don't have icons or nested items
+  roles?: ("admin" | "user")[];
 }
 
-export type Role = "admin" | "user";
-
 /**
- * Role-specific navigation. Keep URLs namespaced to match router:
- * - admin pages: /admin/...
- * - user pages:  /user/...
- * - shared: /dashboard
- *
- * NOTE: Ensure the icon components exist on your `Icons` export.
+ * Role-based navigation configuration
+ * URLs are absolute paths that match the router exactly
  */
-export const ROLE_NAVIGATION: Record<Role, NavItem[]> = {
+export const ROLE_NAVIGATION = {
   admin: [
     {
-      title: "Dashboard",
+      title: "Home",
       url: "/dashboard",
       icon: Icons.HomeIcon,
+      roles: ["admin", "user"],
     },
     {
       title: "PEM Requirements",
-      url: "/admin/pem-requirements",
+      url: "/pem-requirements",
       icon: Icons.PEMRequirementsIcon,
+      roles: ["admin", "user"],
+      items: [
+        {
+          title: "Control Object Requirement",
+          url: "/pem-requirements/control-object-requirement",
+          roles: ["admin", "user"],
+        },
+        {
+          title: "Document Requirement",
+          url: "/pem-requirements/document-requirement",
+          roles: ["admin", "user"],
+        },
+        {
+          title: "Discipline Activity Requirement",
+          url: "/pem-requirements/discipline-activity-requirement",
+          roles: ["admin", "user"],
+        },
+      ],
     },
     {
-      title: "Discipline Activity List",
-      url: "/admin/discipline-activity-list",
-      icon: Icons.DisciplineActivityListIcon,
-    },
-    {
-      title: "Control Object Checklist",
-      url: "/admin/control-object-checklist",
-      icon: Icons.ControlObjectChecklistIcon,
-    },
-    {
-      title: "Document Checklist (Admin view)",
-      url: "/dashboard",
+      title: "PEM Check Lists",
+      url: "/pem-checklists",
       icon: Icons.DocumentsChecklistIcon,
+      roles: ["admin", "user"],
+      items: [
+        {
+          title: "Control Object Check List",
+          url: "/pem-checklists/control-object-checklist",
+          roles: ["admin", "user"],
+        },
+        {
+          title: "Document Check List",
+          url: "/pem-checklists/document-checklist",
+          roles: ["admin", "user"],
+        },
+        {
+          title: "Discipline Activity Check List",
+          url: "/pem-checklists/discipline-activity-checklist",
+          roles: ["admin", "user"],
+        },
+      ],
     },
-  ],
+    {
+      title: "Admin Settings",
+      url: "/admin/settings",
+      icon: Settings2,
+      roles: ["admin"],
+    },
+  ] as NavItem[],
 
   user: [
     {
-      title: "Dashboard",
+      title: "Home",
       url: "/dashboard",
       icon: Icons.HomeIcon,
+      roles: ["admin", "user"],
     },
     {
-      title: "My Profile",
-      url: "/user/profile",
-      icon: Icons.DisciplineActivityListIcon,
+      title: "PEM Requirements",
+      url: "/pem-requirements",
+      icon: Icons.PEMRequirementsIcon,
+      roles: ["admin", "user"],
+      items: [
+        {
+          title: "Control Object Requirement",
+          url: "/pem-requirements/control-object-requirement",
+          roles: ["admin", "user"],
+        },
+      ],
     },
-  ],
+  ] as NavItem[],
 } as const;

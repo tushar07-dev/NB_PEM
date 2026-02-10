@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/app/providers/AuthProvider";
 import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
 import { useAsyncError } from "@/shared/hooks/useAsyncError";
@@ -20,20 +20,30 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { handleLogin: login } = useAuth();
+  const location = useLocation();
+  const { handleLogin } = useAuth();
   const { error, isError, setError, clearError } = useAsyncError();
-  // navigate("/dashboard");
-  const handleLogin = async () => {
+
+  // Get the page user was trying to access before login
+  const from = (location.state as any)?.from?.pathname || "/dashboard";
+
+  const handleLoginSubmit = async () => {
     clearError();
     setIsLoading(true);
 
     try {
-      await login(email, password);
-      navigate("/dashboard");
+      await handleLogin(email, password);
+      navigate(from, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err : new Error("Login failed"));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && email && password && !isLoading) {
+      handleLoginSubmit();
     }
   };
 
@@ -46,27 +56,40 @@ const LoginForm = () => {
 
         <CardContent className="space-y-4">
           <div className="space-y-1">
-            <Label>Email</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
+              id="email"
+              type="email"
               placeholder="Enter email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onKeyPress={handleKeyPress}
+              disabled={isLoading}
+              autoComplete="email"
             />
           </div>
 
           <div className="space-y-1">
-            <Label>Password</Label>
+            <Label htmlFor="password">Password</Label>
             <Input
+              id="password"
               type="password"
               placeholder="Enter password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={handleKeyPress}
+              disabled={isLoading}
+              autoComplete="current-password"
             />
           </div>
 
           {isError && <p className="text-sm text-red-500">{error?.message}</p>}
 
-          <Button className="w-full" onClick={handleLogin} disabled={isLoading}>
+          <Button
+            className="w-full"
+            onClick={handleLoginSubmit}
+            disabled={isLoading || !email || !password}
+          >
             {isLoading ? "Logging in..." : "Login"}
           </Button>
         </CardContent>
@@ -94,7 +117,7 @@ const LoginPage = () => {
               <p className="text-gray-600">
                 Something went wrong during login. Please try again.
               </p>
-              <p className="text-xs text-gray-500">Error ID: {error.message}</p>
+              <p className="text-xs text-gray-500">Error: {error.message}</p>
               <Button onClick={resetErrorBoundary} className="w-full">
                 Try Again
               </Button>

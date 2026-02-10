@@ -1,5 +1,5 @@
+// src/app/layouts/AppShell.tsx
 import { type ReactNode } from "react";
-
 import { TopHeader } from "@/shared/components/top-header";
 import { SidebarInset, SidebarProvider } from "@/shared/components/ui/sidebar";
 import { AppSidebar } from "@/shared/components/app-sidebar";

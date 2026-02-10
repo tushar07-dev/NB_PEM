@@ -1,8 +1,9 @@
+// src/shared/components/nav-main.tsx
 "use client";
 
 import * as React from "react";
 import { useLocation, NavLink } from "react-router-dom";
-import { ChevronRight, ChevronDown, type LucideIcon } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 import {
@@ -24,43 +25,36 @@ import {
 export type NavItem = {
   title: string;
   url: string;
-  icon?: LucideIcon;
+  icon?: React.ComponentType<{ className?: string }>;
   isActive?: boolean;
-  items?: { title: string; url: string; isActive?: boolean }[];
-  roles?: ("admin" | "user")[]; // Role-based access
+  items?: Omit<NavItem, "icon" | "items">[]; // Children can't have icons or nested items
+  roles?: ("admin" | "user")[];
 };
 
-export function NavMain({
-  items,
-  className,
-}: {
+interface NavMainProps {
   items: NavItem[];
   className?: string;
-}) {
+}
+
+export function NavMain({ items, className }: NavMainProps) {
   const { pathname } = useLocation();
   const { state, setOpen } = useSidebar();
+
   const isCollapsed = state === "collapsed";
 
-  // Track which menus are currently open (Multiple menus can be open)
   const [openMenus, setOpenMenus] = React.useState<Set<string>>(new Set());
 
-  // Automatically open the menu that contains the active child route on load
   React.useEffect(() => {
-    const activeItem = items.find(
-      (item) =>
-        item.items?.some((sub) => sub.url === pathname) || item.url === pathname
-    );
-    if (activeItem && !isCollapsed) {
-      setOpenMenus((prev) => new Set(prev).add(activeItem.title));
-    }
-  }, [pathname, items, isCollapsed]);
-
-  // Close all menus when sidebar collapses
-  React.useEffect(() => {
-    if (isCollapsed) {
+    if (!isCollapsed) {
+      // Sidebar expanded → open ALL menus with children
+      setOpenMenus(
+        new Set(items.filter((i) => i.items?.length).map((i) => i.title))
+      );
+    } else {
+      // Sidebar collapsed → close all
       setOpenMenus(new Set());
     }
-  }, [isCollapsed]);
+  }, [isCollapsed, items]);
 
   // Handle click when sidebar is collapsed - expand sidebar
   const handleCollapsedClick = (item: NavItem) => {
@@ -88,22 +82,30 @@ export function NavMain({
     });
   };
 
+  // Check if URL is active (exact match or starts with for parent routes)
+  const isUrlActive = (url: string, hasChildren: boolean) => {
+    if (hasChildren) {
+      return pathname.startsWith(url);
+    }
+    return pathname === url;
+  };
+
   return (
     <SidebarGroup className={className}>
       <SidebarMenu>
         {items.map((item) => {
           const isMenuOpen = openMenus.has(item.title);
-          const hasActiveChild = item.items?.some(
-            (sub) => sub.url === pathname
-          );
-          const isParentActive = item.url === pathname;
           const hasSubItems = item.items && item.items.length > 0;
+          const hasActiveChild = item.items?.some((sub) =>
+            pathname.startsWith(sub.url)
+          );
+          const isParentActive = isUrlActive(item.url, !!hasSubItems);
 
           return (
             <Collapsible
               key={item.title}
               asChild
-              open={isMenuOpen && !isCollapsed}
+              open={isMenuOpen}
               onOpenChange={(isOpen) => {
                 if (!isCollapsed) {
                   toggleMenu(item.title, isOpen);
@@ -113,14 +115,152 @@ export function NavMain({
             >
               <SidebarMenuItem>
                 {hasSubItems ? (
+                  // ========================================================================
+                  // MENU WITH SUBMENU (Parent Menu Items like "PEM Requirements")
+                  // ========================================================================
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
                       tooltip={item.title}
                       isActive={isParentActive || hasActiveChild || isMenuOpen}
                       className={cn(
                         "group",
-                        (isParentActive || hasActiveChild || isMenuOpen) &&
-                          "font-semibold"
+
+                        // ================================================================
+                        // OVERRIDE DEFAULT data-[active=true] STYLES FROM sidebar.tsx
+                        // ================================================================
+                        "[&[data-active=true]]:bg-transparent",
+                        "[&[data-active=true]]:border-transparent",
+                        "[&[data-active=true]]:text-grey-700",
+                        "[&[data-active=true]]:shadow-none",
+                        "[&[data-active=true]]:font-medium",
+                        "[&[data-active=true]_svg]:text-grey-700",
+
+                        // ================================================================
+                        // SIDEBAR EXPANDED + SUBMENU OPEN + SELECTED
+                        // Light Blue Background
+                        // ================================================================
+                        !isCollapsed &&
+                          isMenuOpen &&
+                          (hasActiveChild || isParentActive) && [
+                            "!bg-primary-200", // Light blue
+                            "hover:!bg-primary-300", // Hover: darker light blue
+                            "!text-grey-50", // Dark text
+                            "!font-semibold",
+                            "[&_svg]:!text-grey-50",
+                            "!shadow-sm",
+                          ],
+
+                        // ================================================================
+                        // SIDEBAR EXPANDED + SUBMENU OPEN + NOT SELECTED
+                        // Light Blue Background (same as above)
+                        // ================================================================
+                        !isCollapsed &&
+                          isMenuOpen &&
+                          !hasActiveChild &&
+                          !isParentActive && [
+                            "!bg-primary-200", // Light blue
+                            "hover:!bg-primary-300",
+                            "!text-primary-900",
+                            "!font-semibold",
+                            "[&_svg]:!text-primary-900",
+                            "!shadow-sm",
+                          ],
+
+                        // ================================================================
+                        // SIDEBAR COLLAPSED + SUBMENU OPEN + SELECTED
+                        // ================================================================
+                        isCollapsed &&
+                          isMenuOpen &&
+                          (hasActiveChild || isParentActive) && [
+                            "!bg-primary-600", // Dark blue
+                            "hover:!bg-primary-700",
+                            "!text-white",
+                            "[&_svg]:!text-white",
+                            "!shadow-sm",
+                          ],
+
+                        // ================================================================
+                        // SIDEBAR COLLAPSED + SUBMENU OPEN + NOT SELECTED
+                        // ================================================================
+                        isCollapsed &&
+                          isMenuOpen &&
+                          !hasActiveChild &&
+                          !isParentActive && [
+                            "!bg-transparent", // Transparent background
+                            "hover:!bg-grey-200",
+                            "!text-white",
+                            // "[&_svg]:!text-white",
+                            // "!shadow-sm",
+                          ],
+
+                        // ================================================================
+                        // SIDEBAR EXPANDED + SUBMENU CLOSED + HAS ACTIVE CHILD
+                        // Dark Blue Background
+                        // ================================================================
+                        !isCollapsed &&
+                          !isMenuOpen &&
+                          hasActiveChild && [
+                            "!bg-primary-600", // Dark blue
+                            "!border-primary-600",
+                            "hover:!bg-primary-600",
+                            "!text-white",
+                            "!font-semibold",
+                            "[&_svg]:!text-white",
+                            "!shadow-sm",
+                          ],
+
+                        // ================================================================
+                        // SIDEBAR COLLAPSED + SUBMENU CLOSED + HAS ACTIVE CHILD
+                        // Dark Blue Background
+                        // ================================================================
+                        isCollapsed &&
+                          !isMenuOpen &&
+                          hasActiveChild && [
+                            "!bg-primary-600", // Dark blue
+                            "!border-primary-600",
+                            "hover:!bg-primary-600",
+                            "!text-white",
+                            "[&_svg]:!text-white",
+                            "!shadow-sm",
+                          ],
+
+                        // ================================================================
+                        // SIDEBAR EXPANDED + SUBMENU CLOSED + PARENT ACTIVE + NO ACTIVE CHILD
+                        // Dark Blue Background
+                        // ================================================================
+                        !isCollapsed &&
+                          !isMenuOpen &&
+                          isParentActive &&
+                          !hasActiveChild && [
+                            "!bg-primary-600", // Dark blue
+                            "!border-primary-600",
+                            "hover:!bg-primary-600",
+                            "!text-white",
+                            "!font-semibold",
+                            "[&_svg]:!text-white",
+                            "!shadow-sm",
+                          ],
+
+                        // ================================================================
+                        // SIDEBAR COLLAPSED + SUBMENU CLOSED + PARENT ACTIVE + NO ACTIVE CHILD
+                        // Dark Blue Background
+                        // ================================================================
+                        isCollapsed &&
+                          !isMenuOpen &&
+                          isParentActive &&
+                          !hasActiveChild && [
+                            "!bg-primary-600", // Dark blue
+                            "!border-primary-600",
+                            "hover:!bg-primary-600",
+                            "!text-white",
+                            "[&_svg]:!text-white",
+                            "!shadow-sm",
+                          ]
+
+                        // ================================================================
+                        // DEFAULT STATE (SUBMENU CLOSED + NOT ACTIVE)
+                        // Transparent Background - handled by base styles
+                        // ================================================================
                       )}
                       onClick={() => handleCollapsedClick(item)}
                     >
@@ -132,19 +272,68 @@ export function NavMain({
                       </span>
                       <ChevronRight
                         className={cn(
-                          "ml-auto h-4 w-4 shrink-0 transition-transform duration-200",
+                          "ml-auto h-4 w-4 shrink-0 rotate-90 transition-transform duration-200",
                           "group-data-[state=collapsed]:hidden",
-                          "group-data-[state=open]/collapsible:rotate-90"
+                          "group-data-[state=open]/collapsible:rotate-270"
                         )}
                       />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                 ) : (
+                  // ========================================================================
+                  // MENU WITHOUT SUBMENU (Simple Menu Items like "Home", "Admin Settings")
+                  // ========================================================================
                   <SidebarMenuButton
                     asChild
                     tooltip={item.title}
                     isActive={isParentActive}
-                    className="group"
+                    className={cn(
+                      "group",
+
+                      // ================================================================
+                      // OVERRIDE DEFAULT data-[active=true] STYLES
+                      // ================================================================
+                      "[&[data-active=true]]:bg-transparent",
+                      "[&[data-active=true]]:border-transparent",
+                      "[&[data-active=true]]:text-grey-700",
+                      "[&[data-active=true]]:shadow-none",
+                      "[&[data-active=true]]:font-medium",
+                      "[&[data-active=true]_svg]:text-grey-700",
+
+                      // ================================================================
+                      // SIDEBAR EXPANDED + ACTIVE/SELECTED
+                      // Dark Blue Background (always dark blue for simple menu)
+                      // ================================================================
+                      !isCollapsed &&
+                        isParentActive && [
+                          "!bg-primary-600", // Dark blue
+                          "!border-primary-600",
+                          "hover:!bg-primary-600",
+                          "!text-white",
+                          "!font-semibold",
+                          "[&_svg]:!text-white",
+                          "!shadow-sm",
+                        ],
+
+                      // ================================================================
+                      // SIDEBAR COLLAPSED + ACTIVE/SELECTED
+                      // Dark Blue Background
+                      // ================================================================
+                      isCollapsed &&
+                        isParentActive && [
+                          "!bg-primary-600", // Dark blue
+                          "!border-primary-600",
+                          "hover:!bg-primary-600",
+                          "!text-white",
+                          "[&_svg]:!text-white",
+                          "!shadow-sm",
+                        ]
+
+                      // ================================================================
+                      // DEFAULT STATE (NOT ACTIVE)
+                      // Transparent Background - handled by base styles
+                      // ================================================================
+                    )}
                     onClick={() => handleCollapsedClick(item)}
                   >
                     <NavLink to={item.url}>
@@ -158,14 +347,23 @@ export function NavMain({
                   </SidebarMenuButton>
                 )}
 
+                {/* ========================================================================
+                    SUB-MENU ITEMS (Children like "Control Object Requirement")
+                    ======================================================================== */}
                 {hasSubItems && (
                   <CollapsibleContent>
-                    <SidebarMenuSub>
+                    <SidebarMenuSub className="border-grey-300 relative ml-9 border-l pl-0">
                       {item.items!.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title}>
                           <SidebarMenuSubButton
                             asChild
-                            isActive={pathname === subItem.url}
+                            isActive={pathname.startsWith(subItem.url)}
+                            className={cn(
+                              "relative -ml-px rounded-none border-l-2 border-transparent pl-2 transition-all",
+                              "hover:border-grey-700/40",
+                              pathname.startsWith(subItem.url) &&
+                                "border-grey-900 text-grey-900 bg-transparent font-semibold"
+                            )}
                           >
                             <NavLink to={subItem.url}>
                               <span className="truncate">{subItem.title}</span>

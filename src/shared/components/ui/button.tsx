@@ -20,7 +20,7 @@ const buttonVariants = cva(
           // Shape & container
           "border border-[var(--color-primary-200)]",
           "bg-transparent",
-          "rounded-lg md:rounded-xl",
+          // "rounded-lg md:rounded-xl",
           "shadow-none",
 
           // Typography

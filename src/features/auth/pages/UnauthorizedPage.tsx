@@ -1,61 +1,67 @@
 import { useNavigate } from "react-router-dom";
-import { ShieldAlert, ArrowLeft } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { useAuth } from "@/app/providers/AuthProvider";
 
-export default function UnauthorizedPage() {
+const UnauthorizedPage = () => {
   const navigate = useNavigate();
-  const { handleLogout } = useAuth();
+  const { currentUser, handleLogout } = useAuth();
 
-  const handleBackToLogin = () => {
-    // Clear auth state so they can try a different account/role
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  const handleGoHome = () => {
+    navigate("/dashboard");
+  };
+
+  const handleLogoutClick = () => {
     handleLogout();
-    navigate("/login", { replace: true });
+    navigate("/login");
   };
 
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center bg-slate-50 p-4 text-center font-sans">
-      <div className="flex flex-col items-center max-w-md w-full bg-white p-8 rounded-xl shadow-sm border border-slate-200">
-        
-        {/* Visual Icon */}
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-600">
-          <ShieldAlert size={32} />
-        </div>
-
-        {/* Text Content */}
-        <h1 className="mb-2 text-2xl font-bold text-slate-900">
-          Access Denied
-        </h1>
-        <p className="mb-8 text-slate-500 text-sm leading-relaxed">
-          You do not have the necessary permissions to access this section. 
-          Please contact your administrator if you believe this is an error.
-        </p>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-3 w-full">
-          <Button 
-            variant="default" 
-            className="w-full bg-[#081E32] hover:bg-[#051320] text-white"
-            onClick={() => navigate(-1)}
-          >
-            Go Back
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            className="w-full flex items-center justify-center gap-2 border-slate-200 text-slate-600 hover:bg-slate-50"
-            onClick={handleBackToLogin}
-          >
-            <ArrowLeft size={16} />
-            Back to Login
-          </Button>
-        </div>
-      </div>
-      
-      {/* Footer Info */}
-      <p className="mt-8 text-xs text-slate-400 uppercase tracking-widest">
-        Error Code: 403 Forbidden
-      </p>
+    <div className="flex min-h-screen items-center justify-center bg-slate-100">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-center text-2xl text-red-600">
+            Access Denied
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-center text-gray-600">
+            You don't have permission to access this page.
+          </p>
+          {currentUser && (
+            <p className="text-center text-sm text-gray-500">
+              Current role:{" "}
+              <span className="font-semibold">{currentUser.role}</span>
+            </p>
+          )}
+          <div className="space-y-2">
+            <Button className="w-full" onClick={handleGoHome}>
+              Go to Dashboard
+            </Button>
+            <Button className="w-full" variant="outline" onClick={handleGoBack}>
+              Go Back
+            </Button>
+            <Button
+              className="w-full"
+              variant="ghost"
+              onClick={handleLogoutClick}
+            >
+              Logout
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
-}
+};
+
+export default UnauthorizedPage;

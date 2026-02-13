@@ -111,6 +111,9 @@ importers:
       axios:
         specifier: ^1.13.2
         version: 1.13.2
+      calendar:
+        specifier: ^0.1.1
+        version: 0.1.1
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -2263,6 +2266,9 @@ packages:
 
   cacheable@2.3.2:
     resolution: {integrity: sha512-w+ZuRNmex9c1TR9RcsxbfTKCjSL0rh1WA5SABbrWprIHeNBdmyQLSYonlDy9gpD+63XT8DgZ/wNh1Smvc9WnJA==}
+
+  calendar@0.1.1:
+    resolution: {integrity: sha512-CExn+MxSU1pCsjYiS+Cx8d1MtIZqezxRhpIu8odr1oqvYG/0C1m8lvehHxTl1FslgKbOD7Z5QuEcyk8sGgpZLQ==}
 
   call-bind-apply-helpers@1.0.2:
     resolution: {integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==}
@@ -6594,6 +6600,8 @@ snapshots:
       hookified: 1.15.1
       keyv: 5.6.0
       qified: 0.6.0
+
+  calendar@0.1.1: {}
 
   call-bind-apply-helpers@1.0.2:
     dependencies:

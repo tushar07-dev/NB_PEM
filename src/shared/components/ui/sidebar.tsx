@@ -11,19 +11,6 @@ import {
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
 
-/**
- * RESPONSIVE SIDEBAR DIMENSIONS
- * Mobile: 280px expanded, 60px collapsed
- * Laptop: 280px expanded, 70px collapsed
- * Monitor: 300px expanded, 80px collapsed
- */
-const SIDEBAR_WIDTH = "280px";
-const SIDEBAR_WIDTH_LAPTOP = "280px";
-const SIDEBAR_WIDTH_MONITOR = "300px";
-const SIDEBAR_WIDTH_ICON = "60px";
-const SIDEBAR_WIDTH_ICON_LAPTOP = "90px";
-const SIDEBAR_WIDTH_ICON_MONITOR = "90px";
-
 type SidebarContextProps = {
   state: "expanded" | "collapsed";
   open: boolean;
@@ -52,12 +39,10 @@ export const SidebarProvider = React.forwardRef<
   const toggleSidebar = React.useCallback(() => setOpen((prev) => !prev), []);
   const state = open ? "expanded" : "collapsed";
 
-  // Detect mobile/tablet/desktop
   React.useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-      // Auto-collapse on mobile
-      if (window.innerWidth < 768) {
+      setIsMobile(window.innerWidth < 800);
+      if (window.innerWidth < 800) {
         setOpen(false);
       }
     };
@@ -75,12 +60,10 @@ export const SidebarProvider = React.forwardRef<
         <div
           style={
             {
-              "--sidebar-width": SIDEBAR_WIDTH,
-              "--sidebar-width-laptop": SIDEBAR_WIDTH_LAPTOP,
-              "--sidebar-width-monitor": SIDEBAR_WIDTH_MONITOR,
-              "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
-              "--sidebar-width-icon-laptop": SIDEBAR_WIDTH_ICON_LAPTOP,
-              "--sidebar-width-icon-monitor": SIDEBAR_WIDTH_ICON_MONITOR,
+              "--sidebar-width": "280px", // 800-1500px expanded
+              "--sidebar-width-lg": "330px", // 1500px+ expanded
+              "--sidebar-width-icon": "90px", // 800-1500px collapsed
+              "--sidebar-width-icon-lg": "90px", // 1500px+ collapsed
               ...style,
             } as React.CSSProperties
           }
@@ -121,19 +104,17 @@ export const Sidebar = React.forwardRef<
         className={cn(
           "group peer flex h-full shrink-0 flex-col transition-all duration-300 ease-in-out",
           "border-grey-200 border-r bg-white",
-          // Mobile: Fixed position, slide in/out
           "fixed top-0 left-0 z-50 md:relative",
-          // Default width
+
+          // Expanded widths: 280px (800-1500px) → 330px (1500px+)
           "w-[var(--sidebar-width)]",
-          // Laptop (md-lg)
-          "md:w-[var(--sidebar-width-laptop)]",
-          // Monitor (xl+)
-          "xl:w-[var(--sidebar-width-monitor)]",
-          // Collapsed states
+          "lg:w-[var(--sidebar-width-lg)]",
+
+          // Collapsed widths: 60px (800-1500px) → 90px (1500px+)
           "data-[state=collapsed]:w-[var(--sidebar-width-icon)]",
-          "md:data-[state=collapsed]:w-[var(--sidebar-width-icon-laptop)]",
-          "xl:data-[state=collapsed]:w-[var(--sidebar-width-icon-monitor)]",
-          // Mobile: slide out when collapsed
+          "lg:data-[state=collapsed]:w-[var(--sidebar-width-icon-lg)]",
+
+          // Mobile: slide off-screen when collapsed
           "data-[state=collapsed]:-translate-x-full md:data-[state=collapsed]:translate-x-0",
           className
         )}
@@ -157,10 +138,7 @@ export const SidebarGroup = React.forwardRef<
   <div
     ref={ref}
     data-sidebar="group"
-    className={cn(
-      "relative flex w-full min-w-0 flex-col gap-1 p-3 md:p-4",
-      className
-    )}
+    className={cn("relative flex w-full min-w-0 flex-col gap-1 p-2", className)}
     {...props}
   />
 ));
@@ -246,7 +224,7 @@ export const SidebarMenu = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ul
     ref={ref}
-    className={cn("flex w-full list-none flex-col gap-1", className)}
+    className={cn("flex w-full list-none flex-col gap-2", className)}
     {...props}
   />
 ));
@@ -276,16 +254,13 @@ const sidebarMenuButtonVariants = cva(
           "rounded-lg px-3 py-2.5 md:py-3",
           // Active state - dark background like in the image
           // "data-[active=true]:bg-primary-600 data-[active=true]:border-primary-600 data-[active=true]:text-white",
-          // "data-[active=true]:shadow-sm",
           // "data-[active=true]:[&_svg]:text-white",
           // Open collapsible state
           "group-data-[state=open]/collapsible:bg-grey-50",
         ].join(" "),
       },
       size: {
-        default: "h-11 md:h-12 text-sm md:text-base",
-        sm: "h-9 text-sm",
-        lg: "h-13 md:h-14 text-base md:text-lg",
+        default: "h-15",
       },
     },
     defaultVariants: { variant: "default", size: "default" },
@@ -355,7 +330,7 @@ export const SidebarMenuSub = React.forwardRef<
   <ul
     ref={ref}
     className={cn(
-      "border-grey-200 relative ml-6 flex flex-col gap-0.5 border-l-2 py-2 md:ml-8",
+      "border-grey-200 relative ml-6 flex flex-col gap-0.5 border-l-2 py-2 md:ml-5",
       "group-data-[state=collapsed]:hidden",
       className
     )}

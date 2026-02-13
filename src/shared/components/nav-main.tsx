@@ -128,11 +128,11 @@ export function NavMain({ items, className }: NavMainProps) {
                         // ================================================================
                         // OVERRIDE DEFAULT data-[active=true] STYLES FROM sidebar.tsx
                         // ================================================================
-                        "[&[data-active=true]]:bg-transparent",
-                        "[&[data-active=true]]:border-transparent",
-                        "[&[data-active=true]]:text-grey-700",
-                        "[&[data-active=true]]:shadow-none",
-                        "[&[data-active=true]]:font-medium",
+                        "data-[active=true]:bg-transparent",
+                        "data-[active=true]:border-transparent",
+                        "data-[active=true]:text-grey-700",
+                        "data-[active=true]:shadow-none",
+                        "data-[active=true]:font-medium",
                         "[&[data-active=true]_svg]:text-grey-700",
 
                         // ================================================================
@@ -142,12 +142,12 @@ export function NavMain({ items, className }: NavMainProps) {
                         !isCollapsed &&
                           isMenuOpen &&
                           (hasActiveChild || isParentActive) && [
-                            "!bg-primary-200", // Light blue
-                            "hover:!bg-primary-300", // Hover: darker light blue
-                            "!text-grey-50", // Dark text
-                            "!font-semibold",
-                            "[&_svg]:!text-grey-50",
-                            "!shadow-sm",
+                            "bg-primary-200!", // Light blue
+                            "hover:bg-primary-300!", // Hover: darker light blue
+                            "text-grey-50!", // Dark text
+                            "font-semibold!",
+                            "[&_svg]:text-grey-50!",
+                            
                           ],
 
                         // ================================================================
@@ -158,12 +158,12 @@ export function NavMain({ items, className }: NavMainProps) {
                           isMenuOpen &&
                           !hasActiveChild &&
                           !isParentActive && [
-                            "!bg-primary-200", // Light blue
-                            "hover:!bg-primary-300",
-                            "!text-primary-900",
-                            "!font-semibold",
-                            "[&_svg]:!text-primary-900",
-                            "!shadow-sm",
+                            "bg-primary-200!", // Light blue
+                            "hover:bg-primary-300!",
+                            "text-grey-50!",
+                            "font-semibold!",
+                            "[&_svg]:text-grey-50!",
+                            
                           ],
 
                         // ================================================================
@@ -172,11 +172,11 @@ export function NavMain({ items, className }: NavMainProps) {
                         isCollapsed &&
                           isMenuOpen &&
                           (hasActiveChild || isParentActive) && [
-                            "!bg-primary-600", // Dark blue
-                            "hover:!bg-primary-700",
-                            "!text-white",
-                            "[&_svg]:!text-white",
-                            "!shadow-sm",
+                            "bg-primary-600!", // Dark blue
+                            "hover:bg-primary-700!",
+                            "text-white!",
+                            "[&_svg]:text-white!",
+                            
                           ],
 
                         // ================================================================
@@ -186,11 +186,11 @@ export function NavMain({ items, className }: NavMainProps) {
                           isMenuOpen &&
                           !hasActiveChild &&
                           !isParentActive && [
-                            "!bg-transparent", // Transparent background
-                            "hover:!bg-grey-200",
-                            "!text-white",
-                            // "[&_svg]:!text-white",
-                            // "!shadow-sm",
+                            "bg-transparent!", // Transparent background
+                            "hover:bg-grey-200!",
+                            "text-white!",
+                            // "[&_svg]:text-white!",
+                            // 
                           ],
 
                         // ================================================================
@@ -200,13 +200,13 @@ export function NavMain({ items, className }: NavMainProps) {
                         !isCollapsed &&
                           !isMenuOpen &&
                           hasActiveChild && [
-                            "!bg-primary-600", // Dark blue
-                            "!border-primary-600",
-                            "hover:!bg-primary-600",
-                            "!text-white",
-                            "!font-semibold",
-                            "[&_svg]:!text-white",
-                            "!shadow-sm",
+                            "bg-primary-600!", // Dark blue
+                            "border-primary-600!",
+                            "hover:bg-primary-600!",
+                            "text-white!",
+                            "font-semibold!",
+                            "[&_svg]:text-white!",
+                            
                           ],
 
                         // ================================================================
@@ -216,12 +216,12 @@ export function NavMain({ items, className }: NavMainProps) {
                         isCollapsed &&
                           !isMenuOpen &&
                           hasActiveChild && [
-                            "!bg-primary-600", // Dark blue
-                            "!border-primary-600",
-                            "hover:!bg-primary-600",
-                            "!text-white",
-                            "[&_svg]:!text-white",
-                            "!shadow-sm",
+                            "bg-primary-600!", // Dark blue
+                            "border-primary-600!",
+                            "hover:bg-primary-600!",
+                            "text-white!",
+                            "[&_svg]:text-white!",
+                            
                           ],
 
                         // ================================================================
@@ -232,13 +232,13 @@ export function NavMain({ items, className }: NavMainProps) {
                           !isMenuOpen &&
                           isParentActive &&
                           !hasActiveChild && [
-                            "!bg-primary-600", // Dark blue
-                            "!border-primary-600",
-                            "hover:!bg-primary-600",
-                            "!text-white",
-                            "!font-semibold",
-                            "[&_svg]:!text-white",
-                            "!shadow-sm",
+                            "bg-primary-600!", // Dark blue
+                            "border-primary-600!",
+                            "hover:bg-primary-600!",
+                            "text-white!",
+                            "font-semibold!",
+                            "[&_svg]:text-white!",
+                            
                           ],
 
                         // ================================================================
@@ -249,12 +249,12 @@ export function NavMain({ items, className }: NavMainProps) {
                           !isMenuOpen &&
                           isParentActive &&
                           !hasActiveChild && [
-                            "!bg-primary-600", // Dark blue
-                            "!border-primary-600",
-                            "hover:!bg-primary-600",
-                            "!text-white",
-                            "[&_svg]:!text-white",
-                            "!shadow-sm",
+                            "bg-primary-600!", // Dark blue
+                            "border-primary-600!",
+                            "hover:bg-primary-600!",
+                            "text-white!",
+                            "[&_svg]:text-white!",
+                            
                           ]
 
                         // ================================================================
@@ -265,7 +265,7 @@ export function NavMain({ items, className }: NavMainProps) {
                       onClick={() => handleCollapsedClick(item)}
                     >
                       {item.icon && (
-                        <item.icon className="h-5 w-5 shrink-0 md:h-5 md:w-5" />
+                        <item.icon className="h-5 w-5 shrink-0 md:h-6 md:w-6" />
                       )}
                       <span className="truncate text-sm group-data-[state=collapsed]:hidden md:text-base">
                         {item.title}
@@ -293,11 +293,11 @@ export function NavMain({ items, className }: NavMainProps) {
                       // ================================================================
                       // OVERRIDE DEFAULT data-[active=true] STYLES
                       // ================================================================
-                      "[&[data-active=true]]:bg-transparent",
-                      "[&[data-active=true]]:border-transparent",
-                      "[&[data-active=true]]:text-grey-700",
-                      "[&[data-active=true]]:shadow-none",
-                      "[&[data-active=true]]:font-medium",
+                      "data-[active=true]:bg-transparent",
+                      "data-[active=true]:border-transparent",
+                      "data-[active=true]:text-grey-700",
+                      "data-[active=true]:shadow-none",
+                      "data-[active=true]:font-medium",
                       "[&[data-active=true]_svg]:text-grey-700",
 
                       // ================================================================
@@ -306,13 +306,13 @@ export function NavMain({ items, className }: NavMainProps) {
                       // ================================================================
                       !isCollapsed &&
                         isParentActive && [
-                          "!bg-primary-600", // Dark blue
-                          "!border-primary-600",
-                          "hover:!bg-primary-600",
-                          "!text-white",
-                          "!font-semibold",
-                          "[&_svg]:!text-white",
-                          "!shadow-sm",
+                          "bg-primary-600!", // Dark blue
+                          "border-primary-600!",
+                          "hover:bg-primary-600!",
+                          "text-white!",
+                          "font-semibold!",
+                          "[&_svg]:text-white!",
+                          
                         ],
 
                       // ================================================================
@@ -321,12 +321,12 @@ export function NavMain({ items, className }: NavMainProps) {
                       // ================================================================
                       isCollapsed &&
                         isParentActive && [
-                          "!bg-primary-600", // Dark blue
-                          "!border-primary-600",
-                          "hover:!bg-primary-600",
-                          "!text-white",
-                          "[&_svg]:!text-white",
-                          "!shadow-sm",
+                          "bg-primary-600!", // Dark blue
+                          "border-primary-600!",
+                          "hover:bg-primary-600!",
+                          "text-white!",
+                          "[&_svg]:text-white!",
+                          
                         ]
 
                       // ================================================================
@@ -338,7 +338,7 @@ export function NavMain({ items, className }: NavMainProps) {
                   >
                     <NavLink to={item.url}>
                       {item.icon && (
-                        <item.icon className="h-5 w-5 shrink-0 md:h-5 md:w-5" />
+                        <item.icon className="h-5 w-5 shrink-0 md:h-6 md:w-6" />
                       )}
                       <span className="truncate text-sm group-data-[state=collapsed]:hidden md:text-base">
                         {item.title}

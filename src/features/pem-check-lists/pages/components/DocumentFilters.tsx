@@ -1,16 +1,21 @@
-// src/features/pem-checklists/components/DocumentFilters.tsx
-import { Trash2 } from "lucide-react";
+import { useCallback } from "react";
+import { AlertTriangle, Trash2, RefreshCw } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
-import { Label } from "@/shared/components/ui/label";
-import type { DocumentFiltersType } from "../../types/document";
+import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { SearchableFilterSelect } from "@/shared/components/ui/SearchableFilterSelect";
+import { useProjectStore } from "@/shared/store/projectStore";
+import type { DocumentFiltersType } from "../../types/document";
+import {
+  useDisciplines,
+  useDocumentGroups,
+  useDocumentTypes,
+  useFacilityCodes,
+  useSystems,
+  useAreas,
+} from "../../api/queries";
+// import { Circle, CheckCircle2, Clock } from "lucide-react";
+// import type { DataTableFilterField } from "@/shared/components/data-table/types";
+// import type { DocumentRecord } from "../types/document";
 
 interface DocumentFiltersProps {
   filters: DocumentFiltersType;
@@ -23,10 +28,149 @@ export function DocumentFilters({
   onFilterChange,
   onClearAll,
 }: DocumentFiltersProps) {
+  const selectedProject = useProjectStore((state) => state.selectedProject);
+
+  const {
+    data: disciplines = [],
+    isLoading: loadingDisciplines,
+    error: errorDisciplines,
+    refetch: refetchDisciplines,
+  } = useDisciplines(selectedProject?.id);
+
+  const {
+    data: documentGroups = [],
+    isLoading: loadingGroups,
+    error: errorGroups,
+    refetch: refetchGroups,
+  } = useDocumentGroups(filters.discipline);
+
+  const {
+    data: documentTypes = [],
+    isLoading: loadingTypes,
+    error: errorTypes,
+    refetch: refetchTypes,
+  } = useDocumentTypes(filters.discipline);
+
+  const {
+    data: facilityCodes = [],
+    isLoading: loadingFacilities,
+    error: errorFacilities,
+    refetch: refetchFacilities,
+  } = useFacilityCodes(filters.discipline);
+
+  const {
+    data: systems = [],
+    isLoading: loadingSystems,
+    error: errorSystems,
+    refetch: refetchSystems,
+  } = useSystems(filters.discipline);
+
+  const {
+    data: areas = [],
+    isLoading: loadingAreas,
+    error: errorAreas,
+    refetch: refetchAreas,
+  } = useAreas(filters.discipline);
+
+  // Gating Logic
+  const baseEnabled = !!selectedProject;
+  const disciplineEnabled = baseEnabled;
+  const documentGroupEnabled = baseEnabled && !!filters.discipline;
+  const documentTypeEnabled =
+    baseEnabled && !!filters.discipline && !!filters.documentGroup;
+  const downstreamEnabled =
+    baseEnabled &&
+    !!filters.discipline &&
+    !!filters.documentGroup &&
+    !!filters.documentType;
+
+  // ============================================
+  // Change Handlers (with cascade clearing)
+  // ============================================
+  const handleDisciplineChange = useCallback(
+    (value?: string) => {
+      onFilterChange({
+        discipline: value || undefined,
+        documentGroup: undefined,
+        documentType: undefined,
+        facilityCode: undefined,
+        system: undefined,
+        area: undefined,
+      });
+    },
+    [onFilterChange]
+  );
+
+  const handleDocumentGroupChange = useCallback(
+    (value?: string) => {
+      onFilterChange({
+        documentGroup: value || undefined,
+        documentType: undefined,
+        facilityCode: undefined,
+        system: undefined,
+        area: undefined,
+      });
+    },
+    [onFilterChange]
+  );
+
+  const handleDocumentTypeChange = useCallback(
+    (value?: string) => {
+      onFilterChange({
+        documentType: value || undefined,
+        facilityCode: undefined,
+        system: undefined,
+        area: undefined,
+      });
+    },
+    [onFilterChange]
+  );
+
+  const handleFacilityChange = useCallback(
+    (value?: string) => {
+      onFilterChange({ facilityCode: value || undefined });
+    },
+    [onFilterChange]
+  );
+
+  const handleSystemChange = useCallback(
+    (value?: string) => {
+      onFilterChange({ system: value || undefined });
+    },
+    [onFilterChange]
+  );
+
+  const handleAreaChange = useCallback(
+    (value?: string) => {
+      onFilterChange({ area: value || undefined });
+    },
+    [onFilterChange]
+  );
+
+  // ============================================
+  // Error Collection
+  // ============================================
+  const errors = [
+    errorDisciplines,
+    errorGroups,
+    errorTypes,
+    errorFacilities,
+    errorSystems,
+    errorAreas,
+  ].filter(Boolean);
+
+  const hasErrors = errors.length > 0;
+  console.log("Disciplines:", disciplines);
+  console.log("Groups:", documentGroups);
+  console.log("Types:", documentTypes);
+
+  // ============================================
+  // Render
+  // ============================================
   return (
-    <div className="rounded-lg border border-gray-200 bg-white px-4 py-5 sm:px-3 sm:py-4">
+    <div className="mb-2 rounded-lg border border-gray-200 bg-white px-3 py-4 lg:px-5 lg:py-4">
       {/* Header */}
-      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-5 flex flex-row items-center justify-between gap-3">
         <h2 className="text-md font-medium text-gray-700">Filter</h2>
         <Button
           variant="outline"
@@ -39,144 +183,197 @@ export function DocumentFilters({
         </Button>
       </div>
 
-      {/* Filter Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-        {/* Discipline */}
+      {/* Project Selection Warning */}
+      {!selectedProject && (
+        <Alert variant="warning" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Please select a Project first to enable filters.
+          </AlertDescription>
+        </Alert>
+      )}
 
-        <div className="space-y-2">
-          {/* <Label htmlFor="discipline" className="text-sm text-gray-600">
-            Discipline <span className="text-red-500">*</span>
-          </Label> */}
-          {/* <Select
-            value={filters.discipline}
-            onValueChange={(value) => onFilterChange({ discipline: value })}
-          >
-            <SelectTrigger id="discipline" className="w-full bg-gray-50">
-              {" "}
-              <SelectValue placeholder="Eg. HVAC" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="hvac">HVAC</SelectItem>
-              <SelectItem value="mechanical">Mechanical</SelectItem>
-              <SelectItem value="electrical">Electrical</SelectItem>
-              <SelectItem value="civil">Civil</SelectItem>
-            </SelectContent>
-          </Select>
-           */}
-          <SearchableFilterSelect
-            label="Discipline"
-            size="sm"
-            placeholder="Select discipline"
-            options={[
-              { value: "hvac", label: "HVAC" },
-              { value: "mechanical", label: "Mechanical" },
-            ]}
-            value={filters.discipline}
-            onValueChange={(value) => onFilterChange({ discipline: value })}
-            required
-            clearable
-          />
-        </div>
+      {/* API Error Alert */}
+      {hasErrors && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>Failed to load filter options. Please try again.</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                if (errorDisciplines) refetchDisciplines();
+                if (errorGroups) refetchGroups();
+                if (errorTypes) refetchTypes();
+                if (errorFacilities) refetchFacilities();
+                if (errorSystems) refetchSystems();
+                if (errorAreas) refetchAreas();
+              }}
+              className="ml-2 gap-1 text-xs"
+            >
+              <RefreshCw className="h-3 w-3" />
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Filter Grid */}
+      <div className="grid grid-cols-1 gap-x-3 gap-y-4 md:grid-cols-2 md:gap-x-5 md:gap-y-6 lg:grid-cols-2 xl:grid-cols-3">
+        {/* Discipline */}
+        <SearchableFilterSelect
+          label="Discipline"
+          size="md"
+          placeholder={loadingDisciplines ? "Loading..." : "Select discipline"}
+          options={disciplines}
+          value={filters.discipline}
+          onValueChange={handleDisciplineChange}
+          disabled={!disciplineEnabled || loadingDisciplines}
+          required
+          //Need to add this helperText  in searchableFilterSelect
+          // helperText={
+          //   disciplines.length === 0 && !loadingDisciplines && disciplineEnabled
+          //     ? "No disciplines available"
+          //     : undefined
+          // }
+        />
 
         {/* Document Group */}
-        <div className="space-y-2">
-          <Label htmlFor="documentGroup" className="text-sm text-gray-600">
-            Document Group <span className="text-red-500">*</span>
-          </Label>
-          <Select
-            value={filters.documentGroup}
-            onValueChange={(value) => onFilterChange({ documentGroup: value })}
-          >
-            <SelectTrigger id="documentGroup" className="bg-gray-50">
-              <SelectValue placeholder="Eg. ENG" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="eng">ENG</SelectItem>
-              <SelectItem value="design">Design</SelectItem>
-              <SelectItem value="construction">Construction</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <SearchableFilterSelect
+          label="Document Group"
+          size="md"
+          placeholder={loadingGroups ? "Loading..." : "Eg. ENG"}
+          options={documentGroups}
+          value={filters.documentGroup}
+          onValueChange={handleDocumentGroupChange}
+          required
+          disabled={!documentGroupEnabled || loadingGroups}
+          //Need to add this helperText  in searchableFilterSelect
+          // helperText={
+          //   documentGroups.length === 0 &&
+          //   !loadingGroups &&
+          //   documentGroupEnabled
+          //     ? "No groups available"
+          //     : undefined
+          // }
+        />
 
         {/* Document Type */}
-        <div className="space-y-2">
-          <Label htmlFor="documentType" className="text-sm text-gray-600">
-            Document Type <span className="text-red-500">*</span>
-          </Label>
-          <Select
-            value={filters.documentType}
-            onValueChange={(value) => onFilterChange({ documentType: value })}
-          >
-            <SelectTrigger id="documentType" className="bg-gray-50">
-              <SelectValue placeholder="EG. XC" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="xc">XC</SelectItem>
-              <SelectItem value="drawing">Drawing</SelectItem>
-              <SelectItem value="specification">Specification</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <SearchableFilterSelect
+          label="Document Type"
+          size="md"
+          placeholder={loadingTypes ? "Loading..." : "EG. XC"}
+          options={documentTypes}
+          value={filters.documentType}
+          onValueChange={handleDocumentTypeChange}
+          required
+          disabled={!documentTypeEnabled || loadingTypes}
+          //Need to add this helperText  in searchableFilterSelect
+          // helperText={
+          //   documentTypes.length === 0 && !loadingTypes && documentTypeEnabled
+          //     ? "No types available"
+          //     : undefined
+          // }
+        />
 
         {/* Facility Code */}
-        <div className="space-y-2">
-          <Label htmlFor="facilityCode" className="text-sm text-gray-600">
-            Facility Code
-          </Label>
-          <Select
-            value={filters.facilityCode}
-            onValueChange={(value) => onFilterChange({ facilityCode: value })}
-          >
-            <SelectTrigger id="facilityCode" className="bg-gray-50">
-              <SelectValue placeholder="EG." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="fac1">Facility 1</SelectItem>
-              <SelectItem value="fac2">Facility 2</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <SearchableFilterSelect
+          label="Facility Code"
+          size="md"
+          placeholder={loadingFacilities ? "Loading..." : "Select facility"}
+          options={facilityCodes}
+          value={filters.facilityCode}
+          onValueChange={handleFacilityChange}
+          disabled={!downstreamEnabled || loadingFacilities}
+          //Need to add this helperText  in searchableFilterSelect
+          // helperText={
+          //   facilityCodes.length === 0 &&
+          //   !loadingFacilities &&
+          //   downstreamEnabled
+          //     ? "No facilities available"
+          //     : undefined
+          // }
+        />
 
         {/* System */}
-        <div className="space-y-2">
-          <Label htmlFor="system" className="text-sm text-gray-600">
-            System
-          </Label>
-          <Select
-            value={filters.system}
-            onValueChange={(value) => onFilterChange({ system: value })}
-          >
-            <SelectTrigger id="system" className="bg-gray-50">
-              <SelectValue placeholder="EG. 70" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="70">70</SelectItem>
-              <SelectItem value="80">80</SelectItem>
-              <SelectItem value="90">90</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <SearchableFilterSelect
+          label="System"
+          size="md"
+          placeholder={loadingSystems ? "Loading..." : "EG. 70"}
+          options={systems}
+          value={filters.system}
+          onValueChange={handleSystemChange}
+          disabled={!downstreamEnabled || loadingSystems}
+          //Need to add this helperText  in searchableFilterSelect
+          // helperText={
+          //   systems.length === 0 && !loadingSystems && downstreamEnabled
+          //     ? "No systems available"
+          //     : undefined
+          // }
+        />
 
         {/* Area */}
-        <div className="space-y-2">
-          <Label htmlFor="area" className="text-sm text-gray-600">
-            Area
-          </Label>
-          <Select
-            value={filters.area}
-            onValueChange={(value) => onFilterChange({ area: value })}
-          >
-            <SelectTrigger id="area" className="bg-gray-50">
-              <SelectValue placeholder="EG. N/A" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="na">N/A</SelectItem>
-              <SelectItem value="zone-a">Zone A</SelectItem>
-              <SelectItem value="zone-b">Zone B</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <SearchableFilterSelect
+          label="Area"
+          size="md"
+          placeholder={loadingAreas ? "Loading..." : "EG. N/A"}
+          options={areas}
+          value={filters.area}
+          onValueChange={handleAreaChange}
+          disabled={!downstreamEnabled || loadingAreas}
+          //Need to add this helperText  in searchableFilterSelect
+          // helperText={
+          //   areas.length === 0 && !loadingAreas && downstreamEnabled
+          //     ? "No areas available"
+          //     : undefined
+          // }
+        />
       </div>
     </div>
   );
 }
+
+// export const documentFilterFields: DataTableFilterField<DocumentRecord>[] = [
+//   {
+//     label: "Status",
+//     value: "status",
+//     options: [
+//       {
+//         label: "Not Started",
+//         value: "Not Started",
+//         icon: Circle,
+//       },
+//       {
+//         label: "In Progress",
+//         value: "In Progress",
+//         icon: Clock,
+//       },
+//       {
+//         label: "Completed",
+//         value: "Completed",
+//         icon: CheckCircle2,
+//       },
+//     ],
+//   },
+//   {
+//     label: "Reason For Issue",
+//     value: "reasonForIssue",
+//     options: [
+//       { label: "IFC", value: "IFC" },
+//       { label: "IFD", value: "IFD" },
+//       { label: "AFC", value: "AFC" },
+//       { label: "IFR", value: "IFR" },
+//     ],
+//   },
+//   {
+//     label: "Revision Status",
+//     value: "revisionStatus",
+//     options: [
+//       { label: "OF", value: "OF" },
+//       { label: "R1", value: "R1" },
+//       { label: "R2", value: "R2" },
+//       { label: "R3", value: "R3" },
+//     ],
+//   },
+// ];

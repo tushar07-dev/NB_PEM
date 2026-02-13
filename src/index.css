@@ -68,11 +68,10 @@
   --border-radius-full: 100px;
 
   /* ---------------- Breakpoints ---------------- */
-  --breakpoint-sm: 800px;
-  /* laptop */
-  --breakpoint-lg: 1500px;
-  /* monitor */
-  --breakpoint-xl: 1800px;
+  --breakpoint-sm: 800px;  
+  --breakpoint-md: 800px; /* NOW md: uses 800px */
+  --breakpoint-lg: 1500px; /* NOW lg: uses 1500px */
+  --breakpoint-xl: 1800px; /* NOW xl: uses 1800px */
 
   /* ---------------- Fonts ---------------- */
   --font-solutioneer: "Solutioneer", ui-sans-serif, system-ui;
@@ -194,7 +193,6 @@
   --text-6xl: var(--fs-750);
   --text-7xl: var(--fs-800);
 
-
   /* ---------------- Font weights ---------------- */
   --font-weight-100: 400;
   --font-weight-200: 400;
@@ -242,8 +240,8 @@
   --primary-foreground: hsl(0 0% 100%);
   --secondary: hsl(210 20% 98%);
   --secondary-foreground: hsl(215 25% 27%);
-  --muted: hsl(210 40% 96%);
-  --muted-foreground: hsl(215 16% 47%);
+  --muted: hsl(0 0% 98%);
+  --muted-foreground: hsl(210 9% 56%);
   --accent: hsl(210 40% 96%);
   --accent-foreground: hsl(210 50% 11%);
   --destructive: hsl(0 72% 51%);
@@ -341,7 +339,7 @@
   .brand-text {
     color: var(--primary-foreground);
     font-family: var(--font-solutioneer);
-    font-size: var(--text-lg);
+    font-size: var(--text-xl);
     font-style: normal;
     font-weight: 700;
     line-height: normal;
@@ -387,7 +385,7 @@
     background-color: var(--color-primary-600);
   }
   .header-pill {
-    @apply bg-grey-50/90 hover:bg-grey-50 rounded-full border-none transition-all focus-visible:ring-1;
+    @apply bg-grey-100 hover:bg-grey-100/90 rounded-full border-none transition-all focus-visible:ring-1;
     font-family: var(--font-helvetica-now);
   }
   .header-search-container {
@@ -411,113 +409,54 @@
       outline-offset: 1px;
     }
   }
+}
 
-  /* -- Document List UI -- */
-  .doc-list-container {
-    /* Variables for Container */
-    --doc-list-padding: 1.25rem; /* Default p-5 */
-
-    /* Variables for Header */
-    --doc-header-size: 14px;
-
-    /* Variables for List Gap */
-    --doc-list-gap: 0.5rem; /* gap-2 */
-
-    padding: var(--doc-list-padding);
-    @apply border-grey-250 bg-grey-50 flex h-full flex-col border transition-all duration-300;
+/* Custom scrollbar styles */
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
   }
 
-  .doc-list-container[data-state="expanded"] {
-    --doc-list-padding: 0.75rem; /* p-3 */
-    --doc-header-size: 12px;
-    --doc-list-gap: 0.25rem; /* gap-1 */
+  .scrollbar-thumb-gray-300 {
+    scrollbar-color: #d1d5db transparent;
   }
 
-  @media (min-width: 1500px) {
-    .doc-list-container {
-      --doc-header-size: 20px;
-      --doc-list-padding: 1.5rem;
-    }
-
-    .doc-list-container[data-state="expanded"] {
-      --doc-header-size: 16px;
-      --doc-list-padding: 1rem;
-    }
+  .scrollbar-track-transparent::-webkit-scrollbar {
+    width: 6px;
   }
 
-  .doc-list-header-title {
-    font-style: normal;
-    font-weight: 400;
-    font-size: var(--doc-header-size) !important;
-    @apply text-primary-400 font-medium;
+  .scrollbar-track-transparent::-webkit-scrollbar-track {
+    background: transparent;
   }
 
-  /* Apply the dynamic gap */
-  .doc-list-inner-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: var(--doc-list-gap);
-  }
-  .doc-list-badge-wrapper {
-    transition: transform 0.2s ease;
-    transform-origin: right;
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 3px;
   }
 
-  /* Shrink badge when expanded to save room */
-  .doc-list-item[data-state="expanded"] .doc-list-badge-wrapper {
-    transform: scale(0.8);
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+  }
+}
+
+/* Smooth transitions for sidebar */
+@layer components {
+  .sidebar-transition {
+    /* Use GPU-accelerated properties only */
+    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
   }
 
-  .doc-list-item {
-    /* Default: Small Screen + Collapsed (state="collapsed") */
-    --doc-title-size: 10px;
-    --doc-code-size: 9px;
-    @apply flex cursor-pointer items-center rounded-lg transition-all duration-200;
-    font-family: var(--font-helvetica-now);
+  /* Reduce shadow complexity */
+  .shadow-sm {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   }
+}
 
-  .doc-list-item[data-state="expanded"] {
-    --doc-title-size: 8px;
-    --doc-code-size: 7px;
-  }
-
-  /* 2. Large Screen Responsiveness */
-  @media (min-width: 1500px) {
-    .doc-list-item {
-      /* Large Screen + Collapsed */
-      --doc-title-size: 16px;
-      --doc-code-size: 12px;
-    }
-
-    .doc-list-item[data-state="expanded"] {
-      --doc-title-size: 12px;
-      --doc-code-size: 10px;
-    }
-  }
-
-  /* 3. Final Utility Classes (Defined ONLY once) */
-  .doc-title {
-    font-size: var(--doc-title-size) !important;
-    @apply text-primary-400 truncate leading-tight font-bold;
-  }
-
-  .doc-code {
-    font-size: var(--doc-code-size) !important;
-    @apply text-primary-200 truncate leading-normal font-medium;
-  }
-
-  .doc-list-item-active {
-    /* background-color: #E3F2FF; */
-    @apply bg-grey-300 border-grey-200 border;
-  }
-
-  .doc-list-item-hover {
-    @apply hover:bg-slate-50;
-  }
-
-  .doc-icon-box {
-    @apply bg-grey-50 flex shrink-0 items-center justify-center rounded-lg border shadow-2xs;
-    border-color: var(--color-grey-275);
+@layer utilities {
+  /* Simplify scrollbar - remove if sidebar doesn't scroll */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px; /* Thinner = faster render */
   }
 }
 
@@ -527,7 +466,8 @@
 
 @media (min-width: 800px) {
   .top-header-bar {
-    /* background-color: var(--color-primary-600); Testing color */
+    /* //Testing color */
+    background-color: var(--color-primary-600);
   }
 }
 /* Using your breakpoint-lg: 1500px as the trigger */
@@ -565,52 +505,12 @@
     height: 48px;
   }
   .top-header-bar {
-    background-color: var(--primary);
+    background-color: var(--color-success-500);
   }
 }
 
 @media (min-width: 1800px) {
-  .brand-text {
-    font-size: var(--text-50); /* 28px for large monitor */
-  }
   .top-header-bar {
-    background-color: var(--foreground);
-  }
-}
-
-/* Custom scrollbar styles */
-@layer utilities {
-  .scrollbar-thin {
-    scrollbar-width: thin;
-  }
-
-  .scrollbar-thumb-gray-300 {
-    scrollbar-color: #d1d5db transparent;
-  }
-
-  .scrollbar-track-transparent::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .scrollbar-track-transparent::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: #d1d5db;
-    border-radius: 3px;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: #9ca3af;
-  }
-}
-
-/* Smooth transitions for sidebar */
-@layer components {
-  .sidebar-transition {
-    transition-property: width, transform, opacity;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 300ms;
+    background-color: var(--color-primary-600);
   }
 }

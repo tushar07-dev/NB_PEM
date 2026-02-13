@@ -1,6 +1,6 @@
 import { getUser, login } from "@/api/auth";
 import type { User } from "@/types/user";
-import { setAuthToken } from "@/shared/services/axios";
+import { setAuthToken, setAuthErrorHandler } from "@/api/client";
 import {
   createContext,
   useContext,

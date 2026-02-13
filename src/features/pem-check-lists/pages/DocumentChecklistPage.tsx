@@ -1,9 +1,8 @@
-// src/features/pem-checklists/pages/DocumentChecklistPage.tsx
 import { useState } from "react";
 import { DocumentFilters } from "./components/DocumentFilters";
 import { DocumentTable } from "./components/DocumentTable";
-import type { DocumentFiltersType } from "../types/document";
-import type { DocumentRecord } from "../types/document";
+import type { DocumentFiltersType, DocumentRecord } from "../types/document";
+
 // Mock data - replace with API call
 const mockDocuments: DocumentRecord[] = [
   {
@@ -94,12 +93,12 @@ const mockDocuments: DocumentRecord[] = [
 
 export default function DocumentChecklistPage() {
   const [filters, setFilters] = useState<DocumentFiltersType>({
-    discipline: "",
-    documentGroup: "",
-    documentType: "",
-    facilityCode: "",
-    system: "",
-    area: "",
+    discipline: undefined,
+    documentGroup: undefined,
+    documentType: undefined,
+    facilityCode: undefined,
+    system: undefined,
+    area: undefined,
   });
 
   const [documents] = useState<DocumentRecord[]>(mockDocuments);
@@ -109,38 +108,27 @@ export default function DocumentChecklistPage() {
   };
 
   const handleClearAll = () => {
-    setFilters({
-      discipline: "",
-      documentGroup: "",
-      documentType: "",
-      facilityCode: "",
-      system: "",
-      area: "",
-    });
+    setFilters({});
   };
 
   return (
-    <div className="">
+    <div className="space-y-6">
       {/* Header — full width */}
-      <div className="lg:col-span-2">
-        <h1 className="text-primary-500 text-2xl font-semibold font-solutioneer ">
+      <div>
+        <h1 className="text-primary-500 font-solutioneer text-xl font-semibold">
           Search for document
         </h1>
       </div>
 
       {/* Filters — left column */}
-      <div>
-        <DocumentFilters
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          onClearAll={handleClearAll}
-        />
-      </div>
+      <DocumentFilters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onClearAll={handleClearAll}
+      />
 
       {/* Table — right column */}
-      <div>
-        <DocumentTable documents={documents} />
-      </div>
+      <DocumentTable data={documents} />
     </div>
   );
 }

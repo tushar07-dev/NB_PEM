@@ -6,10 +6,15 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/shared/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Search, X } from "lucide-react";
+import {
+  SELECT_SIZE_CONFIG,
+  SELECT_BASE_STYLES,
+} from "@/shared/components/SearchableSelectTokens";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type Option = {
   value: string;
@@ -23,6 +28,11 @@ type Props = {
   label: string;
   placeholder: string;
   options: Option[];
+  /**
+   * Always pass a string ("" means no selection).
+   * Never alternate between string and undefined — that causes the
+   * "controlled → uncontrolled" Radix warning.
+   */
   value?: string;
   onValueChange?: (value: string) => void;
   required?: boolean;
@@ -35,77 +45,50 @@ type Props = {
   size?: Size;
 };
 
-/**
- * Simplified size variants - Industry best practices
- * Max 2-3 breakpoints per property for maintainability
- */
-const SIZE_VARIANTS = {
-  sm: {
-    // Mobile → Tablet (max 2 breakpoints)
-    trigger: "h-8 md:h-9 px-2 md:px-2.5 text-xs md:text-sm",
-    label: "text-[10px] md:text-lg gap-1 md:gap-1.5",
-    input: "h-7 md:h-8 text-xs md:text-sm pl-7 md:pl-8 pr-7 md:pr-8",
-    searchIcon: "size-3 md:size-3.5 left-2 md:left-2.5",
-    clearIcon: "size-3 md:size-3.5",
-    clearButton: "right-2 md:right-2.5",
-    item: "py-1.5 md:py-2 px-2 md:px-2.5 text-xs md:text-sm",
-    maxHeight: "max-h-48 md:max-h-64",
-    searchContainer: "p-2 md:p-2.5",
-    footer: "px-2 md:px-2.5 py-1.5 md:py-2 text-[10px] md:text-xs",
-    error: "text-[10px] md:text-xs",
-    errorIcon: "size-3 md:size-3.5",
-    emptyIcon: "size-4 md:size-5 p-2 md:p-2.5",
-    emptyText: "text-xs md:text-sm",
-    emptySubtext: "text-[10px] md:text-xs",
-    gap: "gap-1 md:gap-1.5",
-  },
-  md: {
-    // Mobile → Tablet → Desktop (max 3 breakpoints)
-    trigger: "h-10 md:h-11 lg:h-12 px-3 md:px-3.5 lg:px-4 text-sm md:text-base",
-    label: "text-xs md:text-sm gap-1.5 md:gap-2",
-    input:
-      "h-9 md:h-10 lg:h-11 text-sm md:text-base pl-9 md:pl-10 lg:pl-11 pr-9 md:pr-10 lg:pr-11",
-    searchIcon: "size-4 md:size-4.5 lg:size-5 left-3 md:left-3.5 lg:left-4",
-    clearIcon: "size-3.5 md:size-4",
-    clearButton: "right-2.5 md:right-3",
-    item: "py-2.5 md:py-3 lg:py-3.5 px-3 md:px-3.5 lg:px-4 text-sm md:text-base",
-    maxHeight: "max-h-64 md:max-h-72 lg:max-h-80",
-    searchContainer: "p-3 md:p-3.5 lg:p-4",
-    footer: "px-3 md:px-3.5 lg:px-4 py-2 md:py-2.5 text-xs md:text-sm",
-    error: "text-xs md:text-sm",
-    errorIcon: "size-3.5 md:size-4",
-    emptyIcon: "size-5 md:size-6 p-3 md:p-3.5",
-    emptyText: "text-sm md:text-base",
-    emptySubtext: "text-xs md:text-sm",
-    gap: "gap-1.5 md:gap-2",
-  },
-  lg: {
-    // Mobile → Tablet → Desktop
-    trigger: "h-12 md:h-14 lg:h-16 px-4 md:px-5 lg:px-6 text-base md:text-lg",
-    label: "text-base md:text-lg gap-2 md:gap-2.5",
-    input:
-      "h-11 md:h-12 lg:h-14 text-base md:text-lg pl-11 md:pl-12 lg:pl-14 pr-11 md:pr-12 lg:pr-14",
-    searchIcon: "size-5 md:size-5.5 lg:size-6 left-3.5 md:left-4",
-    clearIcon: "size-4 md:size-4.5",
-    clearButton: "right-3 md:right-3.5",
-    item: "py-3 md:py-3.5 lg:py-4 px-4 md:px-5 lg:px-6 text-base md:text-lg",
-    maxHeight: "max-h-72 md:max-h-80 lg:max-h-96",
-    searchContainer: "p-4 md:p-5",
-    footer: "px-4 md:px-5 py-2.5 md:py-3 text-sm md:text-base",
-    error: "text-sm md:text-base",
-    errorIcon: "size-4 md:size-4.5",
-    emptyIcon: "size-6 md:size-7 p-4 md:p-5",
-    emptyText: "text-base md:text-lg",
-    emptySubtext: "text-sm md:text-base",
-    gap: "gap-2 md:gap-2.5",
-  },
-} as const;
+// ─── Constants ────────────────────────────────────────────────────────────────
 
+const SEARCH_FOCUS_DELAY_MS = 50;
+
+/**
+ * Radix Select treats `undefined` as "uncontrolled" and `""` as a valid
+ * selection (it won't show the placeholder for ""). We use a unique sentinel
+ * string so the component is always controlled while still showing the
+ * placeholder when nothing is selected.
+ */
+const EMPTY_VALUE = "__EMPTY__";
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+/**
+ * SearchableFilterSelect
+ *
+ * Runtime errors fixed (from console logs):
+ *
+ * ❌ ERROR 1 — `<button> cannot appear as a descendant of <button>`
+ *    Root cause: SelectTrigger renders a <button>. The previous clear button
+ *    was nested inside it → invalid HTML.
+ *    ✅ Fix: The clear button is now rendered OUTSIDE the <Select> entirely,
+ *    absolutely-positioned as a sibling via a wrapping `relative` div.
+ *    SelectTrigger never contains any interactive children.
+ *
+ * ❌ ERROR 2 — `Select is changing from controlled to uncontrolled`
+ *    Root cause: Passing `undefined` to <Select value> tells Radix "I have
+ *    no value prop" (uncontrolled). Alternating string ↔ undefined triggers
+ *    the warning every time the user clears.
+ *    ✅ Fix: We map "" / undefined → EMPTY_VALUE sentinel so Radix always
+ *    receives a non-empty string. The sentinel is mapped back to "" on the
+ *    way out via handleValueChange.
+ *
+ * ❌ ERROR 3 — Clearable button had no effect
+ *    Root cause: Was a consequence of ERROR 2 (undefined flip) and the
+ *    incorrect nesting (ERROR 1 preventing click events from working cleanly).
+ *    ✅ Fix: Both root causes resolved. handleClear calls onValueChange("").
+ */
 export function SearchableFilterSelect({
   label,
   placeholder,
   options,
-  value,
+  value = "",
   onValueChange,
   required = false,
   disabled = false,
@@ -119,271 +102,412 @@ export function SearchableFilterSelect({
   const [search, setSearch] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
+  const isMountedRef = React.useRef(true);
 
-  const sizeClasses = SIZE_VARIANTS[size];
+  React.useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const sizeStyles = SELECT_SIZE_CONFIG[size];
+
+  // ─── FIX ERROR 2: Always keep Radix value as a non-empty string ──────────
+  const radixValue = !value ? EMPTY_VALUE : value;
+
+  const handleValueChange = (newRadixValue: string) => {
+    onValueChange?.(newRadixValue === EMPTY_VALUE ? "" : newRadixValue);
+  };
+
+  // Derived
+  const hasValue = Boolean(value);
+  const selectedLabel = React.useMemo(
+    () => options.find((o) => o.value === value)?.label ?? null,
+    [options, value]
+  );
 
   const filteredOptions = React.useMemo(() => {
     if (!search) return options;
-    return options.filter((opt) =>
-      opt.label.toLowerCase().includes(search.toLowerCase())
-    );
+    const lower = search.toLowerCase();
+    return options.filter((opt) => opt.label.toLowerCase().includes(lower));
   }, [search, options]);
 
   React.useEffect(() => {
-    if (!open) {
-      setSearch("");
-    }
+    if (!open) setSearch("");
   }, [open]);
 
   React.useEffect(() => {
-    if (open && searchInputRef.current) {
-      setTimeout(() => searchInputRef.current?.focus(), 0);
+    if (open) {
+      const timer = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, SEARCH_FOCUS_DELAY_MS);
+      return () => clearTimeout(timer);
     }
   }, [open]);
 
-  const handleClear = (e: React.MouseEvent) => {
+  // ─── FIX ERROR 1 + 3: Clear handler — button is outside <Select> ─────────
+  const handleClear = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     onValueChange?.("");
   };
 
+  const handleClearSearch = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.stopPropagation();
+    setSearch("");
+    setTimeout(() => {
+      if (isMountedRef.current) searchInputRef.current?.focus();
+    }, 0);
+  };
+
+  // Corrected arrow key propagation
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    switch (e.key) {
+      case "Escape":
+        e.preventDefault();
+        e.stopPropagation();
+        setOpen(false);
+        break;
+      case "Enter":
+        e.preventDefault();
+        e.stopPropagation();
+        break;
+      case "ArrowDown": {
+        const atEnd =
+          e.currentTarget.selectionStart === e.currentTarget.value.length;
+        if (!atEnd) e.stopPropagation();
+        break;
+      }
+      case "ArrowUp": {
+        const atStart = e.currentTarget.selectionStart === 0;
+        if (!atStart) e.stopPropagation();
+        break;
+      }
+      default:
+        e.stopPropagation();
+        break;
+    }
+  };
+
+  const emptyState = React.useMemo(() => {
+    if (search)
+      return { title: emptyMessage, subtitle: "Try adjusting your search" };
+    if (options.length === 0)
+      return {
+        title: "No options available",
+        subtitle: "Please add some options",
+      };
+    return {
+      title: "Start typing to search",
+      subtitle: `${options.length} option${options.length !== 1 ? "s" : ""} available`,
+    };
+  }, [search, options.length, emptyMessage]);
+
+  const getItemStyle = React.useCallback(
+    (index: number): React.CSSProperties =>
+      search
+        ? { animationDelay: `${index * 20}ms`, animationDuration: "200ms" }
+        : {},
+    [search]
+  );
+
+  // ─── Render ───────────────────────────────────────────────────────────────
+
   return (
-    <div className={cn("flex w-full flex-col", sizeClasses.gap, className)}>
+    <div
+      className={cn("flex w-full flex-col", sizeStyles.container, className)}
+      data-disabled={disabled || undefined}
+    >
       {/* Label */}
       <label
         className={cn(
-          "text-primary-500 font-medium tracking-wide",
-          sizeClasses.label
+          SELECT_BASE_STYLES.label,
+          sizeStyles.label,
+          disabled && "cursor-not-allowed opacity-50"
         )}
       >
         {label}
         {required && (
-          <span className="text-destructive ml-0.5 transition-colors md:ml-1">
+          <span
+            className={cn(
+              "ml-1 transition-colors",
+              disabled ? "text-muted-foreground" : "text-destructive"
+            )}
+          >
             *
           </span>
         )}
       </label>
 
-      <Select
-        value={value}
-        onValueChange={onValueChange}
-        disabled={disabled}
-        open={open}
-        onOpenChange={setOpen}
-      >
-        <SelectTrigger
-          className={cn(
-            // Base styles
-            "group relative w-full shadow-sm backdrop-blur-sm transition-all duration-200",
-            "border-grey-200 bg-grey-100 rounded-lg border md:rounded-xl",
-
-            // States
-            "focus:ring-ring/20 focus:border-primary-100 focus:ring-2 focus:outline-none",
-            "hover:border-primary-100 hover:bg-grey-100",
-
-            // Error state
-            error &&
-              "border-destructive bg-destructive/5 focus:border-destructive focus:ring-destructive/20",
-
-            // Disabled
-            disabled && "cursor-not-allowed opacity-60 grayscale",
-
-            // Value state
-            value ? "text-primary-100 font-medium" : "text-primary-500",
-
-            // Responsive size
-            sizeClasses.trigger
-          )}
-        >
-          <div className="flex w-full items-center justify-between gap-1.5 md:gap-2">
-            <SelectValue placeholder={placeholder} />
-            {clearable && value && !disabled && (
-              <button
-                type="button"
-                onClick={handleClear}
-                className={cn(
-                  "text-primary-300 rounded-md p-0.5 transition-all duration-200 md:p-1",
-                  "hover:text-primary-500 hover:bg-grey-200",
-                  "focus:ring-primary-100/50 focus:ring-2 focus:outline-none"
-                )}
-                aria-label="Clear selection"
-              >
-                <X className={sizeClasses.clearIcon} />
-              </button>
-            )}
-          </div>
-        </SelectTrigger>
-
-        <SelectContent
-          className={cn(
-            "border-grey-300 bg-grey-100 overflow-hidden rounded-lg border p-0 shadow-xl md:rounded-xl",
-            "data-[state=open]:animate-in data-[state=closed]:animate-out",
-            "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-            "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-            // Responsive width
-            "w-[var(--radix-select-trigger-width)] min-w-[200px] md:min-w-[280px]"
-          )}
-          onCloseAutoFocus={(e) => {
-            if (search) {
-              e.preventDefault();
-            }
+      {/*
+       * FIX ERROR 1: Wrap Select + clear button in a relative container.
+       * The clear button is a SIBLING of <Select>, never a descendant of
+       * SelectTrigger. This avoids the <button> inside <button> violation.
+       */}
+      <div className="relative flex w-full items-center">
+        <Select
+          value={radixValue}
+          onValueChange={handleValueChange}
+          disabled={disabled}
+          open={open}
+          onOpenChange={(next) => {
+            if (disabled) return;
+            setOpen(next);
           }}
         >
-          {/* Search Input */}
-          <div
+          {/*
+           * SelectTrigger renders as <button>.
+           * It contains NO interactive children — only text / icon.
+           */}
+          <SelectTrigger
+            aria-disabled={disabled}
             className={cn(
-              "bg-grey-100 border-grey-200 sticky top-0 z-10 border-b backdrop-blur-sm",
-              sizeClasses.searchContainer
+              SELECT_BASE_STYLES.trigger,
+              sizeStyles.trigger,
+              // Reserve space on the right for the external clear button
+              clearable && hasValue && "pr-9",
+              error &&
+                "border-destructive bg-destructive/5 focus:border-destructive focus:ring-destructive/20",
+              hasValue && "border-primary/40 bg-grey-100",
+              "w-full"
             )}
+            aria-required={required}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${label}-error` : undefined}
           >
-            <div className="relative">
-              <Search
-                className={cn(
-                  "text-primary-300 pointer-events-none absolute top-1/2 -translate-y-1/2 transition-colors",
-                  sizeClasses.searchIcon
-                )}
-              />
-              <input
-                ref={searchInputRef}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={searchPlaceholder}
-                className={cn(
-                  "border-grey-300 bg-grey-100 w-full rounded-lg border transition-all duration-200 md:rounded-xl",
-                  "placeholder:text-primary-300",
-                  "focus:border-primary-100 focus:ring-ring/20 focus:bg-grey-100 focus:ring-2 focus:outline-none",
-                  "hover:border-primary-100 hover:bg-grey-100",
-                  sizeClasses.input
-                )}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                  }
-                }}
-              />
-              {search && (
-                <button
-                  type="button"
-                  onClick={() => setSearch("")}
-                  className={cn(
-                    "text-primary-300 absolute top-1/2 -translate-y-1/2 rounded-lg p-0.5 transition-all duration-200 md:rounded-xl md:p-1",
-                    "hover:text-primary-500 hover:bg-grey-200",
-                    "focus:ring-primary-100/50 focus:ring-2 focus:outline-none",
-                    sizeClasses.clearButton
-                  )}
-                  aria-label="Clear search"
-                >
-                  <X className={sizeClasses.clearIcon} />
-                </button>
+            {/*
+             * We render value text manually because SelectValue would render
+             * the EMPTY_VALUE sentinel string when nothing is selected.
+             */}
+            {hasValue ? (
+              <span className="truncate text-left">{selectedLabel}</span>
+            ) : (
+              <span className="text-muted-foreground truncate text-left">
+                {placeholder}
+              </span>
+            )}
+          </SelectTrigger>
+
+          {/* Dropdown */}
+          <SelectContent
+            className={cn(
+              SELECT_BASE_STYLES.content,
+              "w-[var(--radix-select-trigger-width)] min-w-[200px] lg:min-w-[280px]"
+            )}
+            onCloseAutoFocus={(e) => e.preventDefault()}
+          >
+            {/* Search input area */}
+            <div
+              className={cn(
+                SELECT_BASE_STYLES.searchContainer,
+                sizeStyles.searchContainer
               )}
+              onPointerDown={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <div className="relative">
+                <Search
+                  className={cn(
+                    "text-muted-foreground pointer-events-none absolute top-1/2 -translate-y-1/2 transition-colors",
+                    sizeStyles.searchIcon
+                  )}
+                  aria-hidden="true"
+                />
+
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  disabled={disabled}
+                  role="searchbox"
+                  aria-label={`Search ${label} options`}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={searchPlaceholder}
+                  className={cn(SELECT_BASE_STYLES.input, sizeStyles.input)}
+                  onKeyDown={handleSearchKeyDown}
+                  onClick={(e) => e.stopPropagation()}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                />
+
+                {/* Clear SEARCH button — lives inside the dropdown content, not the trigger */}
+                {search && (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleClearSearch(e);
+                      }
+                    }}
+                    className={cn(
+                      SELECT_BASE_STYLES.clearButton,
+                      "absolute top-1/2 -translate-y-1/2",
+                      sizeStyles.clearButton
+                    )}
+                    aria-label="Clear search"
+                  >
+                    <X className={sizeStyles.clearIcon} aria-hidden="true" />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Results */}
-          <div
-            className={cn(
-              "scrollbar-thin scrollbar-track-transparent scrollbar-thumb-grey-300 hover:scrollbar-thumb-grey-400 relative overflow-y-auto",
-              sizeClasses.maxHeight
-            )}
-          >
-            {/* Top gradient */}
-            <div className="from-grey-100 pointer-events-none sticky top-0 z-10 h-2 bg-gradient-to-b to-transparent md:h-3" />
+            {/* Results list */}
+            <div
+              className={cn(SELECT_BASE_STYLES.scrollbar, sizeStyles.maxHeight)}
+            >
+              <div
+                className={SELECT_BASE_STYLES.gradient.top}
+                aria-hidden="true"
+              />
 
-            {filteredOptions.length === 0 && (
-              <div className="flex flex-col items-center justify-center gap-2 px-3 py-6 text-center md:gap-3 md:px-4 md:py-8">
+              {filteredOptions.length === 0 && (
                 <div
-                  className={cn(
-                    "bg-grey-200 rounded-full",
-                    sizeClasses.emptyIcon
-                  )}
+                  className={SELECT_BASE_STYLES.emptyState}
+                  role="status"
+                  aria-live="polite"
                 >
-                  <Search className="text-primary-300 size-full" />
+                  <div
+                    className={cn(
+                      SELECT_BASE_STYLES.emptyIconWrapper,
+                      sizeStyles.emptyIconPadding
+                    )}
+                  >
+                    <Search
+                      className={cn(
+                        SELECT_BASE_STYLES.emptyIcon,
+                        sizeStyles.emptyIcon
+                      )}
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <p
+                    className={cn(
+                      SELECT_BASE_STYLES.emptyText,
+                      sizeStyles.emptyText
+                    )}
+                  >
+                    {emptyState.title}
+                  </p>
+                  <p
+                    className={cn(
+                      SELECT_BASE_STYLES.emptySubtext,
+                      sizeStyles.emptySubtext
+                    )}
+                  >
+                    {emptyState.subtitle}
+                  </p>
                 </div>
-                <p
+              )}
+
+              {filteredOptions.map((opt, index) => (
+                <SelectItem
+                  key={opt.value}
+                  value={opt.value}
+                  disabled={opt.disabled || disabled}
                   className={cn(
-                    "text-primary-500 font-medium",
-                    sizeClasses.emptyText
+                    SELECT_BASE_STYLES.item,
+                    sizeStyles.item,
+                    opt.disabled &&
+                      "cursor-not-allowed opacity-50 hover:bg-transparent",
+                    search && "animate-in fade-in-0 slide-in-from-top-1"
                   )}
+                  style={getItemStyle(index)}
                 >
-                  {emptyMessage}
-                </p>
-                <p className={cn("text-primary-300", sizeClasses.emptySubtext)}>
-                  Try adjusting your search
+                  {opt.label}
+                </SelectItem>
+              ))}
+
+              <div
+                className={SELECT_BASE_STYLES.gradient.bottom}
+                aria-hidden="true"
+              />
+            </div>
+
+            {/* Results count footer */}
+            {search && filteredOptions.length > 0 && (
+              <div
+                className={cn(SELECT_BASE_STYLES.footer, sizeStyles.footer)}
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                <p className="text-foreground font-medium">
+                  <span className="text-primary">{filteredOptions.length}</span>{" "}
+                  of {options.length} result{options.length !== 1 ? "s" : ""}
                 </p>
               </div>
             )}
+          </SelectContent>
+        </Select>
 
-            {filteredOptions.map((opt, index) => (
-              <SelectItem
-                key={opt.value}
-                value={opt.value}
-                disabled={opt.disabled}
-                className={cn(
-                  "cursor-pointer transition-colors duration-150 outline-none",
-                  "data-[highlighted]:bg-grey-900 data-[highlighted]:text-white",
-                  "data-[state=checked]:bg-primary-100 data-[state=checked]:text-white",
-                  "font-normal data-[state=checked]:font-medium",
-                  opt.disabled &&
-                    "cursor-not-allowed opacity-50 hover:bg-transparent",
-                  search && "animate-in fade-in-0 slide-in-from-top-1",
-                  sizeClasses.item
-                )}
-                style={{
-                  animationDelay: search ? `${index * 20}ms` : undefined,
-                  animationDuration: search ? "200ms" : undefined,
-                }}
-              >
-                {opt.label}
-              </SelectItem>
-            ))}
-
-            {/* Bottom gradient */}
-            <div className="from-grey-100 pointer-events-none sticky bottom-0 z-10 h-2 bg-gradient-to-t to-transparent md:h-3" />
-          </div>
-
-          {/* Footer */}
-          {search && filteredOptions.length > 0 && (
-            <div
-              className={cn(
-                "bg-grey-100 border-grey-200 border-t backdrop-blur-sm",
-                sizeClasses.footer
-              )}
-            >
-              <p className="text-primary-500 font-medium">
-                <span className="text-primary-700">
-                  {filteredOptions.length}
-                </span>{" "}
-                of {options.length} result{options.length !== 1 ? "s" : ""}
-              </p>
-            </div>
-          )}
-        </SelectContent>
-      </Select>
-
-      {/* Error message */}
-      {error && (
-        <div className="animate-in fade-in-0 slide-in-from-top-1 flex items-start gap-1 md:gap-1.5">
-          <svg
+        {/*
+         * FIX ERROR 1: Clear SELECTION button — rendered OUTSIDE <Select>.
+         * It is absolutely positioned over the right edge of the trigger.
+         * onMouseDown/onPointerDown stop propagation so clicks don't
+         * accidentally open or close the dropdown.
+         */}
+        {clearable && hasValue && !disabled && (
+          <button
+            type="button"
+            onClick={handleClear}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleClear(e);
+              }
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
             className={cn(
-              "text-destructive mt-0.5 flex-shrink-0",
-              sizeClasses.errorIcon
+              "absolute top-1/2 right-2.5 z-10 -translate-y-1/2",
+              "rounded-md p-0.5 transition-all duration-200",
+              "text-muted-foreground",
+              "hover:bg-secondary hover:text-foreground",
+              "focus:ring-ring/50 focus:ring-2 focus:outline-none"
             )}
-            fill="currentColor"
-            viewBox="0 0 20 20"
+            aria-label="Clear selection"
           >
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <p
-            className={cn("font-medium text-red-600", sizeClasses.error)}
-            role="alert"
-          >
-            {error}
-          </p>
-        </div>
-      )}
+            <X className={sizeStyles.clearIcon} aria-hidden="true" />
+          </button>
+        )}
+      </div>
+
+      {/*
+       * FIX: aria-live error region is ALWAYS in the DOM (sr-only when empty).
+       * Mounting it only on error means screen readers miss the announcement.
+       */}
+      <div
+        id={`${label}-error`}
+        role="alert"
+        aria-live="polite"
+        aria-atomic="true"
+        className={error ? SELECT_BASE_STYLES.errorContainer : "sr-only"}
+      >
+        {error && (
+          <>
+            <svg
+              className={cn(SELECT_BASE_STYLES.errorIcon, sizeStyles.errorIcon)}
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <p className={cn(SELECT_BASE_STYLES.errorText, sizeStyles.error)}>
+              {error}
+            </p>
+          </>
+        )}
+      </div>
     </div>
   );
 }

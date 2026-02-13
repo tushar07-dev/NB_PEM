@@ -19,22 +19,23 @@ import { useAuth } from "@/app/providers/AuthProvider";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state, toggleSidebar } = useSidebar();
+  const { currentUser } = useAuth();
+    const navigationData = React.useMemo(
+      () => ROLE_NAVIGATION[currentUser?.role || "user"] || [],
+      [currentUser?.role]
+    );
   const isCollapsed = state === "collapsed";
 
-  // Get user role from AuthProvider
-  const { currentUser } = useAuth();
   const userRole = currentUser?.role || "user";
 
-  // Get navigation items based on user role
-  const navigationData = React.useMemo(() => {
-    console.log(
-      `🔍 Generating navigation for role: ${userRole} - ${ROLE_NAVIGATION[userRole]?.length || 0} items`
-    );
-    return ROLE_NAVIGATION[userRole] || [];
-  }, [userRole]);
+
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar
+      collapsible="icon"
+      {...props}
+      className="transition-[width] duration-200"
+    >
       {/* Main Navigation */}
       <SidebarContent>
         <NavMain items={navigationData} />
@@ -62,11 +63,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   )}
                 >
                   {isCollapsed ? (
-                    <Icons.SidebarToggle className="text-grey-700 h-5 w-5" />
+                    <Icons.SidebarToggle 
+                    // className="text-grey-700 h-5 w-5"
+                    />
                   ) : (
                     <Icons.SidebarToggle
                       isCollapsed
-                      className="text-grey-700 h-5 w-5"
+                      // className="text-grey-700 h-5 w-5"
                     />
                   )}
                 </div>

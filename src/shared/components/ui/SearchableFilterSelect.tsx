@@ -14,6 +14,24 @@ import {
   SELECT_BASE_STYLES,
 } from "@/shared/components/SearchableSelectTokens";
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const CONSTANTS = {
+  EMPTY_VALUE: "__EMPTY__",
+  SEARCH_FOCUS_DELAY_MS: 50,
+  ANIMATION_DELAY_MS: 20,
+  ANIMATION_DURATION_MS: 200,
+} as const;
+
+const DEFAULT_TEXTS = {
+  searchPlaceholder: "Search...",
+  emptyMessage: "No results found",
+  emptySubtitle: "Try adjusting your search",
+  noOptionsTitle: "No options available",
+  noOptionsSubtitle: "Please add some options",
+  startSearchTitle: "Start typing to search",
+} as const;
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Option = {
@@ -23,6 +41,15 @@ type Option = {
 };
 
 type Size = "sm" | "md" | "lg";
+
+type CustomTexts = {
+  searchPlaceholder?: string;
+  emptyMessage?: string;
+  emptySubtitle?: string;
+  noOptionsTitle?: string;
+  noOptionsSubtitle?: string;
+  startSearchTitle?: string;
+};
 
 type Props = {
   label: string;
@@ -38,51 +65,40 @@ type Props = {
   required?: boolean;
   disabled?: boolean;
   error?: string;
+  /**
+   * Helper text displayed below the select (info message)
+   * Example: "No disciplines available" or "Select your preferred option"
+   */
+  helperText?: string;
   className?: string;
-  searchPlaceholder?: string;
-  emptyMessage?: string;
   clearable?: boolean;
   size?: Size;
+  /**
+   * Customize all user-facing text strings
+   */
+  texts?: CustomTexts;
 };
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const SEARCH_FOCUS_DELAY_MS = 50;
-
-/**
- * Radix Select treats `undefined` as "uncontrolled" and `""` as a valid
- * selection (it won't show the placeholder for ""). We use a unique sentinel
- * string so the component is always controlled while still showing the
- * placeholder when nothing is selected.
- */
-const EMPTY_VALUE = "__EMPTY__";
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 /**
  * SearchableFilterSelect
  *
- * Runtime errors fixed (from console logs):
+ * A controlled select component with search functionality, keyboard navigation,
+ * and accessibility features.
  *
- * ❌ ERROR 1 — `<button> cannot appear as a descendant of <button>`
- *    Root cause: SelectTrigger renders a <button>. The previous clear button
- *    was nested inside it → invalid HTML.
- *    ✅ Fix: The clear button is now rendered OUTSIDE the <Select> entirely,
- *    absolutely-positioned as a sibling via a wrapping `relative` div.
- *    SelectTrigger never contains any interactive children.
- *
- * ❌ ERROR 2 — `Select is changing from controlled to uncontrolled`
- *    Root cause: Passing `undefined` to <Select value> tells Radix "I have
- *    no value prop" (uncontrolled). Alternating string ↔ undefined triggers
- *    the warning every time the user clears.
- *    ✅ Fix: We map "" / undefined → EMPTY_VALUE sentinel so Radix always
- *    receives a non-empty string. The sentinel is mapped back to "" on the
- *    way out via handleValueChange.
- *
- * ❌ ERROR 3 — Clearable button had no effect
- *    Root cause: Was a consequence of ERROR 2 (undefined flip) and the
- *    incorrect nesting (ERROR 1 preventing click events from working cleanly).
- *    ✅ Fix: Both root causes resolved. handleClear calls onValueChange("").
+ * @example
+ * ```tsx
+ * <SearchableFilterSelect
+ *   label="Country"
+ *   placeholder="Select a country"
+ *   options={countries}
+ *   value={selectedCountry}
+ *   onValueChange={setSelectedCountry}
+ *   clearable
+ *   helperText="Choose your current location"
+ * />
+ * ```
  */
 export function SearchableFilterSelect({
   label,
@@ -93,16 +109,19 @@ export function SearchableFilterSelect({
   required = false,
   disabled = false,
   error,
+  helperText,
   className,
-  searchPlaceholder = "Search...",
-  emptyMessage = "No results found",
   clearable = false,
   size = "md",
+  texts,
 }: Props) {
   const [search, setSearch] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
   const isMountedRef = React.useRef(true);
+
+  // Merge custom texts with defaults
+  const mergedTexts = { ...DEFAULT_TEXTS, ...texts };
 
   React.useEffect(() => {
     isMountedRef.current = true;
@@ -113,14 +132,19 @@ export function SearchableFilterSelect({
 
   const sizeStyles = SELECT_SIZE_CONFIG[size];
 
-  // ─── FIX ERROR 2: Always keep Radix value as a non-empty string ──────────
-  const radixValue = !value ? EMPTY_VALUE : value;
+  // ─── Controlled Value Management ──────────────────────────────────────────
+  const radixValue = !value ? CONSTANTS.EMPTY_VALUE : value;
 
-  const handleValueChange = (newRadixValue: string) => {
-    onValueChange?.(newRadixValue === EMPTY_VALUE ? "" : newRadixValue);
-  };
+  const handleValueChange = React.useCallback(
+    (newRadixValue: string) => {
+      onValueChange?.(
+        newRadixValue === CONSTANTS.EMPTY_VALUE ? "" : newRadixValue
+      );
+    },
+    [onValueChange]
+  );
 
-  // Derived
+  // ─── Derived State ────────────────────────────────────────────────────────
   const hasValue = Boolean(value);
   const selectedLabel = React.useMemo(
     () => options.find((o) => o.value === value)?.label ?? null,
@@ -133,6 +157,97 @@ export function SearchableFilterSelect({
     return options.filter((opt) => opt.label.toLowerCase().includes(lower));
   }, [search, options]);
 
+  const emptyState = React.useMemo(() => {
+    if (search)
+      return {
+        title: mergedTexts.emptyMessage,
+        subtitle: mergedTexts.emptySubtitle,
+      };
+    if (options.length === 0)
+      return {
+        title: mergedTexts.noOptionsTitle,
+        subtitle: mergedTexts.noOptionsSubtitle,
+      };
+    return {
+      title: mergedTexts.startSearchTitle,
+      subtitle: `${options.length} option${options.length !== 1 ? "s" : ""} available`,
+    };
+  }, [search, options.length, mergedTexts]);
+
+  // ─── Event Handlers ───────────────────────────────────────────────────────
+
+  const handleClear = React.useCallback(
+    (e: React.MouseEvent | React.KeyboardEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onValueChange?.("");
+    },
+    [onValueChange]
+  );
+
+  const handleClearSearch = React.useCallback(
+    (e: React.MouseEvent | React.KeyboardEvent) => {
+      e.stopPropagation();
+      setSearch("");
+      setTimeout(() => {
+        if (isMountedRef.current) searchInputRef.current?.focus();
+      }, 0);
+    },
+    []
+  );
+
+  const handleSearchKeyDown = React.useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      switch (e.key) {
+        case "Escape":
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen(false);
+          break;
+        case "Enter":
+          e.preventDefault();
+          e.stopPropagation();
+          break;
+        case "ArrowDown": {
+          const atEnd =
+            e.currentTarget.selectionStart === e.currentTarget.value.length;
+          if (!atEnd) e.stopPropagation();
+          break;
+        }
+        case "ArrowUp": {
+          const atStart = e.currentTarget.selectionStart === 0;
+          if (!atStart) e.stopPropagation();
+          break;
+        }
+        default:
+          e.stopPropagation();
+          break;
+      }
+    },
+    []
+  );
+
+  const handleOpenChange = React.useCallback(
+    (next: boolean) => {
+      if (disabled) return;
+      setOpen(next);
+    },
+    [disabled]
+  );
+
+  const getItemStyle = React.useCallback(
+    (index: number): React.CSSProperties =>
+      search
+        ? {
+            animationDelay: `${index * CONSTANTS.ANIMATION_DELAY_MS}ms`,
+            animationDuration: `${CONSTANTS.ANIMATION_DURATION_MS}ms`,
+          }
+        : {},
+    [search]
+  );
+
+  // ─── Effects ──────────────────────────────────────────────────────────────
+
   React.useEffect(() => {
     if (!open) setSearch("");
   }, [open]);
@@ -141,76 +256,10 @@ export function SearchableFilterSelect({
     if (open) {
       const timer = setTimeout(() => {
         searchInputRef.current?.focus();
-      }, SEARCH_FOCUS_DELAY_MS);
+      }, CONSTANTS.SEARCH_FOCUS_DELAY_MS);
       return () => clearTimeout(timer);
     }
   }, [open]);
-
-  // ─── FIX ERROR 1 + 3: Clear handler — button is outside <Select> ─────────
-  const handleClear = (e: React.MouseEvent | React.KeyboardEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onValueChange?.("");
-  };
-
-  const handleClearSearch = (e: React.MouseEvent | React.KeyboardEvent) => {
-    e.stopPropagation();
-    setSearch("");
-    setTimeout(() => {
-      if (isMountedRef.current) searchInputRef.current?.focus();
-    }, 0);
-  };
-
-  // Corrected arrow key propagation
-  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    switch (e.key) {
-      case "Escape":
-        e.preventDefault();
-        e.stopPropagation();
-        setOpen(false);
-        break;
-      case "Enter":
-        e.preventDefault();
-        e.stopPropagation();
-        break;
-      case "ArrowDown": {
-        const atEnd =
-          e.currentTarget.selectionStart === e.currentTarget.value.length;
-        if (!atEnd) e.stopPropagation();
-        break;
-      }
-      case "ArrowUp": {
-        const atStart = e.currentTarget.selectionStart === 0;
-        if (!atStart) e.stopPropagation();
-        break;
-      }
-      default:
-        e.stopPropagation();
-        break;
-    }
-  };
-
-  const emptyState = React.useMemo(() => {
-    if (search)
-      return { title: emptyMessage, subtitle: "Try adjusting your search" };
-    if (options.length === 0)
-      return {
-        title: "No options available",
-        subtitle: "Please add some options",
-      };
-    return {
-      title: "Start typing to search",
-      subtitle: `${options.length} option${options.length !== 1 ? "s" : ""} available`,
-    };
-  }, [search, options.length, emptyMessage]);
-
-  const getItemStyle = React.useCallback(
-    (index: number): React.CSSProperties =>
-      search
-        ? { animationDelay: `${index * 20}ms`, animationDuration: "200ms" }
-        : {},
-    [search]
-  );
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
@@ -240,32 +289,20 @@ export function SearchableFilterSelect({
         )}
       </label>
 
-      {/*
-       * FIX ERROR 1: Wrap Select + clear button in a relative container.
-       * The clear button is a SIBLING of <Select>, never a descendant of
-       * SelectTrigger. This avoids the <button> inside <button> violation.
-       */}
+      {/* Select Container */}
       <div className="relative flex w-full items-center">
         <Select
           value={radixValue}
           onValueChange={handleValueChange}
           disabled={disabled}
           open={open}
-          onOpenChange={(next) => {
-            if (disabled) return;
-            setOpen(next);
-          }}
+          onOpenChange={handleOpenChange}
         >
-          {/*
-           * SelectTrigger renders as <button>.
-           * It contains NO interactive children — only text / icon.
-           */}
           <SelectTrigger
             aria-disabled={disabled}
             className={cn(
               SELECT_BASE_STYLES.trigger,
               sizeStyles.trigger,
-              // Reserve space on the right for the external clear button
               clearable && hasValue && "pr-9",
               error &&
                 "border-destructive bg-destructive/5 focus:border-destructive focus:ring-destructive/20",
@@ -274,12 +311,14 @@ export function SearchableFilterSelect({
             )}
             aria-required={required}
             aria-invalid={!!error}
-            aria-describedby={error ? `${label}-error` : undefined}
+            aria-describedby={
+              error
+                ? `${label}-error`
+                : helperText
+                  ? `${label}-helper`
+                  : undefined
+            }
           >
-            {/*
-             * We render value text manually because SelectValue would render
-             * the EMPTY_VALUE sentinel string when nothing is selected.
-             */}
             {hasValue ? (
               <span className="truncate text-left">{selectedLabel}</span>
             ) : (
@@ -323,7 +362,7 @@ export function SearchableFilterSelect({
                   aria-label={`Search ${label} options`}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder={searchPlaceholder}
+                  placeholder={mergedTexts.searchPlaceholder}
                   className={cn(SELECT_BASE_STYLES.input, sizeStyles.input)}
                   onKeyDown={handleSearchKeyDown}
                   onClick={(e) => e.stopPropagation()}
@@ -333,7 +372,6 @@ export function SearchableFilterSelect({
                   spellCheck={false}
                 />
 
-                {/* Clear SEARCH button — lives inside the dropdown content, not the trigger */}
                 {search && (
                   <button
                     type="button"
@@ -445,12 +483,7 @@ export function SearchableFilterSelect({
           </SelectContent>
         </Select>
 
-        {/*
-         * FIX ERROR 1: Clear SELECTION button — rendered OUTSIDE <Select>.
-         * It is absolutely positioned over the right edge of the trigger.
-         * onMouseDown/onPointerDown stop propagation so clicks don't
-         * accidentally open or close the dropdown.
-         */}
+        {/* Clear Selection Button */}
         {clearable && hasValue && !disabled && (
           <button
             type="button"
@@ -477,10 +510,20 @@ export function SearchableFilterSelect({
         )}
       </div>
 
-      {/*
-       * FIX: aria-live error region is ALWAYS in the DOM (sr-only when empty).
-       * Mounting it only on error means screen readers miss the announcement.
-       */}
+      {/* Helper Text */}
+      {helperText && !error && (
+        <p
+          id={`${label}-helper`}
+          className={cn(
+            "text-muted-foreground mt-1 transition-colors",
+            sizeStyles.error
+          )}
+        >
+          {helperText}
+        </p>
+      )}
+
+      {/* Error Message */}
       <div
         id={`${label}-error`}
         role="alert"
@@ -511,3 +554,7 @@ export function SearchableFilterSelect({
     </div>
   );
 }
+
+// ─── Exports ──────────────────────────────────────────────────────────────────
+
+export type { Option, Size, Props as SearchableFilterSelectProps, CustomTexts };

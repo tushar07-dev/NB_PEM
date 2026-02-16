@@ -46,7 +46,19 @@ export function TopHeader() {
       </div>
 
       <div className="flex items-center gap-2 md:gap-3">
-        {/* API-Powered Project Selector */}
+        {/* Generic PEM Selector (No functionality yet) */}
+
+        <Select>
+          <SelectTrigger className="header-pill hidden h-[32px] w-[160px] px-5 py-3 text-sm md:flex lg:h-[46px] lg:w-[180px] lg:text-base xl:w-[200px]">
+            <SelectValue placeholder="Generic PEM" />
+          </SelectTrigger>
+
+          <SelectContent className="border-border bg-popover rounded-xl shadow-lg">
+            <SelectItem value="generic">Generic PEM</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Project Selector */}
         <Select
           value={selectedProject?.id}
           onValueChange={handleProjectChange}

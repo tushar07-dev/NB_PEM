@@ -142,28 +142,26 @@ export function NavMain({ items, className }: NavMainProps) {
                         !isCollapsed &&
                           isMenuOpen &&
                           (hasActiveChild || isParentActive) && [
-                            "bg-primary-200!", // Light blue
+                            "bg-primary-600!", // Light blue
                             "hover:bg-primary-300!", // Hover: darker light blue
                             "text-grey-50!", // Dark text
                             "font-semibold!",
                             "[&_svg]:text-grey-50!",
-                            
                           ],
 
                         // ================================================================
                         // SIDEBAR EXPANDED + SUBMENU OPEN + NOT SELECTED
-                        // Light Blue Background (same as above)
+                        // dark Blue Background
                         // ================================================================
                         !isCollapsed &&
                           isMenuOpen &&
                           !hasActiveChild &&
                           !isParentActive && [
-                            "bg-primary-200!", // Light blue
+                            "bg-primary-200!", // dark blue
                             "hover:bg-primary-300!",
                             "text-grey-50!",
                             "font-semibold!",
                             "[&_svg]:text-grey-50!",
-                            
                           ],
 
                         // ================================================================
@@ -176,7 +174,6 @@ export function NavMain({ items, className }: NavMainProps) {
                             "hover:bg-primary-700!",
                             "text-white!",
                             "[&_svg]:text-white!",
-                            
                           ],
 
                         // ================================================================
@@ -190,7 +187,7 @@ export function NavMain({ items, className }: NavMainProps) {
                             "hover:bg-grey-200!",
                             "text-white!",
                             // "[&_svg]:text-white!",
-                            // 
+                            //
                           ],
 
                         // ================================================================
@@ -206,7 +203,6 @@ export function NavMain({ items, className }: NavMainProps) {
                             "text-white!",
                             "font-semibold!",
                             "[&_svg]:text-white!",
-                            
                           ],
 
                         // ================================================================
@@ -221,7 +217,6 @@ export function NavMain({ items, className }: NavMainProps) {
                             "hover:bg-primary-600!",
                             "text-white!",
                             "[&_svg]:text-white!",
-                            
                           ],
 
                         // ================================================================
@@ -238,7 +233,6 @@ export function NavMain({ items, className }: NavMainProps) {
                             "text-white!",
                             "font-semibold!",
                             "[&_svg]:text-white!",
-                            
                           ],
 
                         // ================================================================
@@ -254,7 +248,6 @@ export function NavMain({ items, className }: NavMainProps) {
                             "hover:bg-primary-600!",
                             "text-white!",
                             "[&_svg]:text-white!",
-                            
                           ]
 
                         // ================================================================
@@ -312,7 +305,6 @@ export function NavMain({ items, className }: NavMainProps) {
                           "text-white!",
                           "font-semibold!",
                           "[&_svg]:text-white!",
-                          
                         ],
 
                       // ================================================================
@@ -326,7 +318,6 @@ export function NavMain({ items, className }: NavMainProps) {
                           "hover:bg-primary-600!",
                           "text-white!",
                           "[&_svg]:text-white!",
-                          
                         ]
 
                       // ================================================================

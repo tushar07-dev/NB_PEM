@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { DocumentFilters } from "./components/DocumentFilters";
-import { DocumentTable } from "./components/DocumentTable";
 import type { DocumentFiltersType, DocumentRecord } from "../types/document";
 
 // Mock data - replace with API call
@@ -128,7 +127,6 @@ export default function DocumentChecklistPage() {
       />
 
       {/* Table — right column */}
-      <DocumentTable data={documents} />
     </div>
   );
 }

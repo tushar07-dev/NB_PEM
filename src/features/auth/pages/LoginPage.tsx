@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuth } from "@/app/providers/useAuth";
 import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
 import { useAsyncError } from "@/shared/hooks/useAsyncError";
 
@@ -25,8 +25,9 @@ const LoginForm = () => {
   const { error, isError, setError, clearError } = useAsyncError();
 
   // Get the page user was trying to access before login
-  const from = (location.state as any)?.from?.pathname || "/dashboard";
-
+  const from =
+    (location.state as { from?: { pathname?: string } })?.from?.pathname ||
+    "/dashboard";
   const handleLoginSubmit = async () => {
     clearError();
     setIsLoading(true);

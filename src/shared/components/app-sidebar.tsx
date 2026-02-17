@@ -15,7 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Icons } from "./icons";
 import { ROLE_NAVIGATION } from "@/app/config/navigation";
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuth } from "@/app/providers/useAuth";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state, toggleSidebar } = useSidebar();

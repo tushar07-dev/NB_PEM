@@ -8,6 +8,7 @@ import RouterError from "./RouterError";
 import LoginPage from "@/features/auth/pages/LoginPage";
 import UnauthorizedPage from "@/features/auth/pages/UnauthorizedPage";
 import DocumentChecklistPage from "@/features/pem-check-lists/pages/DocumentChecklistPage";
+import PlaygroundPage from "@/features/playground/pages/PlaygroundPage";
 
 // ==========================================
 // LOADING FALLBACK
@@ -36,17 +37,20 @@ const DashboardPage = lazy(() =>
 // PEM Requirements Pages
 const ControlObjectRequirementPage = lazyPage("Control Object Requirement");
 
-  const DocumentRequirementPage = lazyPage("Document Requirement");
-const DisciplineActivityRequirementPage = lazyPage("Discipline Activity Requirement");
+const DocumentRequirementPage = lazyPage("Document Requirement");
+const DisciplineActivityRequirementPage = lazyPage(
+  "Discipline Activity Requirement"
+);
 
 // PEM Checklists Pages
 const ControlObjectChecklistPage = lazyPage("Control Object Check List");
 
-
-const DisciplineActivityChecklistPage = lazyPage("Discipline Activity Check List");
+const DisciplineActivityChecklistPage = lazyPage(
+  "Discipline Activity Check List"
+);
 
 // Admin Pages
-  const AdminSettingsPage = lazyPage("Admin Settings");
+const AdminSettingsPage = lazyPage("Admin Settings");
 
 // ==========================================
 // COMING SOON FALLBACK
@@ -61,8 +65,6 @@ function ComingSoon({ title }: { title: string }) {
     </div>
   );
 }
-
-
 
 // ==========================================
 // ROUTE WRAPPER WITH SUSPENSE
@@ -90,6 +92,10 @@ export const router = createBrowserRouter([
     path: "/login",
     element: <LoginPage />,
   },
+  // {
+  //   path: "playground",
+  //   element: <PlaygroundPage />,
+  // },
   {
     path: "/unauthorized",
     element: <UnauthorizedPage />,

@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuth } from "@/app/providers/useAuth";
 
 const UnauthorizedPage = () => {
   const navigate = useNavigate();

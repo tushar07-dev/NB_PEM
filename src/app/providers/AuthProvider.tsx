@@ -1,58 +1,39 @@
-import { getUser, login } from "@/api/auth";
+import { login } from "@/api/auth";
 import type { User } from "@/types/user";
-import { setAuthToken, setAuthErrorHandler } from "@/api/client";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type PropsWithChildren,
-} from "react";
-
-type AuthContext = {
-  authToken: string | null;
-  currentUser: User | null;
-  handleLogin: (email: string, password: string) => Promise<void>;
-  handleLogout: () => void;
-  isLoading: boolean;
-};
-
-const AuthContext = createContext<AuthContext | undefined>(undefined);
+import { setAuthToken } from "@/api/client";
+import { useEffect, useState, type PropsWithChildren } from "react";
+import { AuthContext } from "./AuthContext";
 
 type AuthProviderProps = PropsWithChildren;
 
-export default function AuthProvider({ children }: AuthProviderProps) {
-  const [authToken, setAuthTokenState] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Initialize auth state from localStorage
-  useEffect(() => {
-    const storedToken = localStorage.getItem("authToken");
-    const storedUser = localStorage.getItem("currentUser");
-
-    if (storedToken && storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
-        setAuthTokenState(storedToken);
-        setCurrentUser(user);
-        setAuthToken(storedToken);
-        console.log("🔐 User logged in:", user.role);
-      } catch (error) {
-        console.error("Failed to parse stored user data");
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("currentUser");
-      }
+function getStoredAuth(): { token: string | null; user: User | null } {
+  try {
+    const token = localStorage.getItem("authToken");
+    const userStr = localStorage.getItem("currentUser");
+    if (token && userStr) {
+      return { token, user: JSON.parse(userStr) };
     }
-    setIsLoading(false);
-  }, []);
+  } catch {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("currentUser");
+  }
+  return { token: null, user: null };
+}
 
-  // Sync token with axios interceptor
+export default function AuthProvider({ children }: AuthProviderProps) {
+  const [authToken, setAuthTokenState] = useState<string | null>(
+    () => getStoredAuth().token
+  );
+  const [currentUser, setCurrentUser] = useState<User | null>(
+    () => getStoredAuth().user
+  );
+  const [isLoading] = useState(false);
+
   useEffect(() => {
     if (authToken) {
       setAuthToken(authToken);
     }
-  }, [authToken]);
+  });
 
   async function handleLogin(email: string, password: string) {
     try {
@@ -60,8 +41,8 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
       setAuthTokenState(response.authToken);
       setCurrentUser(response.user);
+      setAuthToken(response.authToken);
 
-      // Persist to localStorage
       localStorage.setItem("authToken", response.authToken);
       localStorage.setItem("currentUser", JSON.stringify(response.user));
 
@@ -97,14 +78,4 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-
-  if (context === undefined) {
-    throw new Error("useAuth must be used inside of a AuthProvider");
-  }
-
-  return context;
 }

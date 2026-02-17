@@ -13,9 +13,6 @@ import {
   useSystems,
   useAreas,
 } from "../../api/queries";
-// import { Circle, CheckCircle2, Clock } from "lucide-react";
-// import type { DataTableFilterField } from "@/shared/components/data-table/types";
-// import type { DocumentRecord } from "../types/document";
 
 interface DocumentFiltersProps {
   filters: DocumentFiltersType;
@@ -161,8 +158,8 @@ export function DocumentFilters({
 
   const hasErrors = errors.length > 0;
   console.log("Disciplines:", disciplines);
-  console.log("Groups:", documentGroups);
-  console.log("Types:", documentTypes);
+  // console.log("Groups:", documentGroups);
+  // console.log("Types:", documentTypes);
 
   // ============================================
   // Render
@@ -231,12 +228,11 @@ export function DocumentFilters({
           onValueChange={handleDisciplineChange}
           disabled={!disciplineEnabled || loadingDisciplines}
           required
-          //Need to add this helperText  in searchableFilterSelect
-          // helperText={
-          //   disciplines.length === 0 && !loadingDisciplines && disciplineEnabled
-          //     ? "No disciplines available"
-          //     : undefined
-          // }
+          helperText={
+            disciplines.length === 0 && !loadingDisciplines && disciplineEnabled
+              ? "No disciplines available"
+              : undefined
+          }
         />
 
         {/* Document Group */}
@@ -249,14 +245,13 @@ export function DocumentFilters({
           onValueChange={handleDocumentGroupChange}
           required
           disabled={!documentGroupEnabled || loadingGroups}
-          //Need to add this helperText  in searchableFilterSelect
-          // helperText={
-          //   documentGroups.length === 0 &&
-          //   !loadingGroups &&
-          //   documentGroupEnabled
-          //     ? "No groups available"
-          //     : undefined
-          // }
+          helperText={
+            documentGroups.length === 0 &&
+            !loadingGroups &&
+            documentGroupEnabled
+              ? "No groups available"
+              : undefined
+          }
         />
 
         {/* Document Type */}
@@ -269,12 +264,11 @@ export function DocumentFilters({
           onValueChange={handleDocumentTypeChange}
           required
           disabled={!documentTypeEnabled || loadingTypes}
-          //Need to add this helperText  in searchableFilterSelect
-          // helperText={
-          //   documentTypes.length === 0 && !loadingTypes && documentTypeEnabled
-          //     ? "No types available"
-          //     : undefined
-          // }
+          helperText={
+            documentTypes.length === 0 && !loadingTypes && documentTypeEnabled
+              ? "No types available"
+              : undefined
+          }
         />
 
         {/* Facility Code */}
@@ -286,14 +280,13 @@ export function DocumentFilters({
           value={filters.facilityCode}
           onValueChange={handleFacilityChange}
           disabled={!downstreamEnabled || loadingFacilities}
-          //Need to add this helperText  in searchableFilterSelect
-          // helperText={
-          //   facilityCodes.length === 0 &&
-          //   !loadingFacilities &&
-          //   downstreamEnabled
-          //     ? "No facilities available"
-          //     : undefined
-          // }
+          helperText={
+            facilityCodes.length === 0 &&
+            !loadingFacilities &&
+            downstreamEnabled
+              ? "No facilities available"
+              : undefined
+          }
         />
 
         {/* System */}
@@ -305,12 +298,11 @@ export function DocumentFilters({
           value={filters.system}
           onValueChange={handleSystemChange}
           disabled={!downstreamEnabled || loadingSystems}
-          //Need to add this helperText  in searchableFilterSelect
-          // helperText={
-          //   systems.length === 0 && !loadingSystems && downstreamEnabled
-          //     ? "No systems available"
-          //     : undefined
-          // }
+          helperText={
+            systems.length === 0 && !loadingSystems && downstreamEnabled
+              ? "No systems available"
+              : undefined
+          }
         />
 
         {/* Area */}
@@ -322,58 +314,13 @@ export function DocumentFilters({
           value={filters.area}
           onValueChange={handleAreaChange}
           disabled={!downstreamEnabled || loadingAreas}
-          //Need to add this helperText  in searchableFilterSelect
-          // helperText={
-          //   areas.length === 0 && !loadingAreas && downstreamEnabled
-          //     ? "No areas available"
-          //     : undefined
-          // }
+          helperText={
+            areas.length === 0 && !loadingAreas && downstreamEnabled
+              ? "No areas available"
+              : undefined
+          }
         />
       </div>
     </div>
   );
 }
-
-// export const documentFilterFields: DataTableFilterField<DocumentRecord>[] = [
-//   {
-//     label: "Status",
-//     value: "status",
-//     options: [
-//       {
-//         label: "Not Started",
-//         value: "Not Started",
-//         icon: Circle,
-//       },
-//       {
-//         label: "In Progress",
-//         value: "In Progress",
-//         icon: Clock,
-//       },
-//       {
-//         label: "Completed",
-//         value: "Completed",
-//         icon: CheckCircle2,
-//       },
-//     ],
-//   },
-//   {
-//     label: "Reason For Issue",
-//     value: "reasonForIssue",
-//     options: [
-//       { label: "IFC", value: "IFC" },
-//       { label: "IFD", value: "IFD" },
-//       { label: "AFC", value: "AFC" },
-//       { label: "IFR", value: "IFR" },
-//     ],
-//   },
-//   {
-//     label: "Revision Status",
-//     value: "revisionStatus",
-//     options: [
-//       { label: "OF", value: "OF" },
-//       { label: "R1", value: "R1" },
-//       { label: "R2", value: "R2" },
-//       { label: "R3", value: "R3" },
-//     ],
-//   },
-// ];

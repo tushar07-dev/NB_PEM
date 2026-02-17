@@ -168,7 +168,7 @@ function MyComponent() {
 
 ```tsx
 // Use the auth context
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuth } from "@/app/providers/useAuth";
 
 function ProtectedComponent() {
   const { currentUser, authToken, login, logout } = useAuth();

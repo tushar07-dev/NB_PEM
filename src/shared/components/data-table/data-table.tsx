@@ -1,11 +1,7 @@
-import {
-  type Cell,
-  type Row,
-  type RowData,
-  type Table as TanstackTable,
-  flexRender,
-} from "@tanstack/react-table";
+import { flexRender, type Table as TanstackTable } from "@tanstack/react-table";
+import * as React from "react";
 
+import { DataTablePagination } from "@/shared/components/data-table/data-table-pagination";
 import {
   Table,
   TableBody,
@@ -14,177 +10,150 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import {
-  getCommonCellStyles,
-  getCommonPinningStyles,
-} from "@/shared/lib/data-table";
-import { cn } from "@/lib/utils";
-import React, {
-  type CSSProperties,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { DataTablePagination } from "./data-table-pagination";
-
-declare module "@tanstack/react-table" {
-  interface TableMeta<TData extends RowData> {
-    getRowStyles?: (row: Row<TData>) => CSSProperties;
-    getCellStyles?: (cell: Cell<TData, unknown>) => CSSProperties;
-    updateData?: (rowIndex: number, columnId: string, value: string) => void;
-    onRowClick?: (row: Row<TData>) => void;
-  }
-}
-
-export type ICellWrapper<TData> = React.ComponentType<{
-  cell: Cell<TData, unknown>;
-  row: TData;
-  index: number;
-  children: React.ReactNode;
-}>;
-
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { getColumnPinningStyle } from "@/shared/lib/data-table/data-table";
+import { cn } from "@/shared/lib/utils";
+import { useDragClickGuard } from "@/shared/hooks/data-table/use-drag-click-guard";
 interface DataTableProps<TData> extends React.ComponentProps<"div"> {
   table: TanstackTable<TData>;
   actionBar?: React.ReactNode;
-  isLoading?: boolean;
-  hasMore?: boolean;
-  paginationOptimizedRowDetails?: {
-    pageSize: number;
-    enable: boolean;
-    optimizedRows: Row<TData>[];
-    showTopLoadingDiv: boolean;
-    showBottomLoadingDiv: boolean;
-  };
-  fetchNextPage?: () => void;
-  rowWrapper?: React.ComponentType<{
-    row: TData;
-    selectedRowIds: string[];
-    children: React.ReactNode;
-  }>;
-  searchIds?: string[];
-  variant?: "default" | "bordered";
-  tableBodyRef?: React.RefObject<HTMLTableSectionElement>;
-  rowTopLoadingDivRef?: React.RefObject<HTMLDivElement | null>;
-  rowBottomLoadingDivRef?: React.RefObject<HTMLDivElement | null>;
-  cellWrapper?: ICellWrapper<TData>;
+  /** Pagination variant: "default" or "simple" (Showing X To Y Of Z Entries) */
+  paginationVariant?: "default" | "simple";
+  /** Show/hide rows per page dropdown */
+  showRowsPerPage?: boolean;
+  /** Show/hide selected row count */
+  showSelectedCount?: boolean;
+  /** Show numbered page buttons */
+  showPageNumbers?: boolean;
+  /** Callback when a row is clicked */
+  onRowClick?: (row: TData) => void;
+  /** Custom empty state when no data */
+  emptyState?: React.ReactNode;
+  /** Show loading skeleton */
+  loading?: boolean;
+  /** Number of skeleton rows to show when loading */
+  loadingRowCount?: number;
+  /** Custom className for the table element */
+  tableClassName?: string;
+  /** Custom className for header rows */
+  headerClassName?: string;
+  /** Custom className for body rows (function receives row data) */
+  rowClassName?: string | ((row: TData) => string);
+  /** Page size options for pagination dropdown */
+  pageSizeOptions?: number[];
+  /** Callback when row selection changes */
+  onSelectionChange?: (selectedRows: TData[]) => void;
+  /** Make table header sticky on scroll */
+  stickyHeader?: boolean;
+  /** Show "Go to page" input in pagination */
+  showGoToPage?: boolean;
 }
 
 export function DataTable<TData>({
+  // ...existing code...
   table,
   actionBar,
-  hasMore,
   children,
-  isLoading,
-  tableBodyRef,
-  rowTopLoadingDivRef,
-  rowBottomLoadingDivRef,
   className,
-  variant = "default",
-  fetchNextPage,
-  paginationOptimizedRowDetails,
-  rowWrapper,
-  cellWrapper,
-  searchIds,
+  paginationVariant = "simple",
+  showRowsPerPage = false,
+  showSelectedCount = false,
+  showPageNumbers = true,
+  onRowClick,
+  emptyState,
+  loading = false,
+  loadingRowCount = 5,
+  tableClassName,
+  headerClassName,
+  rowClassName,
+  pageSizeOptions,
+  onSelectionChange,
+  stickyHeader = false,
+  showGoToPage = false,
   ...props
 }: DataTableProps<TData>) {
-  const lastElementRef = useRef<HTMLDivElement>(null);
+  // Track selection changes
+  const selectedRowsRef = React.useRef<string[]>([]);
+  const { onMouseDown, isDrag } = useDragClickGuard();
+  const rowSelection = table.getState().rowSelection;
+  React.useEffect(() => {
+    if (!onSelectionChange) return;
 
-  const selectedRowIds = table.getSelectedRowModel().rows.map((r) => r.id);
-  const RowWrapper = rowWrapper;
-  const CellWrapper = cellWrapper;
+    const selectedRowIds = Object.keys(rowSelection);
+    const prevSelectedIds = selectedRowsRef.current;
 
-  // Memoize so the Set isn't re-created on every render
-  const searchableIdsSet = useMemo(() => new Set(searchIds ?? []), [searchIds]);
-
-  function getRowDataState(row: Row<TData>): "selected" | undefined {
-    return row.getIsSelected() ? "selected" : undefined;
-  }
-
-  // Intersection observer for infinite scroll
-  useEffect(() => {
-    const el = lastElementRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting) {
-          setTimeout(() => {
-            if (fetchNextPage && !isLoading && hasMore) {
-              fetchNextPage();
-            }
-          }, 1000);
-        }
-      },
-      { threshold: 1 }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [fetchNextPage, hasMore, isLoading]);
-
-  // Scroll to highlighted row when searchIds change
-  useEffect(() => {
+    // Only call if selection actually changed
     if (
-      searchIds &&
-      searchIds.length > 0 &&
-      !paginationOptimizedRowDetails?.enable
+      selectedRowIds.length !== prevSelectedIds.length ||
+      !selectedRowIds.every((id) => prevSelectedIds.includes(id))
     ) {
-      const el = document.getElementById(`data-table-id-${searchIds[0]}`);
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      selectedRowsRef.current = selectedRowIds;
+      const selectedRows = table
+        .getFilteredSelectedRowModel()
+        .rows.map((row) => row.original);
+      onSelectionChange(selectedRows);
     }
-  }, [paginationOptimizedRowDetails?.enable, searchIds]);
+  }, [rowSelection, onSelectionChange, table]);
 
-  // Track container width in state so we never read refs during render.
-  // Uses ResizeObserver so the values stay accurate when the layout changes.
-  const [mainContainerWidth, setMainContainerWidth] = useState(500);
-  const [tableBodyWidth, setTableBodyWidth] = useState(500);
+  // Get row className (supports string or function)
+  const getRowClassName = (row: TData) => {
+    if (typeof rowClassName === "function") {
+      return rowClassName(row);
+    }
+    return rowClassName ?? "";
+  };
 
-  useEffect(() => {
-    const container = rowBottomLoadingDivRef?.current?.parentElement;
-    if (!container) return;
-
-    const ro = new ResizeObserver((entries) => {
-      const width = entries[0]?.contentRect.width;
-      if (width !== undefined) setMainContainerWidth(width);
-    });
-    ro.observe(container);
-    return () => ro.disconnect();
-  }, [rowBottomLoadingDivRef]);
-
-  useEffect(() => {
-    const body = tableBodyRef?.current;
-    if (!body) return;
-
-    const ro = new ResizeObserver((entries) => {
-      const width = entries[0]?.contentRect.width;
-      if (width !== undefined) setTableBodyWidth(width);
-    });
-    ro.observe(body);
-    return () => ro.disconnect();
-  }, [tableBodyRef]);
-
-  const rows =
-    paginationOptimizedRowDetails?.optimizedRows ?? table.getRowModel().rows;
+  // Render loading skeleton
+  const renderLoadingSkeleton = () => {
+    const columnCount = table.getAllColumns().length;
+    return Array.from({ length: loadingRowCount }).map((_, rowIndex) => (
+      <TableRow key={`skeleton-${rowIndex}`}>
+        {Array.from({ length: columnCount }).map((_, colIndex) => (
+          <TableCell key={`skeleton-${rowIndex}-${colIndex}`}>
+            <Skeleton className="h-4 w-full" />
+          </TableCell>
+        ))}
+      </TableRow>
+    ));
+  };
 
   return (
-    <div className={cn("flex w-full flex-col gap-2", className)} {...props}>
+    <div
+      className={cn(
+        "bg-grey-50 flex w-full flex-col gap-2.5 overflow-auto rounded-sm",
+        className
+      )}
+      {...props}
+    >
       {children}
-      <div className="bg-background relative h-full overflow-auto">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup, index) => (
-              <TableRow key={headerGroup.id} className="h-full">
+      <div
+        className={cn(
+          "data-table-scroll-wrapper overflow-hidden rounded-md",
+          stickyHeader && "max-h-[70vh] overflow-auto"
+        )}
+      >
+        <Table
+          className={tableClassName}
+          role="grid"
+          aria-rowcount={table.getFilteredRowModel().rows.length}
+          aria-colcount={table.getAllColumns().length}
+        >
+          <TableHeader
+            className={stickyHeader ? "sticky top-0 z-10" : undefined}
+          >
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow
+                key={headerGroup.id}
+                className={headerClassName}
+                role="row"
+              >
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
                     colSpan={header.colSpan}
-                    className="bg-secondary ps-4"
-                    style={getCommonPinningStyles({
-                      column: header.column,
-                      index,
-                    })}
+                    style={{
+                      ...getColumnPinningStyle({ column: header.column }),
+                    }}
                   >
                     {header.isPlaceholder
                       ? null
@@ -192,156 +161,83 @@ export function DataTable<TData>({
                           header.column.columnDef.header,
                           header.getContext()
                         )}
-                    {header.column.columnDef.enableResizing &&
-                      header.column.getCanResize() && (
-                        <div
-                          onMouseDown={header.getResizeHandler()}
-                          onTouchStart={header.getResizeHandler()}
-                          className={cn(
-                            "bg-background focus:ring-primary absolute top-1/2 right-4 h-[60%] w-1 -translate-y-1/2 cursor-col-resize touch-none rounded-sm select-none focus:ring-2 focus:ring-offset-1 focus:outline-none",
-                            header.column.getIsResizing() && "bg-secondary-100"
-                          )}
-                        />
-                      )}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody bodyRef={tableBodyRef}>
-            {paginationOptimizedRowDetails?.showTopLoadingDiv && (
-              <tr
-                className="h-5 w-full"
-                ref={
-                  rowTopLoadingDivRef as React.RefObject<HTMLTableRowElement>
-                }
-              >
-                <td className="sticky" style={{ left: mainContainerWidth / 2 }}>
-                  Loading...
-                </td>
-              </tr>
-            )}
-            {rows.length ? (
-              rows.map((row, index) => {
-                const rowNode = (
-                  <TableRow
-                    key={row.id}
-                    id={`data-table-id-${row.id}`}
-                    style={table.options.meta?.getRowStyles?.(row)}
-                    onClick={() => table.options.meta?.onRowClick?.(row)}
-                    data-state={getRowDataState(row)}
-                  >
-                    {row.getVisibleCells().map((cell, cellIndex) => {
-                      const cellNode = (
-                        <TableCell
-                          key={cell.id}
-                          className={cn(
-                            index % 2 === 0
-                              ? "bg-background"
-                              : "bg-background-secondary",
-                            variant === "bordered" ? "px-2" : "ps-4"
-                          )}
-                          style={{
-                            ...getCommonPinningStyles({
-                              column: cell.column,
-                              index: cellIndex,
-                            }),
-                            ...getCommonCellStyles({
-                              row,
-                              column: cell.column,
-                              index: cellIndex,
-                              noOfCells: row.getVisibleCells().length,
-                              withBorder: variant === "bordered",
-                              setOfSearchIds: searchableIdsSet,
-                            }),
-                            ...table.options.meta?.getCellStyles?.(cell),
-                          }}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      );
-
-                      return CellWrapper ? (
-                        <CellWrapper
-                          key={cell.id}
-                          row={row.original}
-                          cell={cell}
-                          index={cellIndex}
-                        >
-                          {cellNode}
-                        </CellWrapper>
-                      ) : (
-                        cellNode
-                      );
-                    })}
-                  </TableRow>
-                );
-
-                if (RowWrapper) {
-                  return (
-                    <RowWrapper
-                      key={row.id}
-                      row={row.original}
-                      selectedRowIds={selectedRowIds}
+          <TableBody>
+            {loading ? (
+              renderLoadingSkeleton()
+            ) : table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  className={cn(
+                    onRowClick ? "hover:bg-muted/50 cursor-pointer" : "",
+                    getRowClassName(row.original)
+                  )}
+                  onMouseDown={onMouseDown}
+                  onClick={(e) => {
+                    if (isDrag(e)) return;
+                    // Don't trigger row click if clicking on interactive elements
+                    const target = e.target as HTMLElement;
+                    const isInteractive =
+                      target.closest("button") ||
+                      target.closest("a") ||
+                      target.closest("input") ||
+                      target.closest("[role='button']") ||
+                      target.closest("[data-no-row-click]");
+                    if (!isInteractive) {
+                      onRowClick?.(row.original);
+                    }
+                  }}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      style={{
+                        ...getColumnPinningStyle({ column: cell.column }),
+                      }}
                     >
-                      {rowNode}
-                    </RowWrapper>
-                  );
-                }
-
-                return rowNode;
-              })
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
             ) : (
               <TableRow>
                 <TableCell
                   colSpan={table.getAllColumns().length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {emptyState ?? "No results."}
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-        {hasMore && (
-          <div
-            ref={lastElementRef}
-            className="flex h-10 w-full flex-col items-center"
-          >
-            Loading
-          </div>
-        )}
-        {paginationOptimizedRowDetails?.showBottomLoadingDiv && (
-          <div
-            className="h-10 w-full"
-            style={{
-              minWidth: `${tableBodyWidth - 150}px`,
-            }}
-            ref={rowBottomLoadingDivRef as React.RefObject<HTMLDivElement>}
-          >
-            <div
-              className="sticky left-0 flex h-full items-center justify-center"
-              style={{
-                width: `${mainContainerWidth}px`,
-                maxWidth: `${mainContainerWidth}px`,
-              }}
-            >
-              Loading...
-            </div>
-          </div>
-        )}
       </div>
-      {table.getPageCount() > 0 && (
-        <div className="flex flex-col gap-2.5">
-          <DataTablePagination table={table} />
-          {actionBar &&
-            table.getFilteredSelectedRowModel().rows.length > 0 &&
-            actionBar}
-        </div>
-      )}
+      <div className="bg-background m-2 flex flex-col gap-2.5 rounded-sm">
+        <DataTablePagination
+          table={table}
+          variant={paginationVariant}
+          showRowsPerPage={showRowsPerPage}
+          showSelectedCount={showSelectedCount}
+          showPageNumbers={showPageNumbers}
+          pageSizeOptions={pageSizeOptions}
+          showGoToPage={showGoToPage}
+        />
+        {actionBar &&
+          table.getFilteredSelectedRowModel().rows.length > 0 &&
+          actionBar}
+      </div>
     </div>
   );
 }
+
+export default DataTable;

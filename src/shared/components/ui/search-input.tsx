@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { Search, X } from "lucide-react";
 
 export interface ISearchInput extends React.InputHTMLAttributes<HTMLInputElement> {

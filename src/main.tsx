@@ -8,14 +8,17 @@ import { router } from "@/app/router";
 import { queryClient } from "@/api/query-client";
 import AuthProvider from "@/app/providers/AuthProvider";
 import { GlobalLoader } from "@/shared/components/GlobalLoader";
+import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <GlobalLoader />
-        <RouterProvider router={router} />
+        <TooltipProvider delayDuration={200}>
+          <GlobalLoader />
+          <RouterProvider router={router} />
+        </TooltipProvider>
       </AuthProvider>
 
       {/* React Query DevTools (only in development) */}

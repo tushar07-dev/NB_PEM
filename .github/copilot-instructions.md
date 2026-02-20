@@ -1,374 +1,203 @@
-# GitHub Copilot Instructions for NB_PEM Project
+# GitHub Copilot Instructions — NB_PEM
 
-## Project Overview
+> **Living document.** Update this file whenever new patterns, libraries, or conventions are introduced.  
+> Last updated: February 2026
 
-This is a React TypeScript application called "NB_PEM" (PEM Digital) built with modern web technologies. It's a document checklist management system with authentication, role-based access, and various features for managing checklists and documents.
+---
 
-## Tech Stack
+## Project Summary
 
-- **Frontend**: React 18 with TypeScript
-- **Build Tool**: Vite
-- **UI Library**: shadcn/ui components with Tailwind CSS
-- **State Management**: Zustand + React hooks and context
-- **Routing**: React Router v6
-- **Authentication**: Microsoft Authentication Library (MSAL) for Azure AD (But currently commented out)
-- **HTTP Client**: Axios with interceptors
-- **Data Fetching**: TanStack Query (React Query)
-- **Testing**: Jest with React Testing Library
-- **UI Components**: Shadcn/ui + Radix UI
-- **State Management**: Zustand
-- **Linting**: ESLint
-- **Package Manager**: pnpm
-- **Styling**: Tailwind CSS
-- **Forms**: Custom form components with validation
-- **Error Handling**: Error boundaries and custom error hooks
-- **Data Fetching**: TanStack Query (React Query)
+**NB_PEM** (PEM Digital) is a React 18 + TypeScript enterprise application for document checklist management with authentication, role-based access, and advanced data handling.
 
-## Coding Standards
+| Concern         | Tool                                        |
+| --------------- | ------------------------------------------- |
+| Build           | Vite                                        |
+| UI              | shadcn/ui + Radix UI + Tailwind CSS         |
+| State           | Zustand + React Context/Hooks               |
+| Routing         | React Router v6                             |
+| Data Fetching   | TanStack Query (React Query)                |
+| HTTP Client     | Axios (with interceptors)                   |
+| Auth            | MSAL — Azure AD _(currently commented out)_ |
+| Forms           | react-hook-form + zod                       |
+| Testing         | Jest + React Testing Library + MSW          |
+| Package Manager | pnpm                                        |
 
-### File Naming
+---
 
-- Components: PascalCase (e.g., `DocumentChecklist.tsx`)
-- Hooks: camelCase with `use` prefix (e.g., `useAsyncError.ts`)
-- Services: camelCase (e.g., `authService.ts`)
-- Types: PascalCase with descriptive names (e.g., `ChecklistItem.ts`)
-- Utilities: camelCase (e.g., `dateUtils.ts`)
-- Feature Folders: Use lowercase with hyphens (e.g., `document-checklist`, `auth`)
-- File Names: Use lowercase with hyphens (e.g., `client.ts`, `api.ts`)
+## Key Paths
 
-### Component Structure
+| Path                                 | Purpose                               |
+| ------------------------------------ | ------------------------------------- |
+| `src/main.tsx`                       | App entry point                       |
+| `src/app/router`                     | Route definitions                     |
+| `src/app/providers`                  | Global providers (auth, query, theme) |
+| `src/features/*`                     | Feature modules                       |
+| `src/shared/components/ui`           | shadcn/ui primitives                  |
+| `src/shared/components/data-table`   | Reusable data table system            |
+| `src/shared/hooks`                   | Shared custom hooks                   |
+| `src/shared/store`                   | Zustand stores                        |
+| `src/shared/services/axios.ts`       | Axios API client                      |
+| `src/shared/config/configService.ts` | Environment config                    |
+
+---
+
+## Project Structure
+
+```
+src/
+  app/
+    providers/
+    router/
+  features/
+    feature-name/
+      api/            # API functions
+      components/     # Feature UI components
+      constants/      # Query keys, enums
+      hooks/
+        query/        # useQuery hooks
+        mutation/     # useMutation hooks
+      pages/          # Route-level page components
+      types/          # TypeScript types/interfaces
+      utils/          # Feature-specific helpers
+  shared/
+    components/
+      ui/             # shadcn/ui components
+      data-table/     # Table system (see below)
+    config/
+    constants/
+    errors/
+    hooks/
+    lib/
+    services/
+    store/
+    types/
+    utils/
+```
+
+---
+
+## Naming Conventions
+
+| Item             | Convention                                                       | Example                                   |
+| ---------------- | ---------------------------------------------------------------- | ----------------------------------------- |
+| Components       | PascalCase                                                       | `DocumentChecklist.tsx`                   |
+| Hooks            | camelCase + `use` prefix                                         | `useAsyncError.ts`                        |
+| Services / utils | camelCase                                                        | `authService.ts`, `dateUtils.ts`          |
+| Feature folders  | lowercase-hyphenated                                             | `document-checklist`                      |
+| File names       | lowercase-hyphenated                                             | `api.ts`, `client.ts`                     |
+| Interfaces       | PascalCase + `I` prefix                                          | `ICreateChecklistPayload`                 |
+| Types            | PascalCase + `T` prefix                                          | `TChecklist`, `TGetAllChecklistsResponse` |
+| API functions    | `[action][Feature]Api`                                           | `createChecklistApi`                      |
+| Query hooks      | `useGetAll[Feature]`, `useGet[Feature]ById`                      | `useGetAllChecklists`                     |
+| Mutation hooks   | `useCreate[Feature]`, `useUpdate[Feature]`, `useDelete[Feature]` | `useCreateChecklist`                      |
+
+---
+
+## Component Pattern
 
 ```tsx
-// Preferred component structure
 import { useState, useEffect } from "react";
 import { Button } from "@/shared/components/ui/button";
 
 interface ComponentProps {
-  // Define props interface
+  title: string;
+  onAction: () => void;
 }
 
-export function ComponentName({ prop }: ComponentProps) {
-  // Hooks at the top
-  const [state, setState] = useState(initialValue);
+export function ComponentName({ title, onAction }: ComponentProps) {
+  // 1. Hooks
+  const [state, setState] = useState(false);
 
-  // Effects after hooks
+  // 2. Effects
   useEffect(() => {
-    // Side effects
-  }, [dependencies]);
+    // side effects
+  }, []);
 
-  // Event handlers
-  const handleAction = () => {
-    // Handler logic
-  };
+  // 3. Handlers
+  const handleClick = () => onAction();
 
-  // Early returns for loading/error states
+  // 4. Early returns
   if (loading) return <SkeletonCard />;
   if (error) return <ErrorFallback error={error} />;
 
+  // 5. Render
   return (
-    // JSX with semantic HTML
-    <div className="component-container">{/* Component content */}</div>
+    <div className="component-container">
+      <Button onClick={handleClick}>{title}</Button>
+    </div>
   );
 }
 ```
 
-### Styling Guidelines
+**Rules:**
 
-- Use Tailwind CSS classes with shadcn/ui design tokens
-- Prefer HSL color variables: `hsl(var(--background))`, `hsl(var(--foreground))`
-- Use responsive design for laptop and monitor screens
-- Utilize utility-first classes for layout and spacing
-- Follow shadcn/ui component patterns
-- Maintain consistent spacing using Tailwind spacing scale
+- Always define a TypeScript interface for props — no inline prop types
+- Use semantic HTML elements (`<button>`, `<nav>`, `<main>`, etc.)
+- Always handle loading and error states
+- Never use `any` — use proper types or `unknown`
 
-### TypeScript Best Practices
+---
 
-- Use strict type checking
-- Define interfaces for component props and data structures
-- Avoid `any` type - use proper type definitions
-- Use union types for variant props
-- Leverage utility types like `Partial<T>`, `Pick<T>`, etc.
+## API Integration
 
-## Project Structure
+### File location
 
-### Feature Organization
+`src/features/[feature]/api/[feature].ts`
 
-```
-src/features/
-  feature-name/
-    components/     # UI components specific to the feature
-    hooks/         # Custom hooks for the feature
-    pages/         # Page components
-    services/      # API calls and business logic
-    types/         # TypeScript interfaces
-    utils/         # Feature-specific utilities
-```
-
-### Shared Resources
-
-```
-src/shared/
-  components/     # Reusable UI components
-    ui/          # shadcn/ui components
-  config/        # Configuration files
-  constants/     # Application constants
-  errors/        # Error handling components
-  hooks/         # Shared custom hooks
-  lib/           # Utility libraries
-  services/      # Shared services (auth, logging, etc.)
-  store/         # Global state management
-  utils/         # Shared utility functions
-```
-
-## Common Patterns
-
-### API Integration
-
-```tsx
-// Use the shared axios instance
-import { api } from "@/shared/services/axios";
-
-// Service functions
-export const checklistService = {
-  async getChecklists() {
-    const response = await api.get("/checklists");
-    return response.data;
-  },
-
-  async createChecklist(data: CreateChecklistData) {
-    const response = await api.post("/checklists", data);
-    return response.data;
-  },
-};
-```
-
-### Error Handling
-
-```tsx
-// Use ErrorBoundary for component-level errors
-import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
-
-// Use error hooks for async operations
-import { useAsyncError } from "@/shared/hooks/useAsyncError";
-
-function MyComponent() {
-  const throwError = useAsyncError();
-
-  const handleAsyncOperation = async () => {
-    try {
-      await riskyOperation();
-    } catch (error) {
-      throwError(error);
-    }
-  };
-}
-```
-
-### Authentication
-
-```tsx
-// Use the auth context
-import { useAuth } from "@/app/providers/useAuth";
-
-function ProtectedComponent() {
-  const { currentUser, authToken, login, logout } = useAuth();
-
-  if (!currentUser) {
-    return <LoginPage />;
-  }
-
-  return <div>Protected content</div>;
-}
-```
-
-### Testing
-
-```tsx
-// Component testing with RTL
-import { render, screen, fireEvent } from "@testing-library/react";
-import { MyComponent } from "./MyComponent";
-
-describe("MyComponent", () => {
-  it("renders correctly", () => {
-    render(<MyComponent />);
-    expect(screen.getByText("Expected text")).toBeInTheDocument();
-  });
-
-  it("handles user interaction", () => {
-    render(<MyComponent />);
-    fireEvent.click(screen.getByRole("button"));
-    expect(screen.getByText("Updated text")).toBeInTheDocument();
-  });
-});
-```
-
-## Development Workflow
-
-### Adding New Features
-
-1. Create feature directory under `src/features/`
-2. Implement components, hooks, and services
-3. Add TypeScript types
-4. Write tests
-5. Update routing if needed
-6. Test integration with existing features
-
-### Component Creation Checklist
-
-- [ ] Define TypeScript interface for props
-- [ ] Add proper error handling
-- [ ] Include loading states with SkeletonCard
-- [ ] Use semantic HTML elements
-- [ ] Implement responsive design
-- [ ] Add accessibility attributes (aria-labels, roles)
-- [ ] Write unit tests
-- [ ] Follow naming conventions
-
-### Code Review Guidelines
-
-- Ensure TypeScript strict mode compliance
-- Check for proper error handling
-- Verify responsive design implementation
-- Confirm accessibility standards
-- Review test coverage
-- Validate API integration patterns
-
-## Performance Considerations
-
-- Use React.memo for expensive components
-- Implement proper dependency arrays in useEffect
-- Lazy load route components
-- Optimize images and assets
-- Use virtualization for large lists
-- Monitor bundle size
-
-## Security Best Practices
-
-- Validate all user inputs
-- Use HTTPS for all API calls
-- Implement proper authentication checks
-- Avoid storing sensitive data in localStorage
-- Sanitize data before rendering
-- Use Content Security Policy headers
-
-## Useful Commands
-
-```bash
-# Development
-pnpm dev          # Start development server
-pnpm build        # Build for production
-pnpm preview      # Preview production build
-
-# Testing
-pnpm test         # Run tests
-pnpm test:watch   # Run tests in watch mode
-pnpm test:coverage # Generate coverage report
-
-# Code Quality
-pnpm lint         # Run ESLint
-pnpm lint:fix     # Auto-fix ESLint issues
-pnpm type-check   # Run TypeScript type checking
-```
-
-## Common Issues & Solutions
-
-### Build Errors
-
-- Check for missing imports or type errors
-- Ensure all dependencies are installed with `pnpm install`
-- Verify environment variables are set correctly
-
-### Runtime Errors
-
-- Check browser console for detailed error messages
-- Verify API endpoints are accessible
-- Confirm authentication tokens are valid
-
-### Styling Issues
-
-- Use browser dev tools to inspect elements
-- Check Tailwind classes are applied correctly
-- Verify CSS custom properties are defined
-
-Remember to always test your changes thoroughly and follow the established patterns in the codebase. When in doubt, look at existing components for reference implementations.
-
-### API Development Guidelines
-
-When Creating API Files
-When I provide a cURL command or API documentation screenshot, follow this standard pattern:
-
-1. **API Function Structure** (in `src/features/[feature]/api/[feature].ts`)
+### API function pattern
 
 ```typescript
-// Example pattern based on client.ts and tag.ts
-
 import { api } from "@/shared/services/axios";
 import { TSuccessResponse } from "@/shared/types/api/response";
 import { toQueryString } from "@/shared/utils/helpers";
 import {
   ICreateChecklistPayload,
-  IUpdateChecklistPayload,
   TGetAllChecklistsResponse,
-  TGetChecklistByIdResponse,
-} from "@/features/document-checklist/types/api";
+} from "../types/api";
 
-// CREATE
 export const createChecklistApi = async (
   payload: ICreateChecklistPayload
 ): Promise<TSuccessResponse<TCreateChecklistResponse>> => {
-  const data = await api.post("/api/Checklist/CreateChecklist", payload);
-  return data?.data;
+  const { data } = await api.post("/api/Checklist/CreateChecklist", payload);
+  return data;
 };
 
-// UPDATE
-export const updateChecklistApi = async (
-  payload: IUpdateChecklistPayload
-): Promise<TSuccessResponse<null>> => {
-  const data = await api.put("/api/Checklist/UpdateChecklist", payload);
-  return data?.data;
-};
-
-// GET ALL (with filters/pagination)
 export const getAllChecklistsApi = async (
   payload: TGetAllChecklistsPayload
 ): Promise<TSuccessResponse<TGetAllChecklistsResponse>> => {
-  const queryString = toQueryString(payload);
-  const data = await api.get(
-    `/api/Checklist/GetChecklistsWithAdvancedFilter?${queryString}`
+  const { data } = await api.get(
+    `/api/Checklist/GetAll?${toQueryString(payload)}`
   );
-  return data?.data;
+  return data;
 };
 
-// GET BY ID
-export const getChecklistByIdApi = async (
-  id: string
-): Promise<TSuccessResponse<TGetChecklistByIdResponse>> => {
-  const data = await api.get(`/api/Checklist/GetChecklistById/${id}`);
-  return data?.data;
-};
-
-// DELETE (if needed)
-export const deleteChecklistApi = async (
-  id: string
-): Promise<TSuccessResponse<null>> => {
-  const data = await api.delete(`/api/Checklist/DeleteChecklist/${id}`);
-  return data?.data;
-};
-
-// EXPORT TO EXCEL (if needed)
 export const exportChecklistExcelApi = async (
   payload: TExportChecklistPayload
 ): Promise<Blob> => {
-  const queryString = toQueryString(payload);
-  const data = await api.get(
-    `/api/Checklist/ExportChecklistExcel?${queryString}`,
+  const { data } = await api.get(
+    `/api/Checklist/Export?${toQueryString(payload)}`,
     { responseType: "blob" }
   );
-  return data?.data;
+  return data;
 };
 ```
 
-2. **Type Definitions** (in `src/features/[feature]/types/api.ts`)
+### API response format (all endpoints)
+
+```typescript
+{
+  success: boolean;
+  message: string;
+  data: T;
+  errors?: string[];
+}
+```
+
+---
+
+## Type Definitions
+
+File: `src/features/[feature]/types/api.ts`
 
 ```typescript
 import {
@@ -377,244 +206,91 @@ import {
 } from "@/shared/types/api/payload";
 import { TPaginationResponse } from "@/shared/types/api/response";
 
-// CREATE Payload
+// Payloads — use I prefix
 export interface ICreateChecklistPayload {
   name: string;
   description: string;
   isActive: boolean;
   projectId: string;
-  // ... other fields from API docs
 }
 
-// UPDATE Payload (includes ID)
 export interface IUpdateChecklistPayload extends ICreateChecklistPayload {
   checklistId: string;
 }
 
-// Response for single item
+// Single response type
 export interface TGetChecklistByIdResponse {
   checklistId: string;
   name: string;
-  description: string;
   isActive: boolean;
-  projectId: string;
   createdDate: string;
-  createdBy: string;
   modifiedDate: string | null;
-  modifiedBy: string | null;
-  // ... other fields from API response
 }
 
-// Response for create (usually includes timestamps)
-export type TCreateChecklistResponse = TGetChecklistByIdResponse & {
-  createdBy: string;
-  createdDate: string;
-};
-
 // List item type
-export type TChecklist = {
-  checklistId: string;
-  name: string;
-  description: string;
-  isActive: boolean;
-  projectId: string;
-  // ... other fields
-};
+export type TChecklist = Pick<
+  TGetChecklistByIdResponse,
+  "checklistId" | "name" | "isActive"
+>;
 
-// GET ALL Payload (pagination + filters)
+// Paginated list payload
 export type TGetAllChecklistsPayload = TPaginationPayload &
   Partial<TTableQueryPayload> & {
     projectId?: string | null;
-    // ... other optional filters
   };
 
-// GET ALL Response (paginated)
+// Paginated list response
 export type TGetAllChecklistsResponse = TPaginationResponse & {
   data: TChecklist[];
 };
-
-// EXPORT Payload (filters without pagination)
-export type TExportChecklistPayload = Partial<TTableQueryPayload> & {
-  projectId?: string | null;
-};
 ```
 
-### Naming Conventions
+---
 
-- **API Functions**: `[action][Feature]Api` (e.g., `createChecklistApi`, `getAllTagsApi`)
-- **Types**:
-  - Interfaces start with `I` for payloads (e.g., `ICreateChecklistPayload`)
-  - Types start with `T` for responses and complex types (e.g., `TGetAllChecklistResponse`)
-- **Feature Folders**: Use lowercase with hyphens (e.g., `document-checklist`, `auth`)
-- **File Names**: Use lowercase with hyphens (e.g., `checklist.ts`, `api.ts`)
+## React Query Hooks
 
-### Common Patterns
-
-- Use `api` instance from `@/shared/services/axios`
-- Wrap responses in `TSuccessResponse<T>` type
-- Query strings: Use `toQueryString()` helper from `@/shared/utils/helpers`
-- Blob responses: Set `responseType: "blob"` for Excel exports
-- Null safety: Use `?` for optional response fields and `| null` for nullable fields
-- Date types: Use `string` for API dates (ISO format), convert to `Date` in components if needed
-
-### API Response Format
-
-All API responses follow this structure:
+### Query constants — `src/features/[feature]/constants/query.ts`
 
 ```typescript
-{
-  success: boolean;
-  message: string;
-  data: T; // Your actual data
-  errors?: string[];
-}
+export const GET_ALL_CHECKLISTS = "GET_ALL_CHECKLISTS";
+export const GET_CHECKLIST_BY_ID = "GET_CHECKLIST_BY_ID";
 ```
 
-### When I Provide API Documentation
-
-1. Extract endpoint URL and HTTP method
-2. Create type definitions in `types/api.ts` first
-3. Create API function in `api/[feature].ts`
-4. Match field names exactly as shown in API documentation (case-sensitive)
-5. Add proper TypeScript types for all parameters and return values
-6. Handle optional fields with `?` or `| null` as appropriate
-
-### Example Workflow
-
-When you give me:
-
-```
-POST /api/Checklist/CreateChecklist
-Body: { name: "string", description: "string", projectId: "string", isActive: true }
-```
-
-I will:
-
-1. Create `ICreateChecklistPayload` type
-2. Create `TCreateChecklistResponse` type
-3. Create `createChecklistApi` function with proper typing
-4. Follow the exact naming from your API docs
-
-## React Query Hooks Guidelines
-
-### Query Hook Structure (in `src/features/[feature]/hooks/query/[feature].ts`)
+### Query hook — `src/features/[feature]/hooks/query/[feature].ts`
 
 ```typescript
-import {
-  getAllChecklistsApi,
-  getChecklistByIdApi,
-  exportChecklistExcelApi,
-} from "@/features/document-checklist/api/checklist";
-import {
-  GET_ALL_CHECKLISTS,
-  GET_CHECKLIST_BY_ID,
-} from "@/features/document-checklist/constants/query";
-import { TTableQueryPayload } from "@/shared/types/api/payload";
-import { handleQueryBlobError } from "@/shared/utils/errors/errorHandler";
-import {
-  downloadBlobFile,
-  formatFilterSortPayload,
-} from "@/shared/utils/helpers";
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { toast } from "sonner";
-
-// GET ALL Hook (with pagination and filters)
-type TUseGetAllChecklists = Partial<TTableQueryPayload> & {
-  pageSize: number;
-  pageNumber: number;
-  enabled?: boolean;
-  projectId?: string | null;
-  // ... other optional filters
-};
-
-export type TUseGetAllChecklistsReturnType = {
-  data: TChecklist[];
-  meta: {
-    totalRowCount: number;
-    page: number;
-    pageSize: number;
-  };
-};
-
-export const useGetAllChecklists = (
-  payload: TUseGetAllChecklists
-): UseQueryResult<TUseGetAllChecklistsReturnType> => {
-  const formattedPayload = formatFilterSortPayload({
-    filters: payload.filters,
-    sortOptions: payload.sortOptions,
-    filtersLogicalOperator: payload.filtersLogicalOperator,
-  });
+export const useGetAllChecklists = (payload: TUseGetAllChecklists) => {
+  const formatted = formatFilterSortPayload(payload);
 
   return useQuery({
     queryKey: [
       GET_ALL_CHECKLISTS,
       payload.pageSize,
       payload.pageNumber,
-      formattedPayload,
+      formatted,
       payload.projectId,
     ],
     queryFn: async () => {
-      const data = await getAllChecklistsApi({
-        ...formattedPayload,
-        pageNumber: payload.pageNumber,
-        pageSize: payload.pageSize,
-        projectId: payload.projectId,
-      });
-
+      const res = await getAllChecklistsApi({ ...formatted, ...payload });
       return {
-        data: data?.data?.data ?? [],
+        data: res?.data?.data ?? [],
         meta: {
-          totalRowCount: data?.data?.totalRecords ?? 0,
-          page: data.data.pageNumber ?? 1,
+          totalRowCount: res?.data?.totalRecords ?? 0,
+          page: res?.data?.pageNumber ?? 1,
           pageSize: payload.pageSize,
         },
       };
     },
-    staleTime: 5 * 60 * 1000, // 5 min caching
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     enabled: payload.enabled ?? true,
   });
 };
-
-// GET BY ID Hook
-export const useGetChecklistById = (id: string, enabled: boolean) => {
-  return useQuery({
-    queryKey: [GET_CHECKLIST_BY_ID, id],
-    queryFn: async () => {
-      const data = await getChecklistByIdApi(id);
-      if (data.status === -1) {
-        return data.data;
-      }
-      return null;
-    },
-    enabled,
-    staleTime: 0,
-  });
-};
 ```
 
-### Mutation Hook Structure (in `src/features/[feature]/hooks/mutation/[feature].ts`)
+### Mutation hook — `src/features/[feature]/hooks/mutation/[feature].ts`
 
 ```typescript
-import {
-  createChecklistApi,
-  updateChecklistApi,
-  deleteChecklistApi,
-} from "@/features/document-checklist/api/checklist";
-import {
-  GET_ALL_CHECKLISTS,
-  GET_CHECKLIST_BY_ID,
-} from "@/features/document-checklist/constants/query";
-import {
-  ICreateChecklistPayload,
-  IUpdateChecklistPayload,
-} from "@/features/document-checklist/types/api";
-import { getMutationErrorMsg } from "@/shared/utils/errors/errorHandler";
-import { handleSuccessApiToast } from "@/shared/utils/helpers";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-
-// CREATE Mutation
 export const useCreateChecklist = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
 
@@ -622,8 +298,8 @@ export const useCreateChecklist = (onSuccess?: () => void) => {
     mutationFn: (payload: ICreateChecklistPayload) =>
       createChecklistApi(payload),
     onSuccess: (data) => {
-      const isSuccess = handleSuccessApiToast(data);
-      if (isSuccess) {
+      const ok = handleSuccessApiToast(data);
+      if (ok) {
         onSuccess?.();
         queryClient.invalidateQueries({ queryKey: [GET_ALL_CHECKLISTS] });
       }
@@ -636,785 +312,475 @@ export const useCreateChecklist = (onSuccess?: () => void) => {
 };
 ```
 
-### Query Constants (in `src/features/[feature]/constants/query.ts`)
+### staleTime guidelines
+
+| Data type               | staleTime                 |
+| ----------------------- | ------------------------- |
+| Single item (form edit) | `0`                       |
+| List data               | `5 * 60 * 1000` (5 min)   |
+| Dropdowns / static      | `10 * 60 * 1000` (10 min) |
+
+---
+
+## Data Table System
+
+| Layer                                | File                                              |
+| ------------------------------------ | ------------------------------------------------- |
+| Store (per-table state)              | `src/shared/store/tableStore.ts`                  |
+| Hook (binds store to TanStack Table) | `src/shared/hooks/data-table/use-data-table.ts`   |
+| UI renderer                          | `src/shared/components/data-table/data-table.tsx` |
+| Column factories                     | `src/shared/components/data-table/column/*`       |
+
+- Pagination, sorting, and filtering are **server-driven** by default
+- Filters/sorts update Zustand state; page resets on filter changes
+- Column `meta` controls filter variants and display labels
+
+---
+
+## State Management (Zustand)
 
 ```typescript
-export const GET_ALL_CHECKLISTS = "GET_ALL_CHECKLISTS";
-export const GET_CHECKLIST_BY_ID = "GET_CHECKLIST_BY_ID";
-export const CHECK_CHECKLIST_EXIST = "CHECK_CHECKLIST_EXIST";
-export const GET_ALL_CHECKLISTS_DROPDOWNS = "GET_ALL_CHECKLISTS_DROPDOWNS";
-export const EXPORT_CHECKLIST_EXCEL = "EXPORT_CHECKLIST_EXCEL";
-```
-
-### React Query Hook Patterns
-
-- Use `formatFilterSortPayload` for filters and sorting before sending to API
-- Include all query parameters in `queryKey` for proper caching
-- Check `data.status === -1` to determine API success
-- Set appropriate `staleTime`:
-  - `0` for frequently changing data (e.g., get by ID)
-  - `5 * 60 * 1000` (5 minutes) for list data
-  - `10 * 60 * 1000` (10 minutes) for dropdowns/static data
-- Use `enabled` parameter to control when queries run
-- Invalidate related queries after mutations
-- Use `handleSuccessApiToast` for success messages
-- Use `getMutationErrorMsg` for error handling
-- Export explicit return types for queries (e.g., `TUseGetAllChecklistsReturnType`)
-- Set `refetchOnWindowFocus: false` for stable list data
-
-### Query Hook Naming
-
-- **Query Hooks**: `useGet[Feature]`, `useGetAll[Feature]`, `useGet[Feature]ById`
-- **Mutation Hooks**: `useCreate[Feature]`, `useUpdate[Feature]`, `useDelete[Feature]`
-- **Export Hooks**: `useExport[Feature]Excel`
-- **Check Hooks**: `useCheck[Feature]Exist`
-
-### Common Query Hook Parameters
-
-```typescript
-// For list queries
-type TUseGetAllChecklists = Partial<TTableQueryPayload> & {
-  pageSize: number;
-  pageNumber: number;
-  enabled?: boolean;
-  projectId?: string | null;
-};
-
-// For single item queries
-enabled: boolean; // Control when query runs
-id: string; // Resource identifier
-
-// For export queries
-downloadDirectly?: boolean; // Auto-download on success
-```
-
-## Additional Guidelines
-
-### State Management with Zustand
-
-```typescript
-// Store structure (in src/shared/store/[store].ts)
+// src/shared/store/[store].ts
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
 interface ChecklistStore {
-  selectedChecklists: string[];
-  filters: Record<string, any>;
-  setSelectedChecklists: (ids: string[]) => void;
-  setFilters: (filters: Record<string, any>) => void;
+  selectedIds: string[];
+  setSelectedIds: (ids: string[]) => void;
   clearSelection: () => void;
 }
 
 export const useChecklistStore = create<ChecklistStore>()(
   devtools(
-    persist(
-      (set) => ({
-        selectedChecklists: [],
-        filters: {},
-        setSelectedChecklists: (ids) => set({ selectedChecklists: ids }),
-        setFilters: (filters) => set({ filters }),
-        clearSelection: () => set({ selectedChecklists: [] }),
-      }),
-      { name: "checklist-store" }
-    ),
+    (set) => ({
+      selectedIds: [],
+      setSelectedIds: (ids) => set({ selectedIds: ids }),
+      clearSelection: () => set({ selectedIds: [] }),
+    }),
     { name: "checklist-store" }
   )
 );
 ```
 
-### Form Handling
+- Use `persist` only when state must survive page refresh
+- Use `partialize` in persist to limit what gets saved to storage
+- Feature stores go in `src/shared/store/` (global) or feature's own store if truly isolated
+
+---
+
+## Forms
 
 ```typescript
-// Use react-hook-form with validation
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-
-const checklistSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  description: z.string().optional(),
+const schema = z.object({
+  name: z.string().min(1, "Required"),
   isActive: z.boolean(),
 });
 
-type ChecklistFormData = z.infer<typeof checklistSchema>;
+type FormData = z.infer<typeof schema>;
 
-export function ChecklistForm() {
-  const { register, handleSubmit, formState: { errors } } = useForm<ChecklistFormData>({
-    resolver: zodResolver(checklistSchema),
-  });
-
-  const onSubmit = (data: ChecklistFormData) => {
-    // Handle form submission
-  };
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      {/* Form fields */}
-    </form>
-  );
-}
-```
-
-### Theme Management
-
-```typescript
-// Using next-themes for dark/light mode
-import { useTheme } from 'next-themes';
-
-export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-
-  return (
-    <Button
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      variant="ghost"
-      size="icon"
-    >
-      <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-    </Button>
-  );
-}
-```
-
-### Error Boundaries
-
-```typescript
-// Custom error boundary component
-import { Component, ErrorInfo, ReactNode } from 'react';
-
-interface Props {
-  children: ReactNode;
-  fallback?: ReactNode;
-}
-
-interface State {
-  hasError: boolean;
-  error?: Error;
-}
-
-export class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback || <div>Something went wrong.</div>;
-    }
-
-    return this.props.children;
-  }
-}
-```
-
-### Testing Patterns
-
-```typescript
-// Component testing with MSW for API mocking
-import { render, screen, waitFor } from '@testing-library/react';
-import { rest } from 'msw';
-import { server } from '@/mocks/server';
-import { ChecklistList } from './ChecklistList';
-
-describe('ChecklistList', () => {
-  it('renders checklist items', async () => {
-    server.use(
-      rest.get('/api/checklist', (req, res, ctx) => {
-        return res(ctx.json({
-          success: true,
-          data: [
-            { id: '1', name: 'Safety Checklist', isActive: true }
-          ]
-        }));
-      })
-    );
-
-    render(<ChecklistList />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Safety Checklist')).toBeInTheDocument();
-    });
-  });
-});
-```
-
-### Accessibility Guidelines
-
-- Always include `aria-label` or `aria-labelledby` for interactive elements
-- Use semantic HTML elements (`<button>`, `<input>`, `<select>`)
-- Ensure keyboard navigation works
-- Provide sufficient color contrast
-- Include focus indicators
-- Use `role` attributes when semantic elements aren't appropriate
-
-### Performance Optimization
-
-- Use `React.memo` for components that re-render frequently
-- Implement proper dependency arrays in `useEffect`
-- Use `useMemo` for expensive calculations
-- Use `useCallback` for event handlers passed to child components
-- Lazy load route components with `React.lazy`
-- Optimize images and use appropriate formats
-- Use virtualization for large lists (`react-window` or `react-virtualized`)
-
-## Environment Configuration
-
-### Environment Variables
-
-- `VITE_API_BASE_URL`: Backend API base URL
-- `VITE_AZURE_CLIENT_ID`: Azure AD client ID
-- `VITE_AZURE_TENANT_ID`: Azure AD tenant ID
-- `VITE_ENVIRONMENT`: development/staging/production
-- `VITE_APP_VERSION`: Application version for cache busting
-
-### Environment-Specific Settings
-
-```typescript
-// Environment configuration (in src/shared/config/configService.ts)
-export const config = {
-  api: {
-    baseUrl: import.meta.env.VITE_API_BASE_URL,
-    timeout: 30000,
-  },
-  azure: {
-    clientId: import.meta.env.VITE_AZURE_CLIENT_ID,
-    tenantId: import.meta.env.VITE_AZURE_TENANT_ID,
-    redirectUri: window.location.origin,
-  },
-  app: {
-    environment: import.meta.env.VITE_ENVIRONMENT,
-    version: import.meta.env.VITE_APP_VERSION,
-  },
-};
-```
-
-### Development vs Production
-
-- **Development**: Use local API endpoints, enable debug logging
-- **Staging**: Use staging API endpoints, enable error reporting
-- **Production**: Use production API endpoints, disable debug logging
-
-## Component Creation Guidelines
-
-### When I ask for "Create a component":
-
-1. **Define Component Interface** - Create TypeScript interface for props
-2. **Implement Component Structure** - Follow the established component pattern
-3. **Add Error Handling** - Include proper error boundaries and loading states
-4. **Implement Responsive Design** - Use Tailwind responsive classes
-5. **Add Accessibility** - Include ARIA labels and semantic HTML
-6. **Create Unit Tests** - Write comprehensive test cases
-7. **Follow Naming Conventions** - Use PascalCase for component names
-
-### Component Types and Patterns
-
-#### Form Components
-
-```tsx
-// Form component pattern
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-
-const formSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email"),
-});
-
-type FormData = z.infer<typeof formSchema>;
-
-export function UserForm({ onSubmit }: { onSubmit: (data: FormData) => void }) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+export function ChecklistForm({ onSubmit }: { onSubmit: (d: FormData) => void }) {
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(schema),
   });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <Label htmlFor="name">Name</Label>
-        <Input {...register("name")} id="name" />
-        {errors.name && (
-          <p className="text-destructive text-sm">{errors.name.message}</p>
-        )}
-      </div>
-      <Button type="submit">Submit</Button>
+      <Input {...register("name")} />
+      {errors.name && <p className="text-destructive text-sm">{errors.name.message}</p>}
+      <Button type="submit">Save</Button>
     </form>
   );
 }
 ```
 
-#### Data Display Components
+---
 
-```tsx
-// Data table component pattern
-import { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/components/ui/table";
-
-interface DataTableProps<T> {
-  data: T[];
-  columns: Column<T>[];
-  loading?: boolean;
-}
-
-export function DataTable<T>({ data, columns, loading }: DataTableProps<T>) {
-  if (loading) return <SkeletonCard />;
-
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          {columns.map((column) => (
-            <TableHead key={column.key}>{column.label}</TableHead>
-          ))}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data.map((item, index) => (
-          <TableRow key={index}>
-            {columns.map((column) => (
-              <TableCell key={column.key}>
-                {column.render
-                  ? column.render(item)
-                  : (item as any)[column.key]}
-              </TableCell>
-            ))}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-}
-```
-
-#### Modal/Dialog Components
-
-```tsx
-// Modal component pattern
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/shared/components/ui/dialog";
-
-interface ModalProps {
-  trigger: React.ReactNode;
-  title: string;
-  children: React.ReactNode;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-}
-
-export function Modal({
-  trigger,
-  title,
-  children,
-  open,
-  onOpenChange,
-}: ModalProps) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        {children}
-      </DialogContent>
-    </Dialog>
-  );
-}
-```
-
-### Component Composition Patterns
-
-#### Container/Presentational Pattern
-
-```tsx
-// Container component (handles data logic)
-export function ChecklistContainer() {
-  const { data, isLoading, error } = useGetAllChecklists({
-    pageSize: 10,
-    pageNumber: 1,
-  });
-
-  if (isLoading) return <SkeletonCard />;
-  if (error) return <ErrorFallback error={error} />;
-
-  return <ChecklistList checklists={data} />;
-}
-
-// Presentational component (handles UI)
-interface ChecklistListProps {
-  checklists: TChecklist[];
-}
-
-export function ChecklistList({ checklists }: ChecklistListProps) {
-  return (
-    <div className="space-y-4">
-      {checklists.map((checklist) => (
-        <ChecklistCard key={checklist.checklistId} checklist={checklist} />
-      ))}
-    </div>
-  );
-}
-```
-
-#### Compound Component Pattern
-
-```tsx
-// Compound component pattern for complex UI
-interface TabsProps {
-  children: React.ReactNode;
-  defaultValue?: string;
-}
-
-export function Tabs({ children, defaultValue }: TabsProps) {
-  const [activeTab, setActiveTab] = useState(defaultValue);
-
-  return (
-    <TabsContext.Provider value={{ activeTab, setActiveTab }}>
-      <div className="tabs-container">{children}</div>
-    </TabsContext.Provider>
-  );
-}
-
-export function TabList({ children }: { children: React.ReactNode }) {
-  return <div className="tab-list">{children}</div>;
-}
-
-export function Tab({
-  value,
-  children,
-}: {
-  value: string;
-  children: React.ReactNode;
-}) {
-  const { activeTab, setActiveTab } = useTabsContext();
-
-  return (
-    <button
-      onClick={() => setActiveTab(value)}
-      className={activeTab === value ? "active" : ""}
-    >
-      {children}
-    </button>
-  );
-}
-
-export function TabPanel({
-  value,
-  children,
-}: {
-  value: string;
-  children: React.ReactNode;
-}) {
-  const { activeTab } = useTabsContext();
-
-  if (activeTab !== value) return null;
-  return <div className="tab-panel">{children}</div>;
-}
-
-// Usage
-<Tabs defaultValue="overview">
-  <TabList>
-    <Tab value="overview">Overview</Tab>
-    <Tab value="details">Details</Tab>
-  </TabList>
-  <TabPanel value="overview">Overview content</TabPanel>
-  <TabPanel value="details">Details content</TabPanel>
-</Tabs>;
-```
-
-## Integration Patterns
-
-### Third-Party Library Integrations
-
-#### MSAL (Azure AD Authentication)
+## Error Handling
 
 ```typescript
-// MSAL configuration (in src/shared/config/msalConfig.ts)
-import { Configuration, PublicClientApplication } from '@azure/msal-browser';
+// Wrap pages in error boundaries
+import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
 
-export const msalConfig: Configuration = {
-  auth: {
-    clientId: import.meta.env.VITE_AZURE_CLIENT_ID,
-    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_AZURE_TENANT_ID}`,
-    redirectUri: window.location.origin,
-  },
-  cache: {
-    cacheLocation: 'localStorage',
-    storeAuthStateInCookie: false,
-  },
-};
+// Async errors in components
+import { useAsyncError } from "@/shared/hooks/useAsyncError";
+const throwError = useAsyncError();
+try {
+  await riskyOp();
+} catch (e) {
+  throwError(e);
+}
 
-export const initializeMsalInstance = () => {
-  return new PublicClientApplication(msalConfig);
-};
+// Centralized API errors
+import { handleApiError } from "@/shared/utils/errors/errorHandler";
+```
 
-// Usage in components
-import { useMsal } from '@azure/msal-react';
+- Every route-level page must be wrapped in `<ErrorBoundary>`
+- Use `toast.error()` (sonner) for user-facing mutation errors
+- Never swallow errors silently
 
-export function LoginButton() {
-  const { instance } = useMsal();
+---
 
-  const handleLogin = async () => {
-    try {
-      await instance.loginPopup({
-        scopes: ['User.Read'],
+## Styling Rules
+
+**Decision order:**
+
+1. Theme colors, design tokens → **CSS variables** (`hsl(var(--background))`)
+2. Simple/one-off layout → **Tailwind in TSX**
+3. Reusable/complex styles → **CSS class**
+4. Never duplicate a style in both CSS and TSX
+
+| Rule                                        | Where        |
+| ------------------------------------------- | ------------ |
+| Theme colors, font families, letter spacing | CSS          |
+| Keyframe animations, pseudo-elements        | CSS          |
+| One-off spacing, flex, grid utilities       | Tailwind TSX |
+| Simple transitions                          | Tailwind TSX |
+
+---
+
+## TypeScript Rules
+
+- Strict mode always on
+- No `any` — use `unknown` and narrow, or define a proper type
+- Prefer `interface` for object shapes, `type` for unions/intersections
+- Use utility types: `Partial<T>`, `Pick<T>`, `Omit<T>`, `NonNullable<T>`
+- API date fields → `string` (ISO); convert to `Date` only in components
+
+---
+
+## Authentication
+
+```tsx
+import { useAuth } from "@/app/providers/useAuth";
+
+function ProtectedComponent() {
+  const { currentUser, authToken, login, logout } = useAuth();
+  if (!currentUser) return <LoginPage />;
+  return <div>Protected content</div>;
+}
+```
+
+MSAL config lives in `src/shared/config/msalConfig.ts`. Enable by uncommenting the provider in `src/app/providers`.
+
+---
+
+## Environment Variables
+
+| Variable               | Purpose                                  |
+| ---------------------- | ---------------------------------------- |
+| `VITE_API_BASE_URL`    | Backend API base URL                     |
+| `VITE_AZURE_CLIENT_ID` | Azure AD client ID                       |
+| `VITE_AZURE_TENANT_ID` | Azure AD tenant ID                       |
+| `VITE_ENVIRONMENT`     | `development` / `staging` / `production` |
+| `VITE_APP_VERSION`     | App version string                       |
+
+- Never commit `.env` files — use `.env.example` for documentation
+- Config validation happens in `configService.ts` — fail fast on missing required vars
+
+---
+
+## Testing (Vitest)
+
+> **Before writing or modifying any logic in a component or hook — check if a `.test.tsx` / `.test.ts` file already exists for it. If it does, read it first to understand the expected behavior, then choose an approach that keeps existing tests passing or consciously updates them.**
+
+### Stack
+
+- **Test runner:** Vitest
+- **Component testing:** React Testing Library
+- **API mocking:** MSW v2
+- **Assertions:** Vitest built-ins (`expect`, `vi`)
+
+### File Conventions
+
+| What           | Location          | Name                       |
+| -------------- | ----------------- | -------------------------- |
+| Component test | Next to component | `ComponentName.test.tsx`   |
+| Hook test      | Next to hook      | `useHookName.test.ts`      |
+| Util test      | Next to util      | `utilName.test.ts`         |
+| Shared mocks   | `src/mocks/`      | `server.ts`, `handlers.ts` |
+
+---
+
+### Basic Component Test
+
+```typescript
+import { describe, it, expect } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { ChecklistCard } from "./ChecklistCard";
+
+describe("ChecklistCard", () => {
+  it("renders checklist name", () => {
+    render(<ChecklistCard name="Safety Check" isActive={true} />);
+    expect(screen.getByText("Safety Check")).toBeInTheDocument();
+  });
+
+  it("shows inactive badge when isActive is false", () => {
+    render(<ChecklistCard name="Old Check" isActive={false} />);
+    expect(screen.getByText(/inactive/i)).toBeInTheDocument();
+  });
+});
+```
+
+---
+
+### API Mock with MSW v2
+
+```typescript
+import { describe, it, expect } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
+import { server } from "@/mocks/server";
+import { ChecklistList } from "./ChecklistList";
+
+describe("ChecklistList", () => {
+  it("renders items from API", async () => {
+    server.use(
+      http.get("/api/Checklist/GetAll", () =>
+        HttpResponse.json({
+          success: true,
+          data: { data: [{ checklistId: "1", name: "Safety" }], totalRecords: 1 },
+        })
+      )
+    );
+
+    render(<ChecklistList />);
+
+    await waitFor(() =>
+      expect(screen.getByText("Safety")).toBeInTheDocument()
+    );
+  });
+
+  it("shows empty state when no data", async () => {
+    server.use(
+      http.get("/api/Checklist/GetAll", () =>
+        HttpResponse.json({ success: true, data: { data: [], totalRecords: 0 } })
+      )
+    );
+
+    render(<ChecklistList />);
+    await waitFor(() =>
+      expect(screen.getByText(/no results/i)).toBeInTheDocument()
+    );
+  });
+});
+```
+
+---
+
+### Custom Hook Test
+
+```typescript
+import { describe, it, expect, vi } from "vitest";
+import { renderHook, act } from "@testing-library/react";
+import { useCreateChecklist } from "./useCreateChecklist";
+
+describe("useCreateChecklist", () => {
+  it("calls onSuccess after successful mutation", async () => {
+    const onSuccess = vi.fn();
+    const { result } = renderHook(() => useCreateChecklist(onSuccess), {
+      wrapper: QueryClientWrapper, // wrap with QueryClientProvider
+    });
+
+    await act(async () => {
+      result.current.mutate({
+        name: "New Check",
+        isActive: true,
+        projectId: "p1",
+        description: "",
       });
-    } catch (error) {
-      console.error('Login failed:', error);
-    }
-  };
+    });
 
-  return <Button onClick={handleLogin}>Sign In</Button>;
-}
-```
-
-#### TanStack Query (Data Fetching)
-
-```typescript
-// Query client setup (in src/main.tsx)
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      refetchOnWindowFocus: false,
-      retry: (failureCount, error) => {
-        // Don't retry on 4xx errors
-        if (error?.status >= 400 && error?.status < 500) return false;
-        return failureCount < 3;
-      },
-    },
-    mutations: {
-      onError: (error) => {
-        console.error('Mutation error:', error);
-      },
-    },
-  },
-});
-
-<QueryClientProvider client={queryClient}>
-  <App />
-</QueryClientProvider>
-```
-
-#### Zustand (State Management)
-
-```typescript
-// Store pattern (in src/shared/store/[store].ts)
-import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
-
-interface AppStore {
-  user: User | null;
-  theme: "light" | "dark";
-  setUser: (user: User | null) => void;
-  setTheme: (theme: "light" | "dark") => void;
-}
-
-export const useAppStore = create<AppStore>()(
-  devtools(
-    persist(
-      (set) => ({
-        user: null,
-        theme: "light",
-        setUser: (user) => set({ user }),
-        setTheme: (theme) => set({ theme }),
-      }),
-      {
-        name: "app-store",
-        partialize: (state) => ({ theme: state.theme }), // Only persist theme
-      }
-    ),
-    { name: "app-store" }
-  )
-);
-```
-
-#### React Hook Form with Zod
-
-```typescript
-// Form validation setup
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-
-const userSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  age: z.number().min(18, 'Must be at least 18 years old'),
-});
-
-type UserFormData = z.infer<typeof userSchema>;
-
-export function UserForm() {
-  const { register, handleSubmit, formState: { errors } } = useForm<UserFormData>({
-    resolver: zodResolver(userSchema),
+    expect(onSuccess).toHaveBeenCalledOnce();
   });
-
-  const onSubmit = (data: UserFormData) => {
-    console.log('Form data:', data);
-  };
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <input {...register('name')} placeholder="Name" />
-      {errors.name && <span>{errors.name.message}</span>}
-
-      <input {...register('email')} type="email" placeholder="Email" />
-      {errors.email && <span>{errors.email.message}</span>}
-
-      <input {...register('age', { valueAsNumber: true })} type="number" placeholder="Age" />
-      {errors.age && <span>{errors.age.message}</span>}
-
-      <button type="submit">Submit</button>
-    </form>
-  );
-}
-```
-
-#### Axios with Interceptors
-
-```typescript
-// Axios instance setup (in src/shared/services/axios.ts)
-import axios from "axios";
-import { config } from "@/shared/config/configService";
-
-export const api = axios.create({
-  baseURL: config.api.baseUrl,
-  timeout: config.api.timeout,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// Request interceptor
-api.interceptors.request.use(
-  (config) => {
-    // Add auth token if available
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Response interceptor
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized access
-      window.location.href = "/login";
-    }
-    return Promise.reject(error);
-  }
-);
-```
-
-### Integration Best Practices
-
-#### Error Handling Across Libraries
-
-```typescript
-// Centralized error handling
-import { toast } from "sonner";
-
-export const handleApiError = (error: any) => {
-  if (error.response) {
-    // Server responded with error status
-    const message = error.response.data?.message || "An error occurred";
-    toast.error(message);
-  } else if (error.request) {
-    // Network error
-    toast.error("Network error. Please check your connection.");
-  } else {
-    // Something else happened
-    toast.error("An unexpected error occurred.");
-  }
-};
-
-// Usage in components
-const { data, error } = useQuery({
-  queryKey: ["data"],
-  queryFn: fetchData,
-  onError: handleApiError,
 });
 ```
 
-#### Loading States Management
+---
+
+### Mocking Modules and Functions
 
 ```typescript
-// Loading state coordination
-export function useLoadingState(queries: UseQueryResult[]) {
-  const isLoading = queries.some(query => query.isLoading);
-  const isError = queries.some(query => query.isError);
-  const error = queries.find(query => query.error)?.error;
+import { vi } from "vitest";
 
-  return { isLoading, isError, error };
-}
+// Mock a module
+vi.mock("@/shared/services/axios", () => ({
+  api: {
+    get: vi.fn(),
+    post: vi.fn(),
+  },
+}));
 
-// Usage
-const checklistQuery = useGetAllChecklists({ pageSize: 10 });
-const userQuery = useGetCurrentUser();
+// Mock a function with a return value
+vi.mocked(api.get).mockResolvedValue({ data: { success: true, data: [] } });
 
-const { isLoading, isError, error } = useLoadingState([checklistQuery, userQuery]);
+// Spy on a function
+const toastSpy = vi.spyOn(toast, "error");
+expect(toastSpy).toHaveBeenCalledWith("Something went wrong");
 
-if (isLoading) return <SkeletonCard />;
-if (isError) return <ErrorFallback error={error} />;
+// Reset mocks between tests
+afterEach(() => vi.clearAllMocks());
 ```
 
-Remember to always test your changes thoroughly and follow the established patterns in the codebase. When in doubt, look at existing components for reference implementations.
+---
 
-## Styling Decision Priority (Order Matters)
+### Vitest Config Reference (`vitest.config.ts`)
 
-1. Follow this decision matrix first.
-2. Prefer TSX (Tailwind) for simple, one-off styles.
-3. Use CSS for reusable, semantic, or complex styles.
-4. Never duplicate the same style in both CSS and TSX.
-5. If unsure, default to clarity and reusability.
+```typescript
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
 
-## Enforced Styling Rules for Copilot
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["./src/mocks/setup.ts"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov"],
+      exclude: ["src/mocks/**", "**/*.d.ts"],
+    },
+  },
+});
+```
 
-- Theme colors and design tokens MUST be defined in CSS.
-- One-off colors and opacity variants MUST be written in TSX using Tailwind.
-- Font families, letter spacing, and line heights MUST live in CSS.
-- Font sizes and weights MAY be used in TSX if not reused.
-- Complex layouts (custom grid templates, advanced flex logic) MUST be written in CSS.
-- Simple layout utilities (flex, grid, alignment) MUST use Tailwind.
-- Pseudo-elements (::before, ::after, ::placeholder) MUST NEVER be written in TSX.
-- Keyframe animations MUST be defined in CSS.
-- Simple transitions SHOULD use Tailwind utilities.
+---
 
-## Copilot Summary
+### MSW Server Setup (`src/mocks/server.ts`)
 
-If a style is reusable, semantic, or complex → use CSS.  
-If a style is simple, local, or one-off → use Tailwind in TSX.
+```typescript
+import { setupServer } from "msw/node";
+import { handlers } from "./handlers";
+
+export const server = setupServer(...handlers);
+```
+
+```typescript
+// src/mocks/setup.ts
+import { beforeAll, afterAll, afterEach } from "vitest";
+import { server } from "./server";
+
+beforeAll(() => server.listen({ onUnhandledRequest: "warn" }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+```
+
+---
+
+### Rules & Guidelines
+
+- **Always check for existing tests before changing logic.** If a test file exists, read it first — understand what's covered, then update tests alongside code changes.
+- Never delete existing tests without a clear reason — update them to match new behavior instead.
+- Use `vi.fn()` for callbacks, `vi.spyOn()` for module methods — never mock entire components.
+- Wrap components that use React Query or Zustand in the appropriate provider wrapper in tests.
+- Prefer `userEvent` over `fireEvent` for simulating real user interactions.
+- Test **behavior**, not implementation — assert what the user sees, not internal state.
+- Use `waitFor` for any async rendering or data fetching assertions.
+- Group related tests under `describe` blocks matching the component/hook name.
+
+### What to Test
+
+| Layer          | What to cover                                                            |
+| -------------- | ------------------------------------------------------------------------ |
+| Components     | Renders correctly, handles loading/error/empty states, user interactions |
+| Query hooks    | Returns correct data shape, handles API errors                           |
+| Mutation hooks | Calls API, triggers `onSuccess`, shows error toast on failure            |
+| Utils          | Edge cases, null/undefined input, expected output                        |
+
+### Commands
+
+```bash
+pnpm test               # Run all tests
+pnpm test:watch         # Watch mode
+pnpm test:coverage      # Coverage report
+pnpm test src/features/document-checklist  # Run tests for one feature
+```
+
+---
+
+## Performance
+
+- `React.memo` for components that receive stable props but re-render often
+- `React.lazy` + `Suspense` for all route-level components
+- `useMemo` for expensive derived values; `useCallback` for handlers passed to children
+- `react-window` or `react-virtualized` for tables/lists with 100+ rows
+- Monitor bundle size — run `pnpm build --report` periodically
+
+---
+
+## Security
+
+- Validate all user input at form boundaries (Zod)
+- No sensitive data in `localStorage` (tokens managed by MSAL)
+- HTTPS for all API calls
+- Sanitize data before rendering (avoid `dangerouslySetInnerHTML`)
+- CSP headers configured at the server/CDN level
+
+---
+
+## Accessibility
+
+- All interactive elements have `aria-label` or visible label
+- Keyboard navigation works for all modals, dropdowns, forms
+- Sufficient color contrast (WCAG AA minimum)
+- Focus indicators always visible
+- Use `role` attributes only when semantic HTML isn't possible
+
+---
+
+## Common Commands
+
+```bash
+pnpm dev              # Dev server
+pnpm build            # Production build
+pnpm preview          # Preview production build
+pnpm test             # Run tests
+pnpm test:watch       # Watch mode
+pnpm test:coverage    # Coverage report
+pnpm lint             # ESLint
+pnpm lint:fix         # Auto-fix lint issues
+pnpm type-check       # TypeScript check
+```
+
+---
+
+## Adding a New Feature — Checklist
+
+```
+src/features/[feature-name]/
+  api/[feature].ts          ← API functions
+  components/               ← UI components
+  constants/query.ts        ← Query key constants
+  hooks/
+    query/[feature].ts      ← useQuery hooks
+    mutation/[feature].ts   ← useMutation hooks
+  pages/[Feature]Page.tsx   ← Route page component
+  types/api.ts              ← All types/interfaces
+  utils/                    ← Feature helpers (if needed)
+```
+
+Steps:
+
+1. Create folder structure above
+2. Define types in `types/api.ts` first
+3. Write API functions in `api/[feature].ts`
+4. Write query/mutation hooks
+5. Build components and page
+6. Add route in `src/app/router`
+7. Write tests
+8. Update this file if new patterns are introduced
+
+---
+
+## Code Review Checklist
+
+- [ ] TypeScript strict — no `any`, all props typed
+- [ ] Loading and error states handled
+- [ ] Error boundary wrapping page-level components
+- [ ] Query keys include all relevant params
+- [ ] Mutations invalidate related queries
+- [ ] Responsive design with Tailwind breakpoints
+- [ ] Accessibility — ARIA, keyboard nav, semantic HTML
+- [ ] Tests written for new logic
+- [ ] No secrets or hardcoded URLs committed
+- [ ] This file updated if new patterns introduced

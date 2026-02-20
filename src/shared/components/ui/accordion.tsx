@@ -4,7 +4,7 @@ import * as React from "react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 function Accordion({
   ...props
@@ -45,7 +45,7 @@ function AccordionTrigger({
         className={cn(
           // Visual styles to match "Global Filter" image:
           "flex flex-1 items-center justify-between px-4 py-3 text-left text-sm font-medium transition-all outline-none",
-          "bg-white text-slate-600 hover:no-underline", // White background and rounded corners
+          "bg-grey-50 text-slate-600 hover:no-underline", // White background and rounded corners
           // BORDER LOGIC:
           "border-t border-r border-l border-slate-200", // Top/Sides always present
           "data-[state=closed]:border-b", // Bottom border ONLY when closed
@@ -78,7 +78,7 @@ function AccordionContent({
     <AccordionPrimitive.Content
       data-slot="accordion-content"
       // Added background and matching rounded bottom to connect with the trigger
-      className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down -mt-1 overflow-hidden rounded-b-lg border-x border-b border-slate-200 bg-white text-sm"
+      className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down bg-grey-50 -mt-1 overflow-hidden rounded-b-lg border-x border-b border-slate-200 text-sm"
       {...props}
     >
       <div className={cn("p-4 pt-2", className)}>{children}</div>

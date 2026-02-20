@@ -1,5 +1,5 @@
 // src/app/router/index.tsx
-import { lazy, Suspense } from "react";
+import { lazy } from "react";
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { RoleGuard } from "@/app/router/RoleGuard";
@@ -7,21 +7,13 @@ import { RoleBasedLayout } from "@/app/layouts/RoleBasedLayout";
 import RouterError from "./RouterError";
 import LoginPage from "@/features/auth/pages/LoginPage";
 import UnauthorizedPage from "@/features/auth/pages/UnauthorizedPage";
-import DocumentChecklistPage from "@/features/pem-check-lists/pages/DocumentChecklistPage";
-import PlaygroundPage from "@/features/playground/pages/PlaygroundPage";
+import DocumentChecklistPage from "@/features/pem-check-lists/pages/document-checklist-page";
+import { ComingSoon } from "@/shared/components/ui/coming-soon";
+import { LazyRoute } from "@/shared/components/ui/lazy-route";
+import DocumentRequirementPage from "@/features/pem-requirements/pages/document-requirement/DocumentRequirementPage";
+import ControlObjectChecklistPage from "@/features/pem-check-lists/pages/control-object-checklist-page";
+import DisciplineActivityChecklistPage from "@/features/pem-check-lists/pages/discipline-activity-checklist-page";
 
-// ==========================================
-// LOADING FALLBACK
-// ==========================================
-const PageLoader = () => (
-  <div className="flex h-full items-center justify-center">
-    <div className="text-muted-foreground">Loading...</div>
-  </div>
-);
-
-// ==========================================
-// LAZY LOADED PAGES
-// ==========================================
 const lazyPage = (title: string) =>
   lazy(async () => ({
     default: () => <ComingSoon title={title} />,
@@ -37,51 +29,12 @@ const DashboardPage = lazy(() =>
 // PEM Requirements Pages
 const ControlObjectRequirementPage = lazyPage("Control Object Requirement");
 
-const DocumentRequirementPage = lazyPage("Document Requirement");
 const DisciplineActivityRequirementPage = lazyPage(
   "Discipline Activity Requirement"
 );
 
-// PEM Checklists Pages
-const ControlObjectChecklistPage = lazyPage("Control Object Check List");
-
-const DisciplineActivityChecklistPage = lazyPage(
-  "Discipline Activity Check List"
-);
-
 // Admin Pages
 const AdminSettingsPage = lazyPage("Admin Settings");
-
-// ==========================================
-// COMING SOON FALLBACK
-// ==========================================
-function ComingSoon({ title }: { title: string }) {
-  return (
-    <div className="flex h-full items-center justify-center">
-      <div className="text-center">
-        <h2 className="text-2xl font-semibold text-gray-900">{title}</h2>
-        <p className="text-muted-foreground mt-2">Coming soon...</p>
-      </div>
-    </div>
-  );
-}
-
-// ==========================================
-// ROUTE WRAPPER WITH SUSPENSE
-// ==========================================
-function LazyRoute({
-  children,
-  roles,
-}: {
-  children: React.ReactNode;
-  roles: ("admin" | "user")[];
-}) {
-  return (
-    <RoleGuard allowedRoles={roles}>
-      <Suspense fallback={<PageLoader />}>{children}</Suspense>
-    </RoleGuard>
-  );
-}
 
 // ==========================================
 // ROUTER CONFIGURATION
@@ -92,10 +45,6 @@ export const router = createBrowserRouter([
     path: "/login",
     element: <LoginPage />,
   },
-  // {
-  //   path: "playground",
-  //   element: <PlaygroundPage />,
-  // },
   {
     path: "/unauthorized",
     element: <UnauthorizedPage />,

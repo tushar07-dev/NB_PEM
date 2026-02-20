@@ -126,7 +126,7 @@ export const Icons = {
         className={cn(
           "shrink-0",
           // Default responsive sizing: 31px small, 46px large
-          !size && "size-[31px] lg:size-[46px] xl:size-[46px]",
+          !size && "size-7.75 lg:size-11.5 xl:size-11.5",
           className
         )}
         aria-hidden="true"
@@ -190,6 +190,20 @@ export const Icons = {
       </svg>
     );
   },
+
+  ArrowLeftIcon: createIcon(
+    () => (
+      <path
+        d="M16.6668 10H3.3335M3.3335 10L8.3335 5M3.3335 10L8.3335 15"
+        stroke="#6A6A6A"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+    "ArrowLeftIcon",
+    "0 0 20 20"
+  ),
 };
 
 // Add display names to all icons

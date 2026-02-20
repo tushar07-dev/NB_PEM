@@ -1,4 +1,3 @@
-import { ChevronLeft } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Breadcrumb,
@@ -8,6 +7,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/shared/components/ui/breadcrumb";
+import { Icons } from "./icons";
 
 // Route name mapping
 const routeNames: Record<string, string> = {
@@ -53,20 +53,20 @@ export function DynamicBreadcrumb() {
       : "/dashboard";
 
   return (
-    <div className="mb-4 flex items-center gap-3">
+    <div className="mb-4 flex items-center gap-3 py-4 px-7 border-b border-gray-200">
       {/* Back Button */}
       <Link
         to={parentPath}
-        className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 bg-white transition-colors hover:bg-gray-50"
+        className="bg-grey-50 flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 transition-colors hover:bg-gray-50"
         aria-label="Go back"
       >
-        <ChevronLeft className="h-4 w-4 text-gray-600" />
+        <Icons.ArrowLeftIcon className="h-4 w-4 text-gray-600" />
       </Link>
 
       {/* Breadcrumb */}
       <Breadcrumb>
         <BreadcrumbList>
-          {breadcrumbItems.map((item, index) => (
+          {breadcrumbItems.map((item) => (
             <div key={item.url} className="flex items-center gap-2">
               <BreadcrumbItem>
                 {item.isLast ? (

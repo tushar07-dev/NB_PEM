@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { dataTableConfig } from "../config/data-table";
+import { dataTableConfig } from "@/shared/config/data-table";
 
 const sortItemSchema = z.object({
   id: z.string(),

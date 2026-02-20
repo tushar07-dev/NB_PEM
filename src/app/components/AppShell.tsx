@@ -15,7 +15,7 @@ const AppShell = ({ children }: AppShellProps) => {
       <TopHeader />
       <SidebarProvider defaultOpen={true} className="flex flex-1">
         <AppSidebar />
-        <SidebarInset className="overflow-y-auto p-4 md:p-6">
+        <SidebarInset className="overflow-y-auto">
           <DynamicBreadcrumb />
           {children}
         </SidebarInset>

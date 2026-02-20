@@ -4,7 +4,7 @@ import type { Column } from "@tanstack/react-table";
 import * as React from "react";
 
 import { Input } from "@/shared/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import type { ExtendedColumnFilter } from "@/shared/types/data-table";
 
 interface DataTableRangeFilterProps<TData> extends React.ComponentProps<"div"> {

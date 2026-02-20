@@ -13,7 +13,7 @@ import {
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
 import { Separator } from "@/shared/components/ui/separator";
-import { formatDate } from "@/lib/format";
+import { formatDate } from "@/shared/lib/data-table/format";
 
 type DateSelection = Date[] | DateRange;
 
@@ -175,16 +175,21 @@ export function DataTableDateFilter<TData>({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="border-dashed">
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-dashed font-normal"
+        >
           {hasValue ? (
-            <button
-              type="button"
+            <div
+              role="button"
               aria-label={`Clear ${title} filter`}
+              tabIndex={0}
               onClick={onReset}
               className="focus-visible:ring-ring rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-1 focus-visible:outline-none"
             >
               <XCircle />
-            </button>
+            </div>
           ) : (
             <CalendarIcon />
           )}
@@ -193,21 +198,21 @@ export function DataTableDateFilter<TData>({
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         {multiple ? (
-          // <Calendar
-          //   initialFocus
-          //   mode="range"
-          //   selected={
-          //     getIsDateRange(selectedDates)
-          //       ? selectedDates
-          //       : { from: undefined, to: undefined }
-          //   }
-          //   onSelect={onSelect}
-          // />
-          <></>
+          <Calendar
+            autoFocus
+            captionLayout="dropdown"
+            mode="range"
+            selected={
+              getIsDateRange(selectedDates)
+                ? selectedDates
+                : { from: undefined, to: undefined }
+            }
+            onSelect={onSelect}
+          />
         ) : (
           <Calendar
-            initialFocus
-            // mode="single"
+            captionLayout="dropdown"
+            mode="single"
             selected={
               !getIsDateRange(selectedDates) ? selectedDates[0] : undefined
             }

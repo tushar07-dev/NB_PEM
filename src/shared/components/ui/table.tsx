@@ -1,20 +1,56 @@
-import * as React from "react";
+"use client";
 
-import { cn } from "@/lib/utils";
+import type * as React from "react";
 
-type TTable = React.ComponentProps<"table"> & {
-  containerClassName?: string;
-};
+import { cn } from "@/shared/lib/utils";
 
-function Table({ className, containerClassName, ...props }: TTable) {
+import { useRef } from "react";
+
+function Table({ className, ...props }: React.ComponentProps<"table">) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+
+  // Mouse event handlers for drag-to-scroll
+  const onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (containerRef.current && e.button === 0) {
+      isDragging.current = true;
+      startX.current = e.pageX - containerRef.current.offsetLeft;
+      scrollLeft.current = containerRef.current.scrollLeft;
+      containerRef.current.style.cursor = "grabbing";
+    }
+  };
+  const onMouseLeave = () => {
+    isDragging.current = false;
+    if (containerRef.current) containerRef.current.style.cursor = "auto";
+  };
+  const onMouseUp = () => {
+    isDragging.current = false;
+    if (containerRef.current) containerRef.current.style.cursor = "auto";
+  };
+  const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging.current || !containerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - containerRef.current.offsetLeft;
+    const walk = x - startX.current;
+    containerRef.current.scrollLeft = scrollLeft.current - walk;
+  };
+
   return (
-    <div data-slot="table-container" className={`w-full ${containerClassName}`}>
+    <div
+      data-slot="table-container"
+      className="data-table-scroll-wrapper relative w-full overflow-x-auto select-none"
+      ref={containerRef}
+      onMouseDown={onMouseDown}
+      onMouseLeave={onMouseLeave}
+      onMouseUp={onMouseUp}
+      onMouseMove={onMouseMove}
+      style={{ cursor: "grab" }}
+    >
       <table
         data-slot="table"
-        className={cn(
-          "relative w-full caption-bottom overflow-x-auto",
-          className
-        )}
+        className={cn("w-full caption-bottom text-sm", className)}
         {...props}
       />
     </div>
@@ -25,23 +61,15 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn(
-        "bg-secondary dark:bg-primary-100 text-secondary-foreground sticky top-0 z-2 h-[50px]",
-        className
-      )}
+      className={cn("[&_tr]:border-b", className)}
       {...props}
     />
   );
 }
 
-type TTablebody = React.ComponentProps<"tbody"> & {
-  bodyRef?: React.RefObject<HTMLTableSectionElement>;
-};
-
-function TableBody({ className, bodyRef, ...props }: TTablebody) {
+function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
   return (
     <tbody
-      ref={bodyRef}
       data-slot="table-body"
       className={cn("[&_tr:last-child]:border-0", className)}
       {...props}
@@ -67,7 +95,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "even:bg-background-secondary data-[state=selected]:bg-muted transition-colors",
+        "data-table-row data-[state=selected]:bg-muted border-0 transition-colors",
         className
       )}
       {...props}
@@ -80,8 +108,8 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-        className
+        className,
+        "table-header-cell h-10 px-2 text-left align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 *:[[role=checkbox]]:translate-y-0.5"
       )}
       {...props}
     />
@@ -93,7 +121,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "h-10 max-w-[300px] overflow-hidden p-1 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "table-cell-text p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 *:[[role=checkbox]]:translate-y-0.5",
         className
       )}
       {...props}
@@ -116,11 +144,11 @@ function TableCaption({
 
 export {
   Table,
+  TableHeader,
   TableBody,
-  TableCaption,
-  TableCell,
   TableFooter,
   TableHead,
-  TableHeader,
   TableRow,
+  TableCell,
+  TableCaption,
 };

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Check, Search, X, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import {
   Popover,
   PopoverContent,
@@ -260,7 +260,7 @@ export function MultiSelectWithChips({
                         "flex items-center justify-center rounded border-2 transition-all",
                         isSelected
                           ? "border-primary-100 bg-primary-100"
-                          : "border-grey-300 bg-white",
+                          : "border-grey-300 bg-grey-50",
                         sizeClasses.checkbox
                       )}
                     >
@@ -348,7 +348,7 @@ export function MultiSelectWithChips({
         <div className="animate-in fade-in-0 slide-in-from-top-1 flex items-start gap-1.5">
           <svg
             className={cn(
-              "text-destructive mt-0.5 flex-shrink-0",
+              "text-destructive mt-0.5 shrink-0",
               sizeClasses.errorIcon
             )}
             fill="currentColor"

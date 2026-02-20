@@ -18,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 type FacetedValue<Multiple extends boolean> = Multiple extends true
   ? string[]
@@ -205,7 +205,7 @@ function FacetedContent(props: React.ComponentProps<typeof PopoverContent>) {
       {...contentProps}
       align="start"
       className={cn(
-        "w-[200px] origin-(--radix-popover-content-transform-origin) p-0",
+        "w-50 origin-(--radix-popover-content-transform-origin) p-0",
         className
       )}
     >
@@ -242,7 +242,7 @@ function FacetedItem(props: FacetedItemProps) {
         context.onItemSelect(currentValue);
       }
     },
-    [onSelect, context.onItemSelect]
+    [onSelect, context]
   );
 
   return (

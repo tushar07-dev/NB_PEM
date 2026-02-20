@@ -22,15 +22,15 @@ export const dataTableConfig = {
   ],
   dateOperators: [
     { label: "Is", value: "eq" as const },
-    // { label: "Is not", value: "ne" as const },
+    { label: "Is not", value: "ne" as const },
     { label: "Is before", value: "lt" as const },
     { label: "Is after", value: "gt" as const },
-    // { label: "Is on or before", value: "lte" as const },
-    // { label: "Is on or after", value: "gte" as const },
-    // { label: "Is between", value: "isBetween" as const },
-    // { label: "Is relative to today", value: "isRelativeToToday" as const },
-    // { label: "Is empty", value: "isEmpty" as const },
-    // { label: "Is not empty", value: "isNotEmpty" as const },
+    { label: "Is on or before", value: "lte" as const },
+    { label: "Is on or after", value: "gte" as const },
+    { label: "Is between", value: "isBetween" as const },
+    { label: "Is relative to today", value: "isRelativeToToday" as const },
+    { label: "Is empty", value: "isEmpty" as const },
+    { label: "Is not empty", value: "isNotEmpty" as const },
   ],
   selectOperators: [
     { label: "Is", value: "eq" as const },
@@ -39,12 +39,15 @@ export const dataTableConfig = {
     { label: "Is not empty", value: "isNotEmpty" as const },
   ],
   multiSelectOperators: [
-    { label: "Has any of", value: "inArray" as const },
     { label: "Has none of", value: "notInArray" as const },
+    { label: "Has any of", value: "inArray" as const },
     { label: "Is empty", value: "isEmpty" as const },
     { label: "Is not empty", value: "isNotEmpty" as const },
   ],
-  booleanOperators: [{ label: "Is", value: "eq" as const }],
+  booleanOperators: [
+    { label: "Is", value: "eq" as const },
+    { label: "Is not", value: "ne" as const },
+  ],
   sortOrders: [
     { label: "Asc", value: "asc" as const },
     { label: "Desc", value: "desc" as const },
@@ -77,5 +80,3 @@ export const dataTableConfig = {
   ] as const,
   joinOperators: ["and", "or"] as const,
 };
-
-export const DEFAULT_PAGINATION_PER_PAGE = 20;

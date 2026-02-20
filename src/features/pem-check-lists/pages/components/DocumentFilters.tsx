@@ -165,30 +165,32 @@ export function DocumentFilters({
   // Render
   // ============================================
   return (
-    <div className="mb-2 rounded-lg border border-gray-200 bg-white px-3 py-4 lg:px-5 lg:py-4">
+    <div className="bg-grey-50 mb-2 rounded-lg border border-gray-200 px-3 py-4 lg:px-5 lg:py-4">
       {/* Header */}
-      <div className="mb-5 flex flex-row items-center justify-between gap-3">
-        <h2 className="text-md font-medium text-gray-700">Filter</h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onClearAll}
-          className="gap-2 text-gray-600"
-        >
-          <Trash2 className="h-4 w-4" />
-          CLEAR ALL
-        </Button>
-      </div>
+      <div className="mb-5 flex flex-row items-center gap-3">
+        <h2 className="text-md shrink-0 font-medium text-gray-700">Filter</h2>
 
-      {/* Project Selection Warning */}
-      {!selectedProject && (
-        <Alert variant="warning" className="mb-4">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            Please select a Project first to enable filters.
-          </AlertDescription>
-        </Alert>
-      )}
+        <div className="ml-auto flex items-center gap-3">
+          {!selectedProject && (
+            <Alert variant="warning" className="w-fit py-2">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="whitespace-nowrap">
+                Please select a Project first to enable filters.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onClearAll}
+            className="shrink-0 gap-2 text-gray-600"
+          >
+            <Trash2 className="h-4 w-4" />
+            CLEAR ALL
+          </Button>
+        </div>
+      </div>
 
       {/* API Error Alert */}
       {hasErrors && (
@@ -217,7 +219,7 @@ export function DocumentFilters({
       )}
 
       {/* Filter Grid */}
-      <div className="grid grid-cols-1 gap-x-3 gap-y-4 md:grid-cols-2 md:gap-x-5 md:gap-y-6 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-3 gap-x-3 gap-y-4 md:gap-x-5 md:gap-y-6">
         {/* Discipline */}
         <SearchableFilterSelect
           label="Discipline"

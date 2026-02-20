@@ -12,7 +12,7 @@ import {
   SidebarMenuButton,
   useSidebar,
 } from "@/shared/components/ui/sidebar";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { Icons } from "./icons";
 import { ROLE_NAVIGATION } from "@/app/config/navigation";
 import { useAuth } from "@/app/providers/useAuth";
@@ -20,16 +20,14 @@ import { useAuth } from "@/app/providers/useAuth";
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state, toggleSidebar } = useSidebar();
   const { currentUser } = useAuth();
-    const navigationData = React.useMemo(
-      () => ROLE_NAVIGATION[currentUser?.role || "user"] || [],
-      [currentUser?.role]
-    );
+  const navigationData = React.useMemo(
+    () => ROLE_NAVIGATION[currentUser?.role || "user"] || [],
+    [currentUser?.role]
+  );
   const isCollapsed = state === "collapsed";
 
   const userRole = currentUser?.role || "user";
-
-
-
+  console.log("Current User Role:", userRole);
   return (
     <Sidebar
       collapsible="icon"
@@ -63,7 +61,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   )}
                 >
                   {isCollapsed ? (
-                    <Icons.SidebarToggle 
+                    <Icons.SidebarToggle
                     // className="text-grey-700 h-5 w-5"
                     />
                   ) : (

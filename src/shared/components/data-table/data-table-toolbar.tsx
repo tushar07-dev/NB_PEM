@@ -4,14 +4,13 @@ import type { Column, Table } from "@tanstack/react-table";
 import { X } from "lucide-react";
 import * as React from "react";
 
+import { DataTableDateFilter } from "@/shared/components/data-table/data-table-date-filter";
+import { DataTableFacetedFilter } from "@/shared/components/data-table/data-table-faceted-filter";
+import { DataTableSliderFilter } from "@/shared/components/data-table/data-table-slider-filter";
+import { DataTableViewOptions } from "@/shared/components/data-table/data-table-view-options";
 import { Button } from "@/shared/components/ui/button";
-
 import { Input } from "@/shared/components/ui/input";
-import { cn } from "@/lib/utils";
-import { DataTableViewOptions } from "./data-table-view-options";
-import { DataTableSliderFilter } from "./data-table-slider-filter";
-import { DataTableDateFilter } from "./data-table-date-filter";
-import { DataTableFacetedFilter } from "./data-table-faceted-filter";
+import { cn } from "@/shared/lib/utils";
 
 interface DataTableToolbarProps<TData> extends React.ComponentProps<"div"> {
   table: Table<TData>;
@@ -63,7 +62,7 @@ export function DataTableToolbar<TData>({
       </div>
       <div className="flex items-center gap-2">
         {children}
-        <DataTableViewOptions table={table} />
+        <DataTableViewOptions table={table} align="end" />
       </div>
     </div>
   );
@@ -85,7 +84,7 @@ function DataTableToolbarFilter<TData>({
         case "text":
           return (
             <Input
-              // label={columnMeta.placeholder ?? columnMeta.label}
+              placeholder={columnMeta.placeholder ?? columnMeta.label}
               value={(column.getFilterValue() as string) ?? ""}
               onChange={(event) => column.setFilterValue(event.target.value)}
               className="h-8 w-40 lg:w-56"
@@ -98,10 +97,10 @@ function DataTableToolbarFilter<TData>({
               <Input
                 type="number"
                 inputMode="numeric"
-                // label={columnMeta.placeholder ?? columnMeta.label}
+                placeholder={columnMeta.placeholder ?? columnMeta.label}
                 value={(column.getFilterValue() as string) ?? ""}
                 onChange={(event) => column.setFilterValue(event.target.value)}
-                className={cn("h-8 w-[120px]", columnMeta.unit && "pr-8")}
+                className={cn("h-8 w-30", columnMeta.unit && "pr-8")}
               />
               {columnMeta.unit && (
                 <span className="bg-accent text-muted-foreground absolute top-0 right-0 bottom-0 flex items-center rounded-r-md px-2 text-sm">

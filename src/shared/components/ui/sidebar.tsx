@@ -87,23 +87,15 @@ export const Sidebar = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & { collapsible?: "icon" | "none" }
 >(({ collapsible = "icon", className, children, ...props }, ref) => {
-  const { state, isMobile } = useSidebar();
+  const { state } = useSidebar();
 
   return (
     <>
-      {/* Mobile Overlay */}
-      {isMobile && state === "expanded" && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
-          onClick={() => useSidebar().setOpen(false)}
-        />
-      )}
-
       <div
         ref={ref}
         className={cn(
           "group peer flex h-full shrink-0 flex-col transition-all duration-300 ease-in-out",
-          "border-grey-200 border-r bg-white",
+          "border-grey-200 bg-grey-50 border-r",
           "fixed top-0 left-0 z-50 md:relative",
 
           // Expanded widths: 280px (800-1500px) → 330px (1500px+)
@@ -439,7 +431,6 @@ export const SidebarInset = React.forwardRef<
     ref={ref}
     className={cn(
       "bg-grey-100 relative flex w-full flex-1 flex-col overflow-y-auto",
-      // Add padding for mobile when sidebar is open
       "transition-all duration-300",
       className
     )}

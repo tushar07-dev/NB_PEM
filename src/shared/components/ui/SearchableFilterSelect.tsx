@@ -7,7 +7,7 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/shared/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { Search, X } from "lucide-react";
 import {
   SELECT_SIZE_CONFIG,

@@ -68,14 +68,14 @@
   --border-radius-full: 100px;
 
   /* ---------------- Breakpoints ---------------- */
-  --breakpoint-sm: 800px;  
+  --breakpoint-sm: 800px;
   --breakpoint-md: 800px; /* NOW md: uses 800px */
   --breakpoint-lg: 1500px; /* NOW lg: uses 1500px */
   --breakpoint-xl: 1800px; /* NOW xl: uses 1800px */
 
   /* ---------------- Fonts ---------------- */
   --font-solutioneer: "Solutioneer", ui-sans-serif, system-ui;
-  --font-helvetica-now: "Helvetica Now Text", ui-sans-serif, system-ui;
+  --font-helvetica-now: "Helvetica Now Text", system-ui;
 
   /* ---------------- Primary Color Scale (Brand Blue) ---------------- */
   --color-primary-50: #9ca5ad;
@@ -230,40 +230,40 @@
    ========================================================= */
 :root {
   /* ShadCN Theme Colors - HSL format (H S% L%) */
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(203 64% 16%);
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(206 72% 11%);
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(206 72% 11%);
-  --primary: hsl(206 72% 11%);
-  --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(210 20% 98%);
-  --secondary-foreground: hsl(215 25% 27%);
-  --muted: hsl(0 0% 98%);
-  --muted-foreground: hsl(210 9% 56%);
-  --accent: hsl(210 40% 96%);
-  --accent-foreground: hsl(210 50% 11%);
-  --destructive: hsl(0 72% 51%);
-  --border: hsl(214 32% 91%);
-  --input: hsl(210 20% 98%);
-  --ring: hsl(210 50% 11%);
+  --background: hsl(0, 0%, 96%);
+  --foreground: hsl(203, 64%, 16%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(206, 72%, 11%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(206, 72%, 11%);
+  --primary: hsl(206, 72%, 11%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(210, 20%, 98%);
+  --secondary-foreground: hsl(215, 25%, 27%);
+  --muted: hsl(0, 0%, 98%);
+  --muted-foreground: hsl(210, 9%, 56%);
+  --accent: hsl(210, 40%, 96%);
+  --accent-foreground: hsl(210, 50%, 11%);
+  --destructive: hsl(0, 72%, 51%);
+  --border: hsl(214, 32%, 91%);
+  --input: hsl(210, 20%, 98%);
+  --ring: hsl(210, 50%, 11%);
 
   /* Chart Colors */
-  --chart-1: hsl(0 0% 70%); /* #b2b2b2 */
-  --chart-2: hsl(214 32% 91%); /* #e2e8f0 */
-  --chart-3: hsl(214 17% 61%); /* #94a3b8 */
-  --chart-4: hsl(214 20% 81%); /* #cbd5e1 */
-  --chart-5: hsl(214 32% 91%); /* #e2e8f0 */
+  --chart-1: hsl(0, 0%, 70%); /* #b2b2b2 */
+  --chart-2: hsl(214, 32%, 91%); /* #e2e8f0 */
+  --chart-3: hsl(214, 17%, 61%); /* #94a3b8 */
+  --chart-4: hsl(214, 20%, 81%); /* #cbd5e1 */
+  --chart-5: hsl(214, 32%, 91%); /* #e2e8f0 */
   /* Sidebar Colors */
-  --sidebar: hsl(208 73% 11%);
-  --sidebar-foreground: hsl(0 0% 100%);
-  --sidebar-primary: hsl(0 0% 100%);
-  --sidebar-primary-foreground: hsl(210 50% 11%);
-  --sidebar-border: hsl(208 73% 15%);
-  --sidebar-accent: hsl(208 73% 15%);
-  --sidebar-accent-foreground: hsl(0 0% 100%);
-  --sidebar-ring: hsl(0 0% 100%);
+  --sidebar: hsl(208, 73%, 11%);
+  --sidebar-foreground: hsl(0, 0%, 100%);
+  --sidebar-primary: hsl(0, 0%, 100%);
+  --sidebar-primary-foreground: hsl(210, 50%, 11%);
+  --sidebar-border: hsl(208, 73%, 15%);
+  --sidebar-accent: hsl(208, 73%, 15%);
+  --sidebar-accent-foreground: hsl(0, 0%, 100%);
+  --sidebar-ring: hsl(0, 0%, 100%);
 
   /* Border Radius */
   --radius: 0.75rem;
@@ -277,19 +277,24 @@
   --shadow-color: 0, 0, 0;
 
   /* Shadow Utilities */
-  --shadow-2xs: 0px 4px 12px 0px hsl(0 0% 0% / 0.02);
-  --shadow-xs: 0px 4px 12px 0px hsl(0 0% 0% / 0.02);
+  --shadow-2xs: 0px 4px 12px 0px hsl(0, 0%, 0% / 0.02);
+  --shadow-xs: 0px 4px 12px 0px hsl(0, 0%, 0% / 0.02);
   --shadow-sm:
-    0px 4px 12px 0px hsl(0 0% 0% / 0.04), 0px 1px 2px -1px hsl(0 0% 0% / 0.04);
+    0px 4px 12px 0px hsl(0, 0%, 0% / 0.04),
+    0px 1px 2px -1px hsl(0, 0%, 0% / 0.04);
   --shadow:
-    0px 4px 12px 0px hsl(0 0% 0% / 0.04), 0px 1px 2px -1px hsl(0 0% 0% / 0.04);
+    0px 4px 12px 0px hsl(0, 0%, 0% / 0.04),
+    0px 1px 2px -1px hsl(0, 0%, 0% / 0.04);
   --shadow-md:
-    0px 4px 12px 0px hsl(0 0% 0% / 0.04), 0px 2px 4px -1px hsl(0 0% 0% / 0.04);
+    0px 4px 12px 0px hsl(0, 0%, 0% / 0.04),
+    0px 2px 4px -1px hsl(0, 0%, 0% / 0.04);
   --shadow-lg:
-    0px 4px 12px 0px hsl(0 0% 0% / 0.04), 0px 4px 6px -1px hsl(0 0% 0% / 0.04);
+    0px 4px 12px 0px hsl(0, 0%, 0% / 0.04),
+    0px 4px 6px -1px hsl(0, 0%, 0% / 0.04);
   --shadow-xl:
-    0px 4px 12px 0px hsl(0 0% 0% / 0.04), 0px 8px 10px -1px hsl(0 0% 0% / 0.04);
-  --shadow-2xl: 0px 4px 12px 0px hsl(0 0% 0% / 0.1);
+    0px 4px 12px 0px hsl(0, 0%, 0% / 0.04),
+    0px 8px 10px -1px hsl(0, 0%, 0% / 0.04);
+  --shadow-2xl: 0px 4px 12px 0px hsl(0, 0%, 0% / 0.1);
 
   /* Typography */
   --tracking-normal: -0.011em;
@@ -372,7 +377,7 @@
     padding: var(--spacing-4);
     justify-content: center;
     align-items: center;
-    gap: var(--spacing-2.5);
+    gap: var(--spacing-2);
     border-radius: 30px;
     background: var(--background);
     cursor: pointer;
@@ -457,6 +462,128 @@
   /* Simplify scrollbar - remove if sidebar doesn't scroll */
   .scrollbar-thin::-webkit-scrollbar {
     width: 4px; /* Thinner = faster render */
+  }
+}
+
+@layer components {
+  /* Table Header Styles */
+  .table-header-cell {
+    background-color: var(--color-grey-200);
+    color: var(--color-primary-400);
+    font-family: var(--font-helvetica-now);
+    font-size: var(--text-300);
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    text-transform: capitalize;
+    padding: 9px 20px 7px 20px;
+  }
+  /* Table Row Styles */
+  .data-table-row {
+    background-color: var(--color-grey-50);
+  }
+
+  .data-table-row:hover {
+    background-color: var(--color-grey-100) !important;
+  }
+
+  /* Table Cell Text */
+  .table-cell-text {
+    /* background-color: var(--color-grey-50); */
+    /* color: var(--color-primary-500); */
+    font-family: var(--font-helvetica-now);
+    font-size: var(--fs-300);
+    font-weight: 500;
+    text-transform: capitalize;
+    font-family: var(--font-helvetica-now);
+    font-size: var(--text-200);
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    text-transform: capitalize;
+  }
+  /* Status Badge Styles */
+  .status-completed {
+    color: var(--color-success-600);
+    font-weight: 500;
+  }
+
+  .status-in-progress {
+    color: var(--color-warning-400);
+    font-weight: 500;
+  }
+
+  .status-not-started {
+    color: var(--color-primary-500);
+    font-weight: 500;
+  }
+
+  /* Icon button with Dark Blue background */
+  .icon-btn-dark-blue {
+    /* background-color: var(--color-primary-200); */
+    color: var(--color-primary-200);
+    padding: 4px;
+    border-radius: 4px;
+  }
+
+  .icon-btn-dark-blue:hover {
+    color: var(--color-primary-50);
+  }
+  /* Data table pagination styles */
+  .data-table-pagination-btn {
+    @apply text-primary-600 rounded-md border border-transparent bg-transparent px-2 py-0.5 transition-colors duration-150;
+  }
+  .data-table-pagination-btn[data-active="true"] {
+    @apply border-primary-400 text-primary-900 bg-gray-50 shadow-sm;
+  }
+  .data-table-pagination-btn:not([data-active="true"]):hover {
+    @apply border-primary-300 text-primary-700 bg-transparent;
+  }
+  .data-table-pagination-btn:focus {
+    @apply ring-primary-200 ring-2;
+  }
+  .data-table-pagination-numbers {
+    @apply flex items-center gap-2;
+  }
+  .data-table-pagination-rows {
+    @apply ml-2 flex items-center gap-2;
+  }
+  .data-table-scroll-wrapper {
+    overflow-x: auto;
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s ease;
+  }
+
+  /* Firefox — reveal on hover */
+  .data-table-scroll-wrapper:hover {
+    scrollbar-color: var(--color-gray-300) transparent;
+  }
+
+  /* Chrome, Safari, Edge (Chromium) */
+  .data-table-scroll-wrapper::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .data-table-scroll-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* Ghost state — almost invisible */
+  .data-table-scroll-wrapper::-webkit-scrollbar-thumb {
+    background-color: var(--color-primary-100);
+    border-radius: 100px;
+  }
+
+  /* Hover state — softly visible */
+  .data-table-scroll-wrapper:hover::-webkit-scrollbar-thumb {
+    background-color: var(--color-primary-300);
+  }
+
+  /* Active drag — slightly more prominent */
+  .data-table-scroll-wrapper::-webkit-scrollbar-thumb:active {
+    background-color: var(--color-primary-500);
   }
 }
 

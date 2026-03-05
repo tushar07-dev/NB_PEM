@@ -40,12 +40,12 @@ export const ROLE_NAVIGATION = {
         {
           title: "Document Requirement",
           url: "/pem-requirements/document-requirement",
-          roles: ["admin", "user"],
+          roles: ["admin"],
         },
         {
           title: "Discipline Activity Requirement",
           url: "/pem-requirements/discipline-activity-requirement",
-          roles: ["admin", "user"],
+          roles: ["admin"],
         },
       ],
     },

@@ -1,20 +1,20 @@
 {
   "api": {
-    "baseUrl": "https://api.example.com",
+    "baseUrl": "http://pemdigitaldevapi.akersolutions.com",
     "timeout": 10000
   },
   "auth": {
-    "clientId": "your-msal-client-id",
-    "tenantId": "your-tenant-id",
-    "authority": "https://login.microsoftonline.com/your-tenant-id",
-    "redirectUri": "http://localhost:5173"
+    "clientId": "ed34402c-0601-4fec-a339-b5e0ffbdbe81",
+    "tenantId": "26b749f6-8c72-44e3-bbde-ae3de07b4206",
+    "authority": "https://login.microsoftonline.com/26b749f6-8c72-44e3-bbde-ae3de07b4206",
+    "redirectUri": ""
   },
   "monitoring": {
     "appInsightsConnectionString": "",
     "enableMonitoring": false
   },
   "features": {
-    "enableDebugMode": true,
+    "enableDebugMode": false,
     "enableAnalytics": false
   },
   "environment": {

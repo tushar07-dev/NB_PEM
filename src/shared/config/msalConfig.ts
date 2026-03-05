@@ -11,13 +11,13 @@ export function initializeMsalInstance() {
     auth: {
       clientId: authConfig.clientId,
       authority: authConfig.authority,
-      redirectUri: authConfig.redirectUri,
+      redirectUri: authConfig.redirectUri || window.location.origin,
     },
     cache: {
       cacheLocation: "sessionStorage",
       storeAuthStateInCookie: false,
     },
-  }
+  };
 
   msalInstance = new PublicClientApplication(msalConfig)
   return msalInstance

@@ -1,3 +1,4 @@
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Breadcrumb,
@@ -67,7 +68,7 @@ export function DynamicBreadcrumb() {
       <Breadcrumb>
         <BreadcrumbList>
           {breadcrumbItems.map((item) => (
-            <div key={item.url} className="flex items-center gap-2">
+            <React.Fragment key={item.url}>
               <BreadcrumbItem>
                 {item.isLast ? (
                   <BreadcrumbPage className="font-medium text-gray-900">
@@ -85,7 +86,7 @@ export function DynamicBreadcrumb() {
                 )}
               </BreadcrumbItem>
               {!item.isLast && <BreadcrumbSeparator />}
-            </div>
+            </React.Fragment>
           ))}
         </BreadcrumbList>
       </Breadcrumb>

@@ -5,7 +5,7 @@ const RouterError = () => {
 
   if (isRouteErrorResponse(error)) {
     return (
-      <div style={{ padding: 40 }}>
+      <div className="p-10">
         <h2>{error.status}</h2>
         <p>{error.statusText}</p>
       </div>
@@ -13,7 +13,7 @@ const RouterError = () => {
   }
 
   return (
-    <div style={{ padding: 40 }}>
+    <div className="p-10">
       <h2>Something went wrong</h2>
     </div>
   )

@@ -1,12 +1,16 @@
 import React from "react"
+import type { ErrorBoundaryProps as RebProps } from "react-error-boundary"
 import { ErrorBoundary as ReactErrorBoundary } from "react-error-boundary"
 import ErrorFallback from "./ErrorFallback"
 import { logError } from "../services/errorLogger"
+import { trackEvent } from "../services/monitoring"
+
+type ResetDetails = Parameters<NonNullable<RebProps["onReset"]>>[0]
 
 interface ErrorBoundaryProps {
   children: React.ReactNode
   fallback?: React.ComponentType<{ error: Error; resetErrorBoundary: () => void }>
-  onError?: (error: Error, errorInfo: { componentStack: string }) => void
+  onError?: (error: unknown, errorInfo: { componentStack: string }) => void
   onReset?: () => void
   resetKeys?: Array<string | number>
   fallbackRender?: (props: { error: Error; resetErrorBoundary: () => void }) => React.ReactElement
@@ -20,22 +24,21 @@ export function ErrorBoundary({
   onReset,
   resetKeys
 }: ErrorBoundaryProps) {
-  const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
-    // Log error with our custom logging system
+  const handleError = (error: unknown, errorInfo: React.ErrorInfo) => {
+    const message = error instanceof Error ? error.message : String(error)
+    const stack = error instanceof Error ? error.stack : undefined
+
     logError({
       type: "UI_ERROR",
-      message: error.message,
-      stack: errorInfo.componentStack || undefined,
+      message,
+      stack: errorInfo.componentStack ?? stack,
     })
 
-    // Call custom onError handler if provided
-    onError?.(error, { componentStack: errorInfo.componentStack || "" })
+    onError?.(error, { componentStack: errorInfo.componentStack ?? "" })
   }
 
-  const handleReset = (details: { reason: "imperative-api"; args: any[] } | { reason: "keys"; prev: any[] | undefined; next: any[] | undefined }) => {
-    // Log reset event via monitoring service in production
-
-    // Call custom onReset handler if provided
+  const handleReset = (details: ResetDetails) => {
+    trackEvent("error_boundary_reset", { reason: details.reason })
     onReset?.()
   }
 
@@ -59,33 +62,4 @@ export function ErrorBoundary({
       {children}
     </ReactErrorBoundary>
   )
-}
-
-// Legacy class component export for backward compatibility
-export class LegacyErrorBoundary extends React.Component<
-  React.PropsWithChildren,
-  { hasError: boolean; message?: string; errorId?: string }
-> {
-  state = { hasError: false, message: undefined as string | undefined, errorId: undefined as string | undefined }
-
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, message: error.message }
-  }
-
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
-    const errorId = logError({
-      type: "UI_ERROR",
-      message: error.message,
-      stack: info.componentStack || undefined,
-    })
-
-    this.setState({ errorId })
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return <ErrorFallback message={this.state.message} errorId={this.state.errorId} />
-    }
-    return this.props.children
-  }
 }

@@ -3,7 +3,6 @@
 import type { Column } from "@tanstack/react-table";
 import {
   ChevronDown,
-  ChevronsUpDown,
   ChevronUp,
   EyeOff,
   X,

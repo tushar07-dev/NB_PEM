@@ -28,7 +28,8 @@ const LoginForm = () => {
   const from =
     (location.state as { from?: { pathname?: string } })?.from?.pathname ||
     "/dashboard";
-  const handleLoginSubmit = async () => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     clearError();
     setIsLoading(true);
 
@@ -42,12 +43,6 @@ const LoginForm = () => {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && email && password && !isLoading) {
-      handleLoginSubmit();
-    }
-  };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100">
       <Card className="w-full max-w-md">
@@ -56,43 +51,43 @@ const LoginForm = () => {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="space-y-1">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={isLoading}
-              autoComplete="email"
-            />
-          </div>
+          <form onSubmit={handleLoginSubmit} className="space-y-4">
+            <div className="space-y-1">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                autoComplete="email"
+              />
+            </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={isLoading}
-              autoComplete="current-password"
-            />
-          </div>
+            <div className="space-y-1">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+                autoComplete="current-password"
+              />
+            </div>
 
-          {isError && <p className="text-sm text-red-500">{error?.message}</p>}
+            {isError && <p className="text-sm text-red-500">{error?.message}</p>}
 
-          <Button
-            className="w-full"
-            onClick={handleLoginSubmit}
-            disabled={isLoading || !email || !password}
-          >
-            {isLoading ? "Logging in..." : "Login"}
-          </Button>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading || !email || !password}
+            >
+              {isLoading ? "Logging in..." : "Login"}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>

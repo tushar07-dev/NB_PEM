@@ -25,6 +25,7 @@ const DashboardPage = lazy(() =>
     default: () => <ComingSoon title="Dashboard" />,
   }))
 );
+const DocumentChecklistDetailPage = lazyPage("Document Checklist Detail");
 
 // PEM Requirements Pages
 const ControlObjectRequirementPage = lazyPage("Control Object Requirement");
@@ -137,13 +138,27 @@ export const router = createBrowserRouter([
               </LazyRoute>
             ),
           },
+          // AFTER
           {
             path: "document-checklist",
-            element: (
-              <LazyRoute roles={["admin"]}>
-                <DocumentChecklistPage />
-              </LazyRoute>
-            ),
+            children: [
+              {
+                index: true,
+                element: (
+                  <LazyRoute roles={["admin"]}>
+                    <DocumentChecklistPage />
+                  </LazyRoute>
+                ),
+              },
+              {
+                path: "checklist",
+                element: (
+                  <LazyRoute roles={["admin"]}>
+                    <DocumentChecklistDetailPage />
+                  </LazyRoute>
+                ),
+              },
+            ],
           },
           {
             path: "discipline-activity-checklist",

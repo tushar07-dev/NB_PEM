@@ -6,16 +6,3 @@ export interface DocumentFiltersType {
   system?: string;
   area?: string;
 }
-
-export interface DocumentRecord {
-  id: string;
-  title: string;
-  documentNo: string;
-  reasonForIssue: string;
-  revisionStatus: string;
-  revision: string;
-  originator: string;
-  checker: string;
-  approver: string;
-  status: "In Progress" | "Completed" | "Not Started";
-}

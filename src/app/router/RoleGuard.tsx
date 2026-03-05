@@ -27,9 +27,6 @@ export const RoleGuard = ({ children, allowedRoles }: RoleGuardProps) => {
 
   // Logged in but role not allowed → unauthorized
   if (!allowedRoles.includes(currentUser.role)) {
-    console.warn(
-      `🚫 Access denied: User role "${currentUser.role}" not in allowed roles [${allowedRoles.join(", ")}]`
-    );
     return <Navigate to="/unauthorized" replace />;
   }
 

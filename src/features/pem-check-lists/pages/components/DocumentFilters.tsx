@@ -1,8 +1,10 @@
+// src/features/pem-check-lists/pages/components/DocumentFilters.tsx
 import { useCallback } from "react";
 import { AlertTriangle, Trash2, RefreshCw } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { SearchableFilterSelect } from "@/shared/components/ui/SearchableFilterSelect";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useProjectStore } from "@/shared/store/projectStore";
 import type { DocumentFiltersType } from "../../types/document";
 import {
@@ -27,63 +29,55 @@ export function DocumentFilters({
 }: DocumentFiltersProps) {
   const selectedProject = useProjectStore((state) => state.selectedProject);
 
+  // ── UI gating ─────────────────────────────────────────────────────────────
+  const hasProject = !!selectedProject;
+  const documentGroupEnabled = hasProject && !!filters.discipline;
+  const documentTypeEnabled = documentGroupEnabled && !!filters.documentGroup;
+  const downstreamEnabled = documentTypeEnabled && !!filters.documentType;
+
+  // ── Fetch on mount (2 calls) ──────────────────────────────────────────────
   const {
     data: disciplines = [],
     isLoading: loadingDisciplines,
     error: errorDisciplines,
     refetch: refetchDisciplines,
-  } = useDisciplines(selectedProject?.id);
-
+  } = useDisciplines();
   const {
     data: documentGroups = [],
     isLoading: loadingGroups,
     error: errorGroups,
     refetch: refetchGroups,
-  } = useDocumentGroups(filters.discipline);
+  } = useDocumentGroups();
 
+  // ── Fetch only when documentGroup is selected (1 call) ───────────────────
   const {
     data: documentTypes = [],
     isLoading: loadingTypes,
     error: errorTypes,
     refetch: refetchTypes,
-  } = useDocumentTypes(filters.discipline);
+  } = useDocumentTypes(filters.documentGroup);
 
+  // ── Fetch only when all 3 mandatory filters are selected (3 calls) ────────
   const {
     data: facilityCodes = [],
     isLoading: loadingFacilities,
     error: errorFacilities,
     refetch: refetchFacilities,
-  } = useFacilityCodes(filters.discipline);
-
+  } = useFacilityCodes(downstreamEnabled);
   const {
     data: systems = [],
     isLoading: loadingSystems,
     error: errorSystems,
     refetch: refetchSystems,
-  } = useSystems(filters.discipline);
-
+  } = useSystems(downstreamEnabled);
   const {
     data: areas = [],
     isLoading: loadingAreas,
     error: errorAreas,
     refetch: refetchAreas,
-  } = useAreas(filters.discipline);
+  } = useAreas(downstreamEnabled);
 
-  // Gating Logic
-  const baseEnabled = !!selectedProject;
-  const disciplineEnabled = baseEnabled;
-  const documentGroupEnabled = baseEnabled && !!filters.discipline;
-  const documentTypeEnabled =
-    baseEnabled && !!filters.discipline && !!filters.documentGroup;
-  const downstreamEnabled =
-    baseEnabled &&
-    !!filters.discipline &&
-    !!filters.documentGroup &&
-    !!filters.documentType;
-
-  // ============================================
-  // Change Handlers (with cascade clearing)
-  // ============================================
+  // ── Handlers with cascade clearing ───────────────────────────────────────
   const handleDisciplineChange = useCallback(
     (value?: string) => {
       onFilterChange({
@@ -144,9 +138,7 @@ export function DocumentFilters({
     [onFilterChange]
   );
 
-  // ============================================
-  // Error Collection
-  // ============================================
+  // ── Error handling ────────────────────────────────────────────────────────
   const errors = [
     errorDisciplines,
     errorGroups,
@@ -156,22 +148,37 @@ export function DocumentFilters({
     errorAreas,
   ].filter(Boolean);
 
-  const hasErrors = errors.length > 0;
-  console.log("Disciplines:", disciplines);
-  // console.log("Groups:", documentGroups);
-  // console.log("Types:", documentTypes);
+  const handleRetry = useCallback(() => {
+    if (errorDisciplines) refetchDisciplines();
+    if (errorGroups) refetchGroups();
+    if (errorTypes) refetchTypes();
+    if (errorFacilities) refetchFacilities();
+    if (errorSystems) refetchSystems();
+    if (errorAreas) refetchAreas();
+  }, [
+    errorDisciplines,
+    errorGroups,
+    errorTypes,
+    errorFacilities,
+    errorSystems,
+    errorAreas,
+    refetchDisciplines,
+    refetchGroups,
+    refetchTypes,
+    refetchFacilities,
+    refetchSystems,
+    refetchAreas,
+  ]);
 
-  // ============================================
-  // Render
-  // ============================================
+  const isInitialLoading = loadingDisciplines || loadingGroups;
+
   return (
-    <div className="bg-grey-50 mb-2 rounded-lg border border-gray-200 px-3 py-4 lg:px-5 lg:py-4">
+    <div className="bg-grey-50 mb-2 rounded-lg border border-gray-200 px-3 py-3 lg:px-5 lg:py-4 xl:px-6 xl:py-5">
       {/* Header */}
       <div className="mb-5 flex flex-row items-center gap-3">
         <h2 className="text-md shrink-0 font-medium text-gray-700">Filter</h2>
-
         <div className="ml-auto flex items-center gap-3">
-          {!selectedProject && (
+          {!hasProject && (
             <Alert variant="warning" className="w-fit py-2">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription className="whitespace-nowrap">
@@ -179,12 +186,11 @@ export function DocumentFilters({
               </AlertDescription>
             </Alert>
           )}
-
           <Button
             variant="outline"
             size="sm"
             onClick={onClearAll}
-            className="shrink-0 gap-2 text-gray-600"
+            className="border-primary-200 text-primary-200 hover:bg-grey-100 hover:border-primary-300 hover:text-primary-300 shrink-0 gap-[6px] rounded-[8px] px-[12px] py-[8px] text-[10px] leading-[15px] font-medium uppercase"
           >
             <Trash2 className="h-4 w-4" />
             CLEAR ALL
@@ -192,8 +198,8 @@ export function DocumentFilters({
         </div>
       </div>
 
-      {/* API Error Alert */}
-      {hasErrors && (
+      {/* Error Alert */}
+      {errors.length > 0 && (
         <Alert variant="destructive" className="mb-4">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription className="flex items-center justify-between">
@@ -201,14 +207,7 @@ export function DocumentFilters({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => {
-                if (errorDisciplines) refetchDisciplines();
-                if (errorGroups) refetchGroups();
-                if (errorTypes) refetchTypes();
-                if (errorFacilities) refetchFacilities();
-                if (errorSystems) refetchSystems();
-                if (errorAreas) refetchAreas();
-              }}
+              onClick={handleRetry}
               className="ml-2 gap-1 text-xs"
             >
               <RefreshCw className="h-3 w-3" />
@@ -219,109 +218,74 @@ export function DocumentFilters({
       )}
 
       {/* Filter Grid */}
-      <div className="grid grid-cols-3 gap-x-3 gap-y-4 md:gap-x-5 md:gap-y-6">
-        {/* Discipline */}
-        <SearchableFilterSelect
-          label="Discipline"
-          size="md"
-          placeholder={loadingDisciplines ? "Loading..." : "Select discipline"}
-          options={disciplines}
-          value={filters.discipline}
-          onValueChange={handleDisciplineChange}
-          disabled={!disciplineEnabled || loadingDisciplines}
-          required
-          helperText={
-            disciplines.length === 0 && !loadingDisciplines && disciplineEnabled
-              ? "No disciplines available"
-              : undefined
-          }
-        />
+      <div className="grid grid-cols-3 gap-x-3 gap-y-3 lg:gap-x-5 lg:gap-y-5 xl:gap-x-6 xl:gap-y-6">
+        {isInitialLoading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex flex-col gap-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ))
+        ) : (
+          <>
+            <SearchableFilterSelect
+              label="Discipline"
+              placeholder="Select discipline"
+              options={disciplines}
+              value={filters.discipline}
+              onValueChange={handleDisciplineChange}
+              disabled={!hasProject}
+              required
+            />
 
-        {/* Document Group */}
-        <SearchableFilterSelect
-          label="Document Group"
-          size="md"
-          placeholder={loadingGroups ? "Loading..." : "Eg. ENG"}
-          options={documentGroups}
-          value={filters.documentGroup}
-          onValueChange={handleDocumentGroupChange}
-          required
-          disabled={!documentGroupEnabled || loadingGroups}
-          helperText={
-            documentGroups.length === 0 &&
-            !loadingGroups &&
-            documentGroupEnabled
-              ? "No groups available"
-              : undefined
-          }
-        />
+            <SearchableFilterSelect
+              label="Document Group"
+              placeholder="Eg. ENG"
+              options={documentGroups}
+              value={filters.documentGroup}
+              onValueChange={handleDocumentGroupChange}
+              disabled={!documentGroupEnabled}
+              required
+            />
 
-        {/* Document Type */}
-        <SearchableFilterSelect
-          label="Document Type"
-          size="md"
-          placeholder={loadingTypes ? "Loading..." : "EG. XC"}
-          options={documentTypes}
-          value={filters.documentType}
-          onValueChange={handleDocumentTypeChange}
-          required
-          disabled={!documentTypeEnabled || loadingTypes}
-          helperText={
-            documentTypes.length === 0 && !loadingTypes && documentTypeEnabled
-              ? "No types available"
-              : undefined
-          }
-        />
+            <SearchableFilterSelect
+              label="Document Type"
+              placeholder={loadingTypes ? "Loading..." : "Eg. XC"}
+              options={documentTypes}
+              value={filters.documentType}
+              onValueChange={handleDocumentTypeChange}
+              disabled={!documentTypeEnabled || loadingTypes}
+              required
+            />
 
-        {/* Facility Code */}
-        <SearchableFilterSelect
-          label="Facility Code"
-          size="md"
-          placeholder={loadingFacilities ? "Loading..." : "Select facility"}
-          options={facilityCodes}
-          value={filters.facilityCode}
-          onValueChange={handleFacilityChange}
-          disabled={!downstreamEnabled || loadingFacilities}
-          helperText={
-            facilityCodes.length === 0 &&
-            !loadingFacilities &&
-            downstreamEnabled
-              ? "No facilities available"
-              : undefined
-          }
-        />
+            <SearchableFilterSelect
+              label="Facility Code"
+              placeholder={loadingFacilities ? "Loading..." : "Select facility"}
+              options={facilityCodes}
+              value={filters.facilityCode}
+              onValueChange={handleFacilityChange}
+              disabled={!downstreamEnabled || loadingFacilities}
+            />
 
-        {/* System */}
-        <SearchableFilterSelect
-          label="System"
-          size="md"
-          placeholder={loadingSystems ? "Loading..." : "EG. 70"}
-          options={systems}
-          value={filters.system}
-          onValueChange={handleSystemChange}
-          disabled={!downstreamEnabled || loadingSystems}
-          helperText={
-            systems.length === 0 && !loadingSystems && downstreamEnabled
-              ? "No systems available"
-              : undefined
-          }
-        />
+            <SearchableFilterSelect
+              label="System"
+              placeholder={loadingSystems ? "Loading..." : "Eg. 70"}
+              options={systems}
+              value={filters.system}
+              onValueChange={handleSystemChange}
+              disabled={!downstreamEnabled || loadingSystems}
+            />
 
-        {/* Area */}
-        <SearchableFilterSelect
-          label="Area"
-          size="md"
-          placeholder={loadingAreas ? "Loading..." : "EG. N/A"}
-          options={areas}
-          value={filters.area}
-          onValueChange={handleAreaChange}
-          disabled={!downstreamEnabled || loadingAreas}
-          helperText={
-            areas.length === 0 && !loadingAreas && downstreamEnabled
-              ? "No areas available"
-              : undefined
-          }
-        />
+            <SearchableFilterSelect
+              label="Area"
+              placeholder={loadingAreas ? "Loading..." : "Eg. N/A"}
+              options={areas}
+              value={filters.area}
+              onValueChange={handleAreaChange}
+              disabled={!downstreamEnabled || loadingAreas}
+            />
+          </>
+        )}
       </div>
     </div>
   );

@@ -20,7 +20,9 @@ export function logApiError(error: unknown) {
       timestamp: new Date().toISOString(),
     }
 
-    console.error("[API ERROR]", errorDetails)
+    if (import.meta.env.DEV) {
+      console.error("[API ERROR]", errorDetails)
+    }
 
     trackException(new Error(`API Error: ${error.message}`), {
       type: 'API_ERROR',
@@ -35,7 +37,9 @@ export function logApiError(error: unknown) {
       timestamp: new Date().toISOString(),
     }
 
-    console.error("[UNKNOWN API ERROR]", errorDetails)
+    if (import.meta.env.DEV) {
+      console.error("[UNKNOWN API ERROR]", errorDetails)
+    }
 
     trackException(error instanceof Error ? error : new Error('Unknown API error'), {
       type: 'UNKNOWN_API_ERROR',

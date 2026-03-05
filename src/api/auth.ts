@@ -13,8 +13,34 @@ const mockUsers: Array<{
   name: string;
   role: "admin" | "user";
 }> = [
-  { id: 1, email: "admin@test.com", password: "admin123", name: "Admin User", role: "admin" },
-  { id: 2, email: "user@test.com", password: "user123", name: "Regular User", role: "user" },
+  {
+    id: 1,
+    email: "sanghati.chatterjee2@akersolutions.com",
+    password: "abc",
+    name: "Admin User",
+    role: "admin",
+  },
+  {
+    id: 2,
+    email: "nilesh.thakur@akersolutions.com",
+    password: "abc",
+    name: "Admin User",
+    role: "admin",
+  },
+  {
+    id: 3,
+    email: "tushar.shelke@akersolutions.com",
+    password: "abc",
+    name: "Admin User",
+    role: "admin",
+  },
+  {
+    id: 4,
+    email: "shiv.kumar@akersolutions.com",
+    password: "abc",
+    name: "Regular User",
+    role: "user",
+  },
 ];
 
 function generateAuthToken(): string {
@@ -39,12 +65,17 @@ export async function getUser(): Promise<AuthResponse> {
   };
 }
 
-export async function login(email: string, password: string): Promise<AuthResponse> {
+export async function login(
+  email: string,
+  password: string
+): Promise<AuthResponse> {
   // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 600));
 
   // Find user by email and password
-  const user = mockUsers.find((u) => u.email === email && u.password === password);
+  const user = mockUsers.find(
+    (u) => u.email === email && u.password === password
+  );
 
   if (!user) {
     throw new Error("Invalid email or password");

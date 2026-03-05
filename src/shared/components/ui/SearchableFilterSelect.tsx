@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import {
   Select,
@@ -8,13 +6,12 @@ import {
   SelectTrigger,
 } from "@/shared/components/ui/select";
 import { cn } from "@/shared/lib/utils";
-import { Search, X } from "lucide-react";
+import { Search, X, ChevronDown } from "lucide-react";
 import {
   SELECT_SIZE_CONFIG,
+  SELECT_AUTO_CONFIG,
   SELECT_BASE_STYLES,
 } from "@/shared/components/SearchableSelectTokens";
-
-// ─── Constants ────────────────────────────────────────────────────────────────
 
 const CONSTANTS = {
   EMPTY_VALUE: "__EMPTY__",
@@ -32,15 +29,13 @@ const DEFAULT_TEXTS = {
   startSearchTitle: "Start typing to search",
 } as const;
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 type Option = {
   value: string;
   label: string;
   disabled?: boolean;
 };
 
-type Size = "sm" | "md" | "lg";
+type Size = "sm" | "md" | "lg" | "auto";
 
 type CustomTexts = {
   searchPlaceholder?: string;
@@ -55,51 +50,18 @@ type Props = {
   label: string;
   placeholder: string;
   options: Option[];
-  /**
-   * Always pass a string ("" means no selection).
-   * Never alternate between string and undefined — that causes the
-   * "controlled → uncontrolled" Radix warning.
-   */
   value?: string;
   onValueChange?: (value: string) => void;
   required?: boolean;
   disabled?: boolean;
   error?: string;
-  /**
-   * Helper text displayed below the select (info message)
-   * Example: "No disciplines available" or "Select your preferred option"
-   */
   helperText?: string;
   className?: string;
   clearable?: boolean;
   size?: Size;
-  /**
-   * Customize all user-facing text strings
-   */
   texts?: CustomTexts;
 };
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
-/**
- * SearchableFilterSelect
- *
- * A controlled select component with search functionality, keyboard navigation,
- * and accessibility features.
- *
- * @example
- * ```tsx
- * <SearchableFilterSelect
- *   label="Country"
- *   placeholder="Select a country"
- *   options={countries}
- *   value={selectedCountry}
- *   onValueChange={setSelectedCountry}
- *   clearable
- *   helperText="Choose your current location"
- * />
- * ```
- */
 export function SearchableFilterSelect({
   label,
   placeholder,
@@ -112,7 +74,7 @@ export function SearchableFilterSelect({
   helperText,
   className,
   clearable = false,
-  size = "md",
+  size = "auto",
   texts,
 }: Props) {
   const [search, setSearch] = React.useState("");
@@ -120,7 +82,6 @@ export function SearchableFilterSelect({
   const searchInputRef = React.useRef<HTMLInputElement>(null);
   const isMountedRef = React.useRef(true);
 
-  // Merge custom texts with defaults
   const mergedTexts = { ...DEFAULT_TEXTS, ...texts };
 
   React.useEffect(() => {
@@ -130,9 +91,9 @@ export function SearchableFilterSelect({
     };
   }, []);
 
-  const sizeStyles = SELECT_SIZE_CONFIG[size];
+  const sizeStyles =
+    size === "auto" ? SELECT_AUTO_CONFIG : SELECT_SIZE_CONFIG[size];
 
-  // ─── Controlled Value Management ──────────────────────────────────────────
   const radixValue = !value ? CONSTANTS.EMPTY_VALUE : value;
 
   const handleValueChange = React.useCallback(
@@ -144,8 +105,8 @@ export function SearchableFilterSelect({
     [onValueChange]
   );
 
-  // ─── Derived State ────────────────────────────────────────────────────────
   const hasValue = Boolean(value);
+
   const selectedLabel = React.useMemo(
     () => options.find((o) => o.value === value)?.label ?? null,
     [options, value]
@@ -173,8 +134,6 @@ export function SearchableFilterSelect({
       subtitle: `${options.length} option${options.length !== 1 ? "s" : ""} available`,
     };
   }, [search, options.length, mergedTexts]);
-
-  // ─── Event Handlers ───────────────────────────────────────────────────────
 
   const handleClear = React.useCallback(
     (e: React.MouseEvent | React.KeyboardEvent) => {
@@ -246,8 +205,6 @@ export function SearchableFilterSelect({
     [search]
   );
 
-  // ─── Effects ──────────────────────────────────────────────────────────────
-
   React.useEffect(() => {
     if (!open) setSearch("");
   }, [open]);
@@ -261,14 +218,12 @@ export function SearchableFilterSelect({
     }
   }, [open]);
 
-  // ─── Render ───────────────────────────────────────────────────────────────
-
   return (
     <div
       className={cn("flex w-full flex-col", sizeStyles.container, className)}
       data-disabled={disabled || undefined}
     >
-      {/* Label */}
+      {/* label px comes from sizeStyles.label so it scales with breakpoints */}
       <label
         className={cn(
           SELECT_BASE_STYLES.label,
@@ -280,7 +235,7 @@ export function SearchableFilterSelect({
         {required && (
           <span
             className={cn(
-              "ml-1 transition-colors",
+              "ml-0.5 text-sm leading-[20px] tracking-[-0.48px] opacity-80 transition-colors",
               disabled ? "text-muted-foreground" : "text-destructive"
             )}
           >
@@ -289,7 +244,6 @@ export function SearchableFilterSelect({
         )}
       </label>
 
-      {/* Select Container */}
       <div className="relative flex w-full items-center">
         <Select
           value={radixValue}
@@ -303,10 +257,11 @@ export function SearchableFilterSelect({
             className={cn(
               SELECT_BASE_STYLES.trigger,
               sizeStyles.trigger,
-              clearable && hasValue && "pr-9",
+              hasValue && !open && "border-primary/40 bg-grey-100",
+              open && "border-primary bg-grey-100 ring-ring/20 ring-2",
               error &&
                 "border-destructive bg-destructive/5 focus:border-destructive focus:ring-destructive/20",
-              hasValue && "border-primary/40 bg-grey-100",
+              clearable && hasValue && "pr-9",
               "w-full"
             )}
             aria-required={required}
@@ -319,24 +274,35 @@ export function SearchableFilterSelect({
                   : undefined
             }
           >
-            {hasValue ? (
-              <span className="truncate text-left">{selectedLabel}</span>
-            ) : (
-              <span className="text-muted-foreground truncate text-left">
-                {placeholder}
-              </span>
-            )}
+            <span
+              className={cn(
+                "flex-1 truncate text-left capitalize",
+                "text-base leading-[20px] font-normal tracking-[-0.56px]",
+                hasValue ? "text-primary-500" : "text-primary-100"
+              )}
+            >
+              {hasValue ? selectedLabel : placeholder}
+            </span>
+
+            {/* Figma: w-[20px] h-[19.003px] */}
+            <ChevronDown
+              className={cn(
+                "shrink-0 transition-transform duration-200 ease-in-out",
+                hasValue ? "text-primary-500" : "text-primary-100",
+                open && "rotate-180"
+              )}
+              style={{ width: 20, height: 19 }}
+              aria-hidden="true"
+            />
           </SelectTrigger>
 
-          {/* Dropdown */}
           <SelectContent
             className={cn(
               SELECT_BASE_STYLES.content,
-              "w-[var(--radix-select-trigger-width)] min-w-[200px] lg:min-w-[280px]"
+              "w-[var(--radix-select-trigger-width)]"
             )}
             onCloseAutoFocus={(e) => e.preventDefault()}
           >
-            {/* Search input area */}
             <div
               className={cn(
                 SELECT_BASE_STYLES.searchContainer,
@@ -348,12 +314,11 @@ export function SearchableFilterSelect({
               <div className="relative">
                 <Search
                   className={cn(
-                    "text-muted-foreground pointer-events-none absolute top-1/2 -translate-y-1/2 transition-colors",
+                    "text-primary-100 pointer-events-none absolute top-1/2 -translate-y-1/2",
                     sizeStyles.searchIcon
                   )}
                   aria-hidden="true"
                 />
-
                 <input
                   ref={searchInputRef}
                   type="text"
@@ -371,7 +336,6 @@ export function SearchableFilterSelect({
                   autoCapitalize="off"
                   spellCheck={false}
                 />
-
                 {search && (
                   <button
                     type="button"
@@ -395,7 +359,6 @@ export function SearchableFilterSelect({
               </div>
             </div>
 
-            {/* Results list */}
             <div
               className={cn(SELECT_BASE_STYLES.scrollbar, sizeStyles.maxHeight)}
             >
@@ -467,14 +430,13 @@ export function SearchableFilterSelect({
               />
             </div>
 
-            {/* Results count footer */}
             {search && filteredOptions.length > 0 && (
               <div
                 className={cn(SELECT_BASE_STYLES.footer, sizeStyles.footer)}
                 aria-live="polite"
                 aria-atomic="true"
               >
-                <p className="text-foreground font-medium">
+                <p className="text-foreground text-base leading-[20px] font-medium">
                   <span className="text-primary">{filteredOptions.length}</span>{" "}
                   of {options.length} result{options.length !== 1 ? "s" : ""}
                 </p>
@@ -483,7 +445,6 @@ export function SearchableFilterSelect({
           </SelectContent>
         </Select>
 
-        {/* Clear Selection Button */}
         {clearable && hasValue && !disabled && (
           <button
             type="button"
@@ -499,8 +460,8 @@ export function SearchableFilterSelect({
             className={cn(
               "absolute top-1/2 right-2.5 z-10 -translate-y-1/2",
               "rounded-md p-0.5 transition-all duration-200",
-              "text-muted-foreground",
-              "hover:bg-secondary hover:text-foreground",
+              "text-primary-100",
+              "hover:bg-grey-200 hover:text-primary-500",
               "focus:ring-ring/50 focus:ring-2 focus:outline-none"
             )}
             aria-label="Clear selection"
@@ -510,12 +471,12 @@ export function SearchableFilterSelect({
         )}
       </div>
 
-      {/* Helper Text */}
       {helperText && !error && (
         <p
           id={`${label}-helper`}
           className={cn(
-            "text-muted-foreground mt-1 transition-colors",
+            "text-primary-100 mt-1 leading-[20px] tracking-[-0.56px]",
+            sizeStyles.label, // reuse label px for alignment
             sizeStyles.error
           )}
         >
@@ -523,7 +484,6 @@ export function SearchableFilterSelect({
         </p>
       )}
 
-      {/* Error Message */}
       <div
         id={`${label}-error`}
         role="alert"
@@ -554,7 +514,5 @@ export function SearchableFilterSelect({
     </div>
   );
 }
-
-// ─── Exports ──────────────────────────────────────────────────────────────────
 
 export type { Option, Size, Props as SearchableFilterSelectProps, CustomTexts };

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)"
+    ]
+  }
+}

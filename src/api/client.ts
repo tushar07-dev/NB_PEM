@@ -7,8 +7,7 @@ import axios, {
 import { useLoadingStore } from "@/shared/store/loadingStore";
 import { logApiError } from "@/shared/services/errorLogger";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5164";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
 // Token management (updated by MSAL AuthProvider)
 let currentToken: string | null = null;

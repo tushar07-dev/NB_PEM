@@ -5,9 +5,7 @@
 
 @font-face {
   font-family: "Helvetica Now Text";
-  src:
-    url("../fonts/HelveticaNowText-Regular.woff2") format("woff2"),
-    url("../fonts/HelveticaNowText-Regular.woff") format("woff");
+  src: url("/fonts/HelveticaNowText 1.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -15,20 +13,8 @@
 
 @font-face {
   font-family: "Helvetica Now Text";
-  src:
-    url("../fonts/HelveticaNowText-Medium.woff2") format("woff2"),
-    url("../fonts/HelveticaNowText-Medium.woff") format("woff");
+  src: url("/fonts/HelveticaNowTextMedium 1.woff2") format("woff2");
   font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Helvetica Now Text";
-  src:
-    url("../fonts/HelveticaNowText-Bold.woff2") format("woff2"),
-    url("../fonts/HelveticaNowText-Bold.woff") format("woff");
-  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -68,7 +54,7 @@
   --border-radius-full: 100px;
 
   /* ---------------- Breakpoints ---------------- */
-  --breakpoint-sm: 800px;
+  --breakpoint-sm: 640px;
   --breakpoint-md: 800px; /* NOW md: uses 800px */
   --breakpoint-lg: 1500px; /* NOW lg: uses 1500px */
   --breakpoint-xl: 1800px; /* NOW xl: uses 1800px */
@@ -458,13 +444,6 @@
   }
 }
 
-@layer utilities {
-  /* Simplify scrollbar - remove if sidebar doesn't scroll */
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 4px; /* Thinner = faster render */
-  }
-}
-
 @layer components {
   /* Table Header Styles */
   .table-header-cell {
@@ -489,18 +468,12 @@
 
   /* Table Cell Text */
   .table-cell-text {
-    /* background-color: var(--color-grey-50); */
-    /* color: var(--color-primary-500); */
-    font-family: var(--font-helvetica-now);
-    font-size: var(--fs-300);
-    font-weight: 500;
-    text-transform: capitalize;
-    font-family: var(--font-helvetica-now);
-    font-size: var(--text-200);
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-    text-transform: capitalize;
+  font-family: var(--font-helvetica-now);
+  font-size: var(--text-200);
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  text-transform: capitalize;
   }
   /* Status Badge Styles */
   .status-completed {
@@ -558,7 +531,7 @@
 
   /* Firefox — reveal on hover */
   .data-table-scroll-wrapper:hover {
-    scrollbar-color: var(--color-gray-300) transparent;
+    scrollbar-color: var(--color-grey-300) transparent;
   }
 
   /* Chrome, Safari, Edge (Chromium) */
@@ -591,16 +564,8 @@
    RESPONSIVE UTILITIES
    ========================================================= */
 
-@media (min-width: 800px) {
-  .top-header-bar {
-    /* //Testing color */
-    background-color: var(--color-primary-600);
-  }
-}
 /* Using your breakpoint-lg: 1500px as the trigger */
 @media (min-width: 1500px) {
-  @theme {
-  }
   :root {
     --fs-50: 10px;
     --fs-100: 12px;
@@ -630,14 +595,5 @@
   .header-dropdown-trigger {
     padding: var(--spacing-3) var(--spacing-5);
     height: 48px;
-  }
-  .top-header-bar {
-    background-color: var(--color-success-500);
-  }
-}
-
-@media (min-width: 1800px) {
-  .top-header-bar {
-    background-color: var(--color-primary-600);
   }
 }

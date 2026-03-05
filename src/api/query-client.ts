@@ -1,5 +1,6 @@
 // src/api/query-client.ts
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient, QueryCache, MutationCache } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 /**
  * Global React Query Client Configuration
@@ -10,6 +11,12 @@ import { QueryClient } from "@tanstack/react-query";
  * - Automatic retry on failure (once)
  */
 export const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => toast.error(error.message),
+  }),
+  mutationCache: new MutationCache({
+    onError: (error) => toast.error(error.message),
+  }),
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh

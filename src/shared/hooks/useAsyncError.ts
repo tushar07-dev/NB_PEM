@@ -24,7 +24,9 @@ export function useAsyncError(): AsyncErrorState & AsyncErrorActions {
 
   const setError = useCallback((error: Error | string) => {
     const errorObj = typeof error === "string" ? new Error(error) : error;
-    console.error("❌ Async Error:", errorObj.message);
+    if (import.meta.env.DEV) {
+      console.error("Async Error:", errorObj.message);
+    }
     setErrorState(errorObj);
   }, []);
 

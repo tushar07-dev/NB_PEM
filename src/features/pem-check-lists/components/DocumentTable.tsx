@@ -8,28 +8,114 @@ import { DataTableFilterList } from "@/shared/components/data-table/data-table-f
 import { DataTableSortList } from "@/shared/components/data-table/data-table-sort-list";
 import { useDataTable } from "@/shared/hooks/data-table/use-data-table";
 import { Button } from "@/shared/components/ui/button";
-import { Clock, X } from "lucide-react";
+import { Clock, X, AlertCircle, FileSearch, FileX } from "lucide-react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
+import {
+  useProjectDocuments,
+  useAssignDocumentRoles,
+  useSendDocumentEmail,
+  type ProjectDocumentsResponseDto,
+} from "../api/queries";
+import type { DocumentFiltersType } from "../types/document";
+import { useAuth } from "@/app/providers/useAuth";
+import {
+  DocumentWorkflowDialog,
+  useDocumentWorkflowDialog,
+  type ResponsibilityValues,
+} from "../pages/components/DocumentWorkflowDialog";
 
-// Data type matching the design
+// ============================================
+// Mock users (frontend-only until backend ready)
+// ============================================
+const ALL_USERS = [
+  {
+    value: "sanghati.chatterjee2@akersolutions.com",
+    name: "sanghati.chatterjee2@akersolutions.com",
+    label: "Sanghati Chatterjee",
+  },
+  { value: "nilesh.thakur@akersolutions.com", label: "Nilesh Thakur" },
+  { value: "tushar.shelke@akersolutions.com", label: "Tushar Shelke" },
+  { value: "shiv.kumar@akersolutions.com", label: "Shiv Kumar" },
+];
+
+const CHECKLIST_ROUTE = "/pem-checklists/document-checklist/checklist";
+
+// ============================================
+// Types
+// ============================================
 export interface DocumentEntry {
   id: string;
+  // NOTE: projectDocumentId is required by AssignProjectDocumentRoles.
+  // Ask backend to include it in GetProjectDocuments response.
+  projectDocumentId: number | null;
   title: string;
   documentNo: string;
   reasonForIssue: string;
   revisionStatus: string;
-  revision: number | null;
+  revision: string | null;
   originatorSelfCheck: string | null;
   checker: string | null;
   approver: string | null;
   progress: "Completed" | "Not Started" | "In-Progress";
 }
 
+interface DocumentTableProps {
+  /** Gates the API fetch — true only when project + discipline + group + type are selected */
+  enabled: boolean;
+  filters: DocumentFiltersType;
+}
+
+// ============================================
+// Transform
+// ============================================
+function transformToDocumentEntry(
+  item: ProjectDocumentsResponseDto,
+  index: number
+): DocumentEntry {
+  const progressMap: Record<
+    string,
+    "Completed" | "Not Started" | "In-Progress"
+  > = {
+    completed: "Completed",
+    complete: "Completed",
+    "in-progress": "In-Progress",
+    inprogress: "In-Progress",
+    "not started": "Not Started",
+    notstarted: "Not Started",
+  };
+
+  const normalizeProgress = (
+    progress: string | null | undefined
+  ): "Completed" | "Not Started" | "In-Progress" => {
+    const key = progress?.toLowerCase().trim() ?? "";
+    return progressMap[key] ?? "Not Started";
+  };
+
+  return {
+    id: item.documentNo ?? String(index),
+    // TODO: replace with item.projectDocumentId once backend adds it to response
+    projectDocumentId: null,
+    title: item.documentName ?? "",
+    documentNo: item.documentNo ?? "",
+    reasonForIssue: item.reasonForIssue ?? "",
+    revisionStatus: item.revisionStatus ?? "",
+    revision: item.revision ?? null,
+    originatorSelfCheck: item.originator ?? null,
+    checker: item.checker ?? null,
+    approver: item.approver ?? null,
+    progress: normalizeProgress(item.progress),
+  };
+}
+
+// ============================================
+// Static filter options
+// ============================================
 const reasonForIssueOptions = [
   { label: "IFC", value: "IFC" },
   { label: "IFA", value: "IFA" },
@@ -48,438 +134,163 @@ const progressOptions = [
   { label: "Not Started", value: "Not Started" },
 ];
 
-// Sample data (move to props or API in real usage)
-const sampleData: DocumentEntry[] = [
-  // ... (same as your provided sampleData array)
-  {
-    id: "1",
-    title: "P&ID - Cooling Water System",
-    documentNo: "C143-AS-H-XC-00020-01",
-    reasonForIssue: "IFC",
-    revisionStatus: "OF",
-    revision: 14,
-    originatorSelfCheck: "Xavier Fernandes",
-    checker: null,
-    approver: null,
-    progress: "In-Progress",
-  },
-  {
-    id: "2",
-    title: "Electrical Layout - Substation",
-    documentNo: "E210-EL-SB-00312-02",
-    reasonForIssue: "IFA",
-    revisionStatus: "AF",
-    revision: 11,
-    originatorSelfCheck: "Sophie Chen",
-    checker: "Ava Chen",
-    approver: "Anna Lee",
-    progress: "Completed",
-  },
-  {
-    id: "3",
-    title: "HVAC Duct Routing Plan",
-    documentNo: "H500-ME-DT-00981-03",
-    reasonForIssue: "IFR",
-    revisionStatus: "DR",
-    revision: 13,
-    originatorSelfCheck: "Liam O'Connor",
-    checker: "Liam Rodriguez",
-    approver: "James Park",
-    progress: "Completed",
-  },
-  {
-    id: "4",
-    title: "Fire Protection Layout",
-    documentNo: "FP320-FR-LT-00451-01",
-    reasonForIssue: "IFA",
-    revisionStatus: "AF",
-    revision: 15,
-    originatorSelfCheck: "Isabella Martinez",
-    checker: "Maya Patel",
-    approver: "Sofia Kim",
-    progress: "Completed",
-  },
-  {
-    id: "5",
-    title: "Structural Foundation Plan",
-    documentNo: "S100-ST-FN-00122-00",
-    reasonForIssue: "IFR",
-    revisionStatus: "DR",
-    revision: null,
-    originatorSelfCheck: null,
-    checker: null,
-    approver: null,
-    progress: "Not Started",
-  },
-  {
-    id: "6",
-    title: "Pipe Rack Elevation",
-    documentNo: "P210-PR-EL-00711-02",
-    reasonForIssue: "IFC",
-    revisionStatus: "OF",
-    revision: 9,
-    originatorSelfCheck: "Emma Lee",
-    checker: "Olivia Brown",
-    approver: "Ava Davis",
-    progress: "In-Progress",
-  },
-  {
-    id: "7",
-    title: "Instrumentation Loop Diagram",
-    documentNo: "I450-IN-LP-00289-04",
-    reasonForIssue: "IFA",
-    revisionStatus: "AF",
-    revision: 6,
-    originatorSelfCheck: "Lucas Johnson",
-    checker: "Lucas Davis",
-    approver: "Noah Wilson",
-    progress: "In-Progress",
-  },
-  {
-    id: "8",
-    title: "Control Panel Wiring Diagram",
-    documentNo: "C780-CP-WD-00567-03",
-    reasonForIssue: "IFC",
-    revisionStatus: "OF",
-    revision: 19,
-    originatorSelfCheck: "Mia Rodriguez",
-    checker: "Isabella Martinez",
-    approver: "Olivia Smith",
-    progress: "In-Progress",
-  },
-  {
-    id: "9",
-    title: "Drainage Layout Plan",
-    documentNo: "D300-DR-LT-00812-01",
-    reasonForIssue: "IFR",
-    revisionStatus: "DR",
-    revision: 18,
-    originatorSelfCheck: "Oliver Scott",
-    checker: "James Johnson",
-    approver: "Ethan Garcia",
-    progress: "In-Progress",
-  },
-  {
-    id: "10",
-    title: "Cable Tray Routing",
-    documentNo: "E550-CT-RT-00345-02",
-    reasonForIssue: "IFA",
-    revisionStatus: "AF",
-    revision: 20,
-    originatorSelfCheck: "Emma Lee",
-    checker: "Olivia Brown",
-    approver: "Ava Davis",
-    progress: "In-Progress",
-  },
-  {
-    id: "11",
-    title: "Pump General Arrangement",
-    documentNo: "M600-PU-GA-00189-05",
-    reasonForIssue: "IFC",
-    revisionStatus: "OF",
-    revision: 17,
-    originatorSelfCheck: "Lucas Johnson",
-    checker: "Lucas Davis",
-    approver: "Noah Wilson",
-    progress: "In-Progress",
-  },
-  {
-    id: "12",
-    title: "Tank Fabrication Drawing",
-    documentNo: "M710-TK-FB-00911-02",
-    reasonForIssue: "IFR",
-    revisionStatus: "DR",
-    revision: 12,
-    originatorSelfCheck: "Zoe Williams",
-    checker: "Emma Wilson",
-    approver: "Isabella Martinez",
-    progress: "In-Progress",
-  },
-  {
-    id: "13",
-    title: "Transformer Layout Plan",
-    documentNo: "E900-TR-LT-00221-01",
-    reasonForIssue: "IFA",
-    revisionStatus: "AF",
-    revision: 16,
-    originatorSelfCheck: "Ethan Brown",
-    checker: "Sophia Lee",
-    approver: "Mia Chen",
-    progress: "Completed",
-  },
-  {
-    id: "14",
-    title: "Access Platform Details",
-    documentNo: "S410-AP-DT-00777-03",
-    reasonForIssue: "IFC",
-    revisionStatus: "OF",
-    revision: 21,
-    originatorSelfCheck: "Noah Garcia",
-    checker: "Ava Wilson",
-    approver: "Lucas Brown",
-    progress: "Not Started",
-  },
-  {
-    id: "15",
-    title: "Emergency Exit Layout",
-    documentNo: "AR220-EE-LT-00519-02",
-    reasonForIssue: "IFA",
-    revisionStatus: "AF",
-    revision: 22,
-    originatorSelfCheck: "Sophia Davis",
-    checker: "Oliver Chen",
-    approver: "Emma Park",
-    progress: "In-Progress",
-  },
-  {
-    id: "16",
-    title: "Compressor Piping Layout",
-    documentNo: "M320-CP-PL-00634-01",
-    reasonForIssue: "IFC",
-    revisionStatus: "OF",
-    revision: 8,
-    originatorSelfCheck: "Aiden Clark",
-    checker: "Sophie Turner",
-    approver: "James Hall",
-    progress: "In-Progress",
-  },
-  {
-    id: "17",
-    title: "Grounding & Earthing Layout",
-    documentNo: "E430-GE-LT-00743-02",
-    reasonForIssue: "IFR",
-    revisionStatus: "DR",
-    revision: null,
-    originatorSelfCheck: null,
-    checker: null,
-    approver: null,
-    progress: "Not Started",
-  },
-  {
-    id: "18",
-    title: "Flare Stack General Arrangement",
-    documentNo: "P540-FS-GA-00328-03",
-    reasonForIssue: "IFA",
-    revisionStatus: "AF",
-    revision: 10,
-    originatorSelfCheck: "Charlotte Evans",
-    checker: "Benjamin Moore",
-    approver: "Grace Taylor",
-    progress: "Completed",
-  },
-  {
-    id: "19",
-    title: "Substation Single Line Diagram",
-    documentNo: "E670-SS-SL-00892-01",
-    reasonForIssue: "IFC",
-    revisionStatus: "OF",
-    revision: 5,
-    originatorSelfCheck: "Mason White",
-    checker: "Harper Scott",
-    approver: "Elijah Adams",
-    progress: "In-Progress",
-  },
-  {
-    id: "20",
-    title: "Cooling Tower Layout Plan",
-    documentNo: "M190-CT-LT-00415-04",
-    reasonForIssue: "IFR",
-    revisionStatus: "DR",
-    revision: 7,
-    originatorSelfCheck: "Amelia Harris",
-    checker: "Logan Nelson",
-    approver: "Chloe Carter",
-    progress: "In-Progress",
-  },
-  {
-    id: "21",
-    title: "Vessel Nozzle Orientation",
-    documentNo: "M820-VN-OR-00556-02",
-    reasonForIssue: "IFA",
-    revisionStatus: "AF",
-    revision: 13,
-    originatorSelfCheck: "Henry Mitchell",
-    checker: "Zoe Perez",
-    approver: "Samuel Roberts",
-    progress: "Completed",
-  },
-  {
-    id: "22",
-    title: "HVAC Mechanical Room Layout",
-    documentNo: "H310-MR-LT-00667-01",
-    reasonForIssue: "IFC",
-    revisionStatus: "OF",
-    revision: null,
-    originatorSelfCheck: null,
-    checker: null,
-    approver: null,
-    progress: "Not Started",
-  },
-  {
-    id: "23",
-    title: "Lighting Layout - Production Area",
-    documentNo: "E780-LT-PA-00134-03",
-    reasonForIssue: "IFR",
-    revisionStatus: "DR",
-    revision: 3,
-    originatorSelfCheck: "Ella Thompson",
-    checker: "William Jackson",
-    approver: "Victoria Lewis",
-    progress: "In-Progress",
-  },
-  {
-    id: "24",
-    title: "Sewage Treatment Plant Layout",
-    documentNo: "C260-ST-PL-00988-02",
-    reasonForIssue: "IFA",
-    revisionStatus: "AF",
-    revision: 11,
-    originatorSelfCheck: "Jack Walker",
-    checker: "Nora Young",
-    approver: "Daniel King",
-    progress: "Completed",
-  },
-  {
-    id: "25",
-    title: "Blower Skid Arrangement",
-    documentNo: "M470-BS-AR-00372-01",
-    reasonForIssue: "IFC",
-    revisionStatus: "OF",
-    revision: 6,
-    originatorSelfCheck: "Penelope Hall",
-    checker: "Sebastian Wright",
-    approver: "Aurora Green",
-    progress: "In-Progress",
-  },
-  {
-    id: "26",
-    title: "Chemical Dosing System P&ID",
-    documentNo: "C590-CD-PI-00241-04",
-    reasonForIssue: "IFR",
-    revisionStatus: "DR",
-    revision: 9,
-    originatorSelfCheck: "Isaac Allen",
-    checker: "Lily Baker",
-    approver: "Ryan Hill",
-    progress: "In-Progress",
-  },
-  {
-    id: "27",
-    title: "Steam Distribution Layout",
-    documentNo: "M640-SD-LT-00819-02",
-    reasonForIssue: "IFA",
-    revisionStatus: "AF",
-    revision: 14,
-    originatorSelfCheck: "Layla Sanchez",
-    checker: "Gabriel Rivera",
-    approver: "Stella Cooper",
-    progress: "Completed",
-  },
-  {
-    id: "28",
-    title: "MCC Room Layout Plan",
-    documentNo: "E390-MC-LT-00473-03",
-    reasonForIssue: "IFC",
-    revisionStatus: "OF",
-    revision: 18,
-    originatorSelfCheck: "Owen Bailey",
-    checker: "Madison Cox",
-    approver: "Carter Nguyen",
-    progress: "In-Progress",
-  },
-  {
-    id: "29",
-    title: "Structural Steel Column Layout",
-    documentNo: "S230-SC-LT-00688-01",
-    reasonForIssue: "IFR",
-    revisionStatus: "DR",
-    revision: null,
-    originatorSelfCheck: null,
-    checker: null,
-    approver: null,
-    progress: "Not Started",
-  },
-  {
-    id: "30",
-    title: "Fire & Gas Detector Layout",
-    documentNo: "FP410-FG-DT-00526-02",
-    reasonForIssue: "IFA",
-    revisionStatus: "AF",
-    revision: 4,
-    originatorSelfCheck: "Scarlett Reed",
-    checker: "Julian Morgan",
-    approver: "Luna Flores",
-    progress: "Completed",
-  },
-  {
-    id: "31",
-    title: "Heat Exchanger Data Sheet",
-    documentNo: "M730-HE-DS-00155-05",
-    reasonForIssue: "IFC",
-    revisionStatus: "OF",
-    revision: 16,
-    originatorSelfCheck: "Wyatt Butler",
-    checker: "Paisley Simmons",
-    approver: "Dominic Foster",
-    progress: "In-Progress",
-  },
-  {
-    id: "32",
-    title: "Instrument Cable Schedule",
-    documentNo: "I560-IC-SC-00793-01",
-    reasonForIssue: "IFR",
-    revisionStatus: "DR",
-    revision: 2,
-    originatorSelfCheck: "Violet Long",
-    checker: "Ezra Peterson",
-    approver: "Hazel Hughes",
-    progress: "In-Progress",
-  },
-  {
-    id: "33",
-    title: "Compressed Air System Layout",
-    documentNo: "M850-CA-LT-00362-03",
-    reasonForIssue: "IFA",
-    revisionStatus: "AF",
-    revision: 20,
-    originatorSelfCheck: "Miles Ward",
-    checker: "Nora Coleman",
-    approver: "Eliana Ross",
-    progress: "Completed",
-  },
-  {
-    id: "34",
-    title: "Effluent Treatment Plant P&ID",
-    documentNo: "C970-ET-PI-00947-02",
-    reasonForIssue: "IFC",
-    revisionStatus: "OF",
-    revision: 7,
-    originatorSelfCheck: "Jasper Price",
-    checker: "Arabella Diaz",
-    approver: "Rowan Jenkins",
-    progress: "In-Progress",
-  },
-];
-
-export function DocumentTable() {
-  const [selectedRow, setSelectedRow] = useState<DocumentEntry | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+// ============================================
+// Component
+// ============================================
+export function DocumentTable({ enabled, filters }: DocumentTableProps) {
   const navigate = useNavigate();
 
+  const { currentUser } = useAuth();
+  // TODO: Use filters and currentUser for server-side filtering when API supports it
+  void filters;
+  void currentUser;
+
+  // ── Rev History dialog ────────────────────────────────────────────────────
+  const [selectedRow, setSelectedRow] = useState<DocumentEntry | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // ── Workflow dialog ───────────────────────────────────────────────────────
+  const {
+    dialogState,
+    open: openWorkflow,
+    close: closeWorkflow,
+  } = useDocumentWorkflowDialog();
+
+  const [workflowRow, setWorkflowRow] = useState<DocumentEntry | null>(null);
+
+  const [responsibilities, setResponsibilities] =
+    useState<ResponsibilityValues>({
+      originator: "",
+      checker: "",
+      approver: "",
+    });
+
+  // ── API: Queries ──────────────────────────────────────────────────────────
+  const { data, isLoading, isError, error } = useProjectDocuments(
+    { page: 1, pageSize: 100 },
+    enabled
+  );
+
+  // ── API: Mutations ────────────────────────────────────────────────────────
+  const { mutateAsync: assignRoles, isPending: isAssigning } =
+    useAssignDocumentRoles();
+
+  const { mutateAsync: sendEmail, isPending: isSendingEmail } =
+    useSendDocumentEmail();
+
+  const isSaving = isAssigning || isSendingEmail;
+
+  // ── Documents ─────────────────────────────────────────────────────────────
+  const documents = useMemo<DocumentEntry[]>(() => {
+    if (!enabled || !data?.items) return [];
+    return data.items.map((item, index) =>
+      transformToDocumentEntry(item, index)
+    );
+  }, [enabled, data]);
+
+  const pageCount = Math.ceil((data?.total ?? 0) / (data?.pageSize ?? 10));
+
+  // ── Row click handler ─────────────────────────────────────────────────────
+  const handleRowClick = useCallback(
+    (row: DocumentEntry) => {
+      if (!row.originatorSelfCheck) {
+        setResponsibilities({
+          originator: "",
+          checker: row.checker ?? "",
+          approver: row.approver ?? "",
+        });
+        setWorkflowRow(row);
+        openWorkflow("define");
+      } else {
+        navigate(CHECKLIST_ROUTE, { state: { document: row } });
+      }
+    },
+    [navigate, openWorkflow]
+  );
+
+  // ── Rev History ───────────────────────────────────────────────────────────
   const handleRevHistoryClick = useCallback((row: DocumentEntry) => {
     setSelectedRow(row);
     setIsModalOpen(true);
   }, []);
 
-  const handleRowClick = useCallback(
-    (row: DocumentEntry) => {
-      navigate("/pem-checklists/control-object-checklist", {
-        state: { document: row },
-      });
+  // ── Workflow: Save (AC3 + AC4) ────────────────────────────────────────────
+  const handleWorkflowSave = useCallback(
+    async (vals: ResponsibilityValues) => {
+      if (!workflowRow) return;
+
+      try {
+        // Step 1: Assign roles via API
+        // NOTE: projectDocumentId will be null until backend adds it to GetProjectDocuments.
+        // Once backend adds it, remove the fallback (0) and use workflowRow.projectDocumentId directly.
+        if (workflowRow.projectDocumentId !== null) {
+          await assignRoles({
+            projectDocumentId: workflowRow.projectDocumentId,
+            originator: vals.originator,
+            checker: vals.checker,
+            approver: vals.approver,
+          });
+        } else {
+          if (import.meta.env.DEV) {
+            console.warn(
+              "[DocumentTable] projectDocumentId is null — skipping AssignProjectDocumentRoles call. " +
+                "Ask backend to include projectDocumentId in GetProjectDocuments response."
+            );
+          }
+        }
+
+        // Step 2: Send real email notification via API
+        if (vals.checker) {
+          await sendEmail({
+            to: [vals.checker],
+            cc: vals.approver ? [vals.approver] : [],
+            subject: `Document Assigned: ${workflowRow.documentNo}`,
+            body: [
+              `You have been assigned as Checker for document ${workflowRow.documentNo}.`,
+              `Title: ${workflowRow.title}`,
+              vals.approver ? `Approver: ${vals.approver}` : "",
+            ]
+              .filter(Boolean)
+              .join("\n"),
+          });
+
+          toast.success("Document assigned & email sent", {
+            description: `To: ${vals.checker}${vals.approver ? ` · CC: ${vals.approver}` : ""}`,
+            duration: 5000,
+          });
+        } else {
+          toast.success("Responsibilities saved");
+        }
+
+        // Step 3: Navigate to checklist with updated state
+        navigate(CHECKLIST_ROUTE, {
+          state: {
+            document: {
+              ...workflowRow,
+              originatorSelfCheck: vals.originator,
+              checker: vals.checker,
+              approver: vals.approver,
+            },
+          },
+        });
+      } catch (err) {
+        toast.error("Failed to assign responsibilities", {
+          description:
+            err instanceof Error ? err.message : "An unexpected error occurred",
+          duration: 6000,
+        });
+      }
     },
-    [navigate]
+    [workflowRow, navigate, assignRoles, sendEmail]
   );
 
+  // ── Workflow: View Only ───────────────────────────────────────────────────
+  const handleWorkflowViewOnly = useCallback(() => {
+    if (!workflowRow) return;
+    navigate(CHECKLIST_ROUTE, { state: { document: workflowRow } });
+  }, [workflowRow, navigate]);
+
+  // ── Columns ───────────────────────────────────────────────────────────────
   const columns = useMemo<ColumnDef<DocumentEntry>[]>(
     () => [
       {
@@ -514,9 +325,7 @@ export function DocumentTable() {
           variant: "multiSelect",
           options: reasonForIssueOptions,
         },
-        filterFn: (row, id, value) => {
-          return value.includes(row.getValue(id));
-        },
+        filterFn: (row, id, value) => value.includes(row.getValue(id)),
       },
       {
         accessorKey: "revisionStatus",
@@ -528,23 +337,17 @@ export function DocumentTable() {
           variant: "multiSelect",
           options: revisionStatusOptions,
         },
-        filterFn: (row, id, value) => {
-          return value.includes(row.getValue(id));
-        },
+        filterFn: (row, id, value) => value.includes(row.getValue(id)),
       },
       {
         accessorKey: "revision",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Revision" />
         ),
-        cell: ({ row }) => {
-          const value = row.getValue("revision") as number | null;
-          return <span>{value !== null ? value : "-"}</span>;
-        },
-        meta: {
-          label: "Revision",
-          variant: "number",
-        },
+        cell: ({ row }) => (
+          <span>{(row.getValue("revision") as string | null) ?? "-"}</span>
+        ),
+        meta: { label: "Revision", variant: "number" },
       },
       {
         accessorKey: "originatorSelfCheck",
@@ -554,10 +357,11 @@ export function DocumentTable() {
             label="Originator(Self Check)"
           />
         ),
-        cell: ({ row }) => {
-          const value = row.getValue("originatorSelfCheck") as string | null;
-          return <span>{value ?? "-"}</span>;
-        },
+        cell: ({ row }) => (
+          <span>
+            {(row.getValue("originatorSelfCheck") as string | null) ?? "-"}
+          </span>
+        ),
         meta: {
           label: "Originator(Self Check)",
           placeholder: "Search originator...",
@@ -569,10 +373,9 @@ export function DocumentTable() {
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Checker" />
         ),
-        cell: ({ row }) => {
-          const value = row.getValue("checker") as string | null;
-          return <span>{value ?? "-"}</span>;
-        },
+        cell: ({ row }) => (
+          <span>{(row.getValue("checker") as string | null) ?? "-"}</span>
+        ),
         meta: {
           label: "Checker",
           placeholder: "Search checker...",
@@ -584,10 +387,9 @@ export function DocumentTable() {
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Approver" />
         ),
-        cell: ({ row }) => {
-          const value = row.getValue("approver") as string | null;
-          return <span>{value ?? "-"}</span>;
-        },
+        cell: ({ row }) => (
+          <span>{(row.getValue("approver") as string | null) ?? "-"}</span>
+        ),
         meta: {
           label: "Approver",
           placeholder: "Search approver...",
@@ -620,13 +422,11 @@ export function DocumentTable() {
           variant: "multiSelect",
           options: progressOptions,
         },
-        filterFn: (row, id, value) => {
-          return value.includes(row.getValue(id));
-        },
+        filterFn: (row, id, value) => value.includes(row.getValue(id)),
       },
       {
         id: "revHistory",
-        header: () => <span className="">Rev History</span>,
+        header: () => <span>Rev History</span>,
         cell: ({ row }) => (
           <button
             className="icon-btn-dark-blue"
@@ -647,33 +447,90 @@ export function DocumentTable() {
   );
 
   const { table } = useDataTable({
-    data: sampleData,
+    data: documents,
     columns,
-    pageCount: Math.ceil(sampleData.length / 10),
-    initialState: {
-      pagination: { pageIndex: 0, pageSize: 10 },
-    },
+    pageCount,
+    initialState: { pagination: { pageIndex: 0, pageSize: 10 } },
   });
 
+  // ── Empty states ──────────────────────────────────────────────────────────
+  const emptyState = !enabled ? (
+    <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+      <div className="bg-grey-200 rounded-full p-4">
+        <FileSearch className="text-primary-100 size-8" />
+      </div>
+      <p className="text-primary-500 font-medium">Select required filters</p>
+      <p className="text-primary-100 text-sm leading-relaxed">
+        Please select{" "}
+        <span className="text-primary-500 font-medium">Project</span>,{" "}
+        <span className="text-primary-500 font-medium">Discipline</span>,{" "}
+        <span className="text-primary-500 font-medium">Document Group</span>,
+        and <span className="text-primary-500 font-medium">Document Type</span>{" "}
+        to view documents.
+      </p>
+    </div>
+  ) : (
+    <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+      <div className="bg-grey-200 rounded-full p-4">
+        <FileX className="text-primary-100 size-8" />
+      </div>
+      <p className="text-primary-500 font-medium">No documents found</p>
+      <p className="text-primary-100 text-sm">
+        Try adjusting your filter selections.
+      </p>
+    </div>
+  );
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 p-8 text-center">
+        <AlertCircle className="text-destructive h-12 w-12" />
+        <div>
+          <h3 className="text-lg font-semibold">Failed to load documents</h3>
+          <p className="text-muted-foreground text-sm">
+            {error?.message ?? "An unexpected error occurred"}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="">
+    <div>
+      {/* ── Table ── */}
       <DataTable
         table={table}
-        actionBar={<div>Action Bar</div>}
         onRowClick={handleRowClick}
+        emptyState={emptyState}
+        loading={isLoading}
+        loadingRowCount={8}
       >
         <DataTableAdvancedToolbar table={table}>
           <DataTableFilterList table={table} />
           <DataTableSortList table={table} />
         </DataTableAdvancedToolbar>
       </DataTable>
+
+      {/* ── Define Responsibilities dialog ── */}
+      <DocumentWorkflowDialog
+        {...dialogState}
+        onClose={closeWorkflow}
+        userOptions={ALL_USERS}
+        values={responsibilities}
+        onChange={setResponsibilities}
+        onSave={handleWorkflowSave}
+        onViewOnly={handleWorkflowViewOnly}
+        isSaving={isSaving}
+      />
+
+      {/* ── Revision History Dialog ── */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         {isModalOpen && (
-          <DialogContent className="m-0 h-screen w-screen max-w-none rounded-none p-0">
+          <DialogContent className="m-0 h-screen w-screen max-w-none rounded-none p-0 [&>button:last-child]:hidden">
             <div className="flex h-full flex-col">
               <DialogHeader className="flex flex-row items-center justify-between border-b p-6">
                 <DialogTitle className="text-2xl font-bold">
-                  Revision History - {selectedRow?.documentNo}
+                  Revision History — {selectedRow?.documentNo}
                 </DialogTitle>
                 <Button
                   variant="ghost"
@@ -683,6 +540,7 @@ export function DocumentTable() {
                   <X className="h-6 w-6" />
                 </Button>
               </DialogHeader>
+
               <div className="flex-1 overflow-auto p-6">
                 {selectedRow && (
                   <div className="space-y-6">
@@ -721,6 +579,7 @@ export function DocumentTable() {
                         </div>
                       </div>
                     </div>
+
                     <div className="bg-muted/50 rounded-lg p-6">
                       <h3 className="mb-4 text-lg font-semibold">
                         Current Revision Details
@@ -763,42 +622,34 @@ export function DocumentTable() {
                             Progress
                           </p>
                           <p
-                            className={`font-medium ${selectedRow.progress === "Completed" ? "status-completed" : selectedRow.progress === "Not Started" ? "status-not-started" : "status-in-progress"}`}
+                            className={`font-medium ${
+                              selectedRow.progress === "Completed"
+                                ? "status-completed"
+                                : selectedRow.progress === "Not Started"
+                                  ? "status-not-started"
+                                  : "status-in-progress"
+                            }`}
                           >
                             {selectedRow.progress}
                           </p>
                         </div>
                       </div>
                     </div>
+
                     <div className="bg-muted/50 rounded-lg p-6">
                       <h3 className="mb-4 text-lg font-semibold">
                         Revision Timeline
                       </h3>
-                      <div className="space-y-4">
-                        <div className="flex items-start gap-4">
-                          <div className="mt-2 h-2 w-2 rounded-full bg-green-500" />
-                          <div>
-                            <p className="font-medium">
-                              Current Revision {selectedRow.revision ?? "N/A"}
-                            </p>
-                            <p className="text-muted-foreground text-sm">
-                              Latest version
-                            </p>
-                          </div>
+                      <div className="flex items-start gap-4">
+                        <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-green-500" />
+                        <div>
+                          <p className="font-medium">
+                            Current — Revision {selectedRow.revision ?? "N/A"}
+                          </p>
+                          <p className="text-muted-foreground text-sm">
+                            Latest version
+                          </p>
                         </div>
-                        {selectedRow.revision && selectedRow.revision > 1 && (
-                          <div className="flex items-start gap-4">
-                            <div className="mt-2 h-2 w-2 rounded-full bg-gray-400" />
-                            <div>
-                              <p className="font-medium">
-                                Revision {selectedRow.revision - 1}
-                              </p>
-                              <p className="text-muted-foreground text-sm">
-                                Previous version
-                              </p>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>

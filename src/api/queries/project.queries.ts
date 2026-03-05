@@ -1,12 +1,10 @@
 // src/api/queries/project.queries.ts
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
-import { apiClient } from "@/api/client";
-import { API_ENDPOINTS } from "@/api/endpoints";
-import {
-  ProjectResponseSchema,
-  transformProjects,
-  // type DropdownItem,
-} from "@/features/pem-check-lists/api/schemas";
+import { customInstance } from "@/api/mutator/custom-instance";
+import type {
+  ProjectResponseDto,
+  ProjectResponseDtoListApiResponse,
+} from "@/api/generated/schemas";
 
 export type Project = {
   id: string;
@@ -20,31 +18,35 @@ export const projectQueryKeys = {
 };
 
 /**
+ * Transform API response to Project format
+ */
+function transformProjects(data: ProjectResponseDto[]): Project[] {
+  return data.map((item) => ({
+    id: item.projectID ?? "",
+    name: item.projectName ?? "",
+  }));
+}
+
+/**
  * Fetch all projects
- * @returns Dropdown items for project select
+ * @returns Projects for select dropdown
  */
 export function useProjects(): UseQueryResult<Project[], Error> {
   return useQuery({
     queryKey: projectQueryKeys.list(),
     queryFn: async (): Promise<Project[]> => {
-      const { data } = await apiClient.get(API_ENDPOINTS.project.getAll, {
-        headers: { "X-React-Query": "true" },
+      const response = await customInstance<ProjectResponseDtoListApiResponse>({
+        url: "/api/Project/GetProjects",
+        method: "GET",
       });
 
-      const validated = ProjectResponseSchema.parse(data);
-
       // Accept -1, 0, or 200 as success
-      if (validated.status > 0 && validated.status !== 200) {
-        throw new Error(validated.message || "Failed to fetch projects");
+      const status = response.status ?? 0;
+      if (status > 0 && status !== 200) {
+        throw new Error(response.message ?? "Failed to fetch projects");
       }
 
-      // Transform to Project format
-      const dropdownItems = transformProjects(validated.data);
-
-      return dropdownItems.map((item) => ({
-        id: item.value,
-        name: item.label,
-      }));
+      return transformProjects(response.data ?? []);
     },
     staleTime: 10 * 60 * 1000, // Projects don't change often - cache 10min
   });

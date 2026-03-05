@@ -1,6 +1,4 @@
 // src/shared/components/app-sidebar.tsx
-"use client";
-
 import * as React from "react";
 import { NavMain } from "@/shared/components/nav-main";
 import {
@@ -26,8 +24,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   );
   const isCollapsed = state === "collapsed";
 
-  const userRole = currentUser?.role || "user";
-  console.log("Current User Role:", userRole);
   return (
     <Sidebar
       collapsible="icon"

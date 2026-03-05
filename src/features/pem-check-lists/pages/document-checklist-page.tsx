@@ -1,44 +1,48 @@
+// src/features/pem-check-lists/pages/DocumentChecklistPage.tsx
 import { useState } from "react";
 import { DocumentFilters } from "./components/DocumentFilters";
-import type { DocumentFiltersType } from "../types/document";
 import { DocumentTable } from "../components/DocumentTable";
+import { useProjectStore } from "@/shared/store/projectStore";
+import type { DocumentFiltersType } from "../types/document";
+
+const EMPTY_FILTERS: DocumentFiltersType = {
+  discipline: undefined,
+  documentGroup: undefined,
+  documentType: undefined,
+  facilityCode: undefined,
+  system: undefined,
+  area: undefined,
+};
 
 export default function DocumentChecklistPage() {
-  const [filters, setFilters] = useState<DocumentFiltersType>({
-    discipline: undefined,
-    documentGroup: undefined,
-    documentType: undefined,
-    facilityCode: undefined,
-    system: undefined,
-    area: undefined,
-  });
+  const selectedProject = useProjectStore((state) => state.selectedProject);
+  const [filters, setFilters] = useState<DocumentFiltersType>(EMPTY_FILTERS);
 
   const handleFilterChange = (newFilters: Partial<DocumentFiltersType>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
-  const handleClearAll = () => {
-    setFilters({});
-  };
+  const areMandatoryFiltersSelected =
+    !!selectedProject &&
+    !!filters.discipline &&
+    !!filters.documentGroup &&
+    !!filters.documentType;
 
   return (
     <div className="space-y-6 px-7.5">
-      {/* Header — full width */}
       <div className="mb-4">
         <h1 className="text-primary-500 font-solutioneer text-xl font-semibold">
           Search for document
         </h1>
       </div>
 
-      {/* Filters — left column */}
       <DocumentFilters
         filters={filters}
         onFilterChange={handleFilterChange}
-        onClearAll={handleClearAll}
+        onClearAll={() => setFilters(EMPTY_FILTERS)}
       />
 
-      {/* Table — right column */}
-      <DocumentTable />
+      <DocumentTable enabled={areMandatoryFiltersSelected} filters={filters} />
     </div>
   );
 }

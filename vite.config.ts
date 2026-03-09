@@ -18,13 +18,13 @@ export default defineConfig({
 
   server: {
     port: 3001,
-    proxy: {
-      "/api": {
-        target: "https://pemdigitaldevapi.akersolutions.com",
-        changeOrigin: true,
-        secure: false,
-      },
-    },
+    // proxy: {
+    //   "/api": {
+    //     target: "https://pemdigitaldevapi.akersolutions.com",
+    //     changeOrigin: true,
+    //     secure: false,
+    //   },
+    // },
   },
 
   build: {

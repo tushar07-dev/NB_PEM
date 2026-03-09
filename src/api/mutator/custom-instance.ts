@@ -1,7 +1,12 @@
 import Axios, { type AxiosRequestConfig } from "axios";
-import { configService } from "@/shared/config/configService";
+// import { configService } from "@/shared/config/configService";
 
-const AXIOS_INSTANCE = Axios.create();
+const AXIOS_INSTANCE = Axios.create({
+  url: "https://pemdigitaldevapi.akersolutions.com", // import.meta.env.VITE_API_BASE_URL, // Base URL will be overridden by interceptor after config is loaded
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
 // Module-level token — updated by AuthProvider on login/logout
 let currentToken: string | null = null;
@@ -11,28 +16,28 @@ export function setApiToken(token: string | null) {
 }
 
 // Request interceptor - set baseURL dynamically and add auth token
-AXIOS_INSTANCE.interceptors.request.use((config) => {
-  // Set baseURL at request time (after config is loaded)
-  if (configService.isConfigLoaded()) {
-    config.baseURL = configService.apiBaseUrl;
-  }
-  // Inject Bearer token on every request
-  if (currentToken) {
-    config.headers.Authorization = `Bearer ${currentToken}`;
-  }
-  return config;
-});
+// AXIOS_INSTANCE.interceptors.request.use((config) => {
+//   // Set baseURL at request time (after config is loaded)
+//   if (configService.isConfigLoaded()) {
+//     config.baseURL = configService.apiBaseUrl;
+//   }
+//   // Inject Bearer token on every request
+//   if (currentToken) {
+//     config.headers.Authorization = `Bearer ${currentToken}`;
+//   }
+//   return config;
+// });
 
 // Response interceptor - handle errors
-AXIOS_INSTANCE.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      window.location.href = "/login";
-    }
-    return Promise.reject(error);
-  }
-);
+// AXIOS_INSTANCE.interceptors.response.use(
+//   (response) => response,
+//   (error) => {
+//     if (error.response?.status === 401) {
+//       window.location.href = "/login";
+//     }
+//     return Promise.reject(error);
+//   }
+// );
 
 /**
  * Orval-compatible custom instance
@@ -51,7 +56,7 @@ export const customInstance = <T>(
   if (typeof urlOrConfig === "string") {
     // Orval-generated signature: customInstance(url, options)
     axiosConfig = {
-      url: urlOrConfig,
+      url: `${import.meta.env.VITE_API_BASE_URL}${urlOrConfig}`,
       method: (options?.method as AxiosRequestConfig["method"]) ?? "GET",
       data: (options as AxiosRequestConfig)?.data,
       signal: options?.signal ?? controller.signal,
@@ -61,6 +66,7 @@ export const customInstance = <T>(
     // Manual signature: customInstance({ url, method, data, headers })
     axiosConfig = {
       ...urlOrConfig,
+      url: `${import.meta.env.VITE_API_BASE_URL}${urlOrConfig.url}`,
       signal: urlOrConfig.signal ?? controller.signal,
     };
   }

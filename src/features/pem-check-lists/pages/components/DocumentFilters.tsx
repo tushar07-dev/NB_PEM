@@ -236,6 +236,7 @@ export function DocumentFilters({
               onValueChange={handleDisciplineChange}
               disabled={!hasProject}
               required
+              clearable
             />
 
             <SearchableFilterSelect

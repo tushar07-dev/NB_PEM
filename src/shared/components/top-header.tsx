@@ -30,12 +30,12 @@ const HeaderLeft = memo(function HeaderLeft() {
     <div className="flex items-center gap-3">
       <Icons.ProjectLogo className="text-primary-foreground" />
       <span className="brand-text">PEM Digital</span>
-      <div className="header-search-container w-[250px]">
+      <div className="header-search-container w-62">
         <Input
           type="text"
           placeholder="Search Anything..."
           title="Search coming soon"
-          className="header-pill text-primary-700 h-8 cursor-not-allowed px-4 pr-10 text-sm opacity-60 lg:h-11"
+          className="header-pill text-primary-700 h-8 px-4 pr-10 text-sm opacity-60 lg:h-11"
         />
         <Search className="text-primary-400 absolute top-1/2 right-3 size-4 -translate-y-1/2" />
       </div>
@@ -119,6 +119,7 @@ const HeaderSelectors = memo(function HeaderSelectors() {
 // ── Re-renders only when auth profile changes ────────────────────────────────
 const HeaderActions = memo(function HeaderActions() {
   const { profile } = useAuthStore();
+  console.log(profile);
 
   const initials =
     profile?.name

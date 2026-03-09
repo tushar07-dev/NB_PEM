@@ -119,7 +119,6 @@ const HeaderSelectors = memo(function HeaderSelectors() {
 // ── Re-renders only when auth profile changes ────────────────────────────────
 const HeaderActions = memo(function HeaderActions() {
   const { profile } = useAuthStore();
-  console.log(profile);
 
   const initials =
     profile?.name

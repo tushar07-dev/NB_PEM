@@ -1,31 +1,25 @@
-import { type Configuration, PublicClientApplication } from "@azure/msal-browser"
-import { configService } from "./configService"
+import { PublicClientApplication, type Configuration } from "@azure/msal-browser";
+import { env } from "@/config/env";
 
-// Note: msalInstance will be initialized after config is loaded
-let msalInstance: PublicClientApplication | null = null
+const msalConfig: Configuration = {
+  auth: {
+    clientId: env.VITE_MSAL_CLIENT_ID,
+    authority: `https://login.microsoftonline.com/${env.VITE_MSAL_TENANT_ID}`,
+    redirectUri: window.location.origin,
+  },
+  cache: {
+    cacheLocation: "sessionStorage",
+    storeAuthStateInCookie: false,
+  },
+};
 
-export function initializeMsalInstance() {
-  const authConfig = configService.authConfig
+export const loginRequest = {
+  scopes: [env.VITE_MSAL_SCOPE],
+};
 
-  const msalConfig: Configuration = {
-    auth: {
-      clientId: authConfig.clientId,
-      authority: authConfig.authority,
-      redirectUri: authConfig.redirectUri || window.location.origin,
-    },
-    cache: {
-      cacheLocation: "sessionStorage",
-      storeAuthStateInCookie: false,
-    },
-  };
+export const msalInstance = new PublicClientApplication(msalConfig);
 
-  msalInstance = new PublicClientApplication(msalConfig)
-  return msalInstance
-}
-
-export function getMsalInstance(): PublicClientApplication {
-  if (!msalInstance) {
-    throw new Error('MSAL instance not initialized. Call initializeMsalInstance() after config is loaded.')
-  }
-  return msalInstance
-}
+// MSAL v3+ requires initialize() to be awaited before ANY other API call.
+// We export the promise so AuthProvider can await it once on mount.
+// Calling initialize() multiple times is safe — it no-ops after the first call.
+export const msalInitPromise = msalInstance.initialize();

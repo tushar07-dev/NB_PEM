@@ -1,12 +1,7 @@
-import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/app/providers/useAuth";
 import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
-import { useAsyncError } from "@/shared/hooks/useAsyncError";
-
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
 import {
   Card,
   CardContent,
@@ -15,31 +10,21 @@ import {
 } from "@/shared/components/ui/card";
 
 const LoginForm = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
   const navigate = useNavigate();
   const location = useLocation();
-  const { handleLogin } = useAuth();
-  const { error, isError, setError, clearError } = useAsyncError();
+  const { handleLogin, isLoading } = useAuth();
 
-  // Get the page user was trying to access before login
   const from =
     (location.state as { from?: { pathname?: string } })?.from?.pathname ||
     "/dashboard";
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    clearError();
-    setIsLoading(true);
 
+  const handleLoginClick = async () => {
     try {
-      await handleLogin(email, password);
+      await handleLogin();
       navigate(from, { replace: true });
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("Login failed"));
-    } finally {
-      setIsLoading(false);
+    } catch {
+      // MSAL popup handles its own error UI
+      // ErrorBoundary above catches unexpected errors
     }
   };
 
@@ -47,47 +32,19 @@ const LoginForm = () => {
     <div className="flex min-h-screen items-center justify-center bg-slate-100">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-center text-2xl">Login</CardTitle>
+          <CardTitle className="text-center text-2xl">PEM Digital</CardTitle>
         </CardHeader>
-
         <CardContent className="space-y-4">
-          <form onSubmit={handleLoginSubmit} className="space-y-4">
-            <div className="space-y-1">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-                autoComplete="email"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-                autoComplete="current-password"
-              />
-            </div>
-
-            {isError && <p className="text-sm text-red-500">{error?.message}</p>}
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading || !email || !password}
-            >
-              {isLoading ? "Logging in..." : "Login"}
-            </Button>
-          </form>
+          <p className="text-muted-foreground text-center text-sm">
+            Sign in with your Aker Solutions Microsoft account
+          </p>
+          <Button
+            className="w-full"
+            onClick={handleLoginClick}
+            disabled={isLoading}
+          >
+            {isLoading ? "Signing in..." : "Sign in with Microsoft"}
+          </Button>
         </CardContent>
       </Card>
     </div>
@@ -95,14 +52,8 @@ const LoginForm = () => {
 };
 
 const LoginPage = () => {
-  const [loginAttempts, setLoginAttempts] = useState(0);
-
   return (
     <ErrorBoundary
-      resetKeys={[loginAttempts]}
-      onReset={() => {
-        setLoginAttempts((prev) => prev + 1);
-      }}
       fallback={({ error, resetErrorBoundary }) => (
         <div className="flex min-h-screen items-center justify-center bg-slate-100">
           <Card className="w-full max-w-md">
@@ -111,9 +62,9 @@ const LoginPage = () => {
                 Login Error
               </h2>
               <p className="text-gray-600">
-                Something went wrong during login. Please try again.
+                Something went wrong. Please try again.
               </p>
-              <p className="text-xs text-gray-500">Error: {error.message}</p>
+              <p className="text-xs text-gray-500">{error.message}</p>
               <Button onClick={resetErrorBoundary} className="w-full">
                 Try Again
               </Button>

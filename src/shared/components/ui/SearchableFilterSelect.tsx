@@ -6,18 +6,20 @@ import {
   SelectTrigger,
 } from "@/shared/components/ui/select";
 import { cn } from "@/shared/lib/utils";
-import { Search, X, ChevronDown } from "lucide-react";
+import { Search, ChevronDown, Check, Loader2 } from "lucide-react";
 import {
   SELECT_SIZE_CONFIG,
   SELECT_AUTO_CONFIG,
   SELECT_BASE_STYLES,
 } from "@/shared/components/SearchableSelectTokens";
 
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
 const CONSTANTS = {
   EMPTY_VALUE: "__EMPTY__",
   SEARCH_FOCUS_DELAY_MS: 50,
-  ANIMATION_DELAY_MS: 20,
-  ANIMATION_DURATION_MS: 200,
 } as const;
 
 const DEFAULT_TEXTS = {
@@ -27,7 +29,12 @@ const DEFAULT_TEXTS = {
   noOptionsTitle: "No options available",
   noOptionsSubtitle: "Please add some options",
   startSearchTitle: "Start typing to search",
+  loadingTitle: "Loading options...",
 } as const;
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 type Option = {
   value: string;
@@ -44,6 +51,7 @@ type CustomTexts = {
   noOptionsTitle?: string;
   noOptionsSubtitle?: string;
   startSearchTitle?: string;
+  loadingTitle?: string;
 };
 
 type Props = {
@@ -54,13 +62,39 @@ type Props = {
   onValueChange?: (value: string) => void;
   required?: boolean;
   disabled?: boolean;
+  isLoading?: boolean;
   error?: string;
   helperText?: string;
   className?: string;
-  clearable?: boolean;
   size?: Size;
   texts?: CustomTexts;
 };
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function toSafeId(label: string): string {
+  return label
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
+/**
+ * Returns focus to the SelectTrigger button without needing a direct ref on it.
+ * SelectTrigger in select.tsx is not a forwardRef component, so we attach a ref
+ * to its wrapper div and query the button from there instead.
+ */
+function focusTrigger(wrapperRef: React.RefObject<HTMLDivElement | null>) {
+  setTimeout(() => {
+    wrapperRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
+  }, 0);
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export function SearchableFilterSelect({
   label,
@@ -70,26 +104,29 @@ export function SearchableFilterSelect({
   onValueChange,
   required = false,
   disabled = false,
+  isLoading = false,
   error,
   helperText,
   className,
-  clearable = false,
   size = "auto",
   texts,
 }: Props) {
   const [search, setSearch] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
-  const isMountedRef = React.useRef(true);
 
-  const mergedTexts = { ...DEFAULT_TEXTS, ...texts };
+  // FIX: ref lives on the wrapper div, not on SelectTrigger directly.
+  // SelectTrigger in select.tsx is not a forwardRef component — passing a ref
+  // to it directly causes the React warning. We query the <button> from the
+  // wrapper div whenever we need to return focus to the trigger.
+  const triggerWrapperRef = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
+  const safeId = React.useMemo(() => toSafeId(label), [label]);
+
+  const mergedTexts = React.useMemo(
+    () => ({ ...DEFAULT_TEXTS, ...texts }),
+    [texts]
+  );
 
   const sizeStyles =
     size === "auto" ? SELECT_AUTO_CONFIG : SELECT_SIZE_CONFIG[size];
@@ -114,9 +151,22 @@ export function SearchableFilterSelect({
 
   const filteredOptions = React.useMemo(() => {
     if (!search) return options;
+
     const lower = search.toLowerCase();
-    return options.filter((opt) => opt.label.toLowerCase().includes(lower));
-  }, [search, options]);
+    const matches = options.filter((opt) =>
+      opt.label.toLowerCase().includes(lower)
+    );
+
+    if (value) {
+      const selectedInMatches = matches.some((o) => o.value === value);
+      if (!selectedInMatches) {
+        const selectedOpt = options.find((o) => o.value === value);
+        if (selectedOpt) return [selectedOpt, ...matches];
+      }
+    }
+
+    return matches;
+  }, [search, options, value]);
 
   const emptyState = React.useMemo(() => {
     if (search)
@@ -135,22 +185,11 @@ export function SearchableFilterSelect({
     };
   }, [search, options.length, mergedTexts]);
 
-  const handleClear = React.useCallback(
-    (e: React.MouseEvent | React.KeyboardEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      onValueChange?.("");
-    },
-    [onValueChange]
-  );
-
   const handleClearSearch = React.useCallback(
     (e: React.MouseEvent | React.KeyboardEvent) => {
       e.stopPropagation();
       setSearch("");
-      setTimeout(() => {
-        if (isMountedRef.current) searchInputRef.current?.focus();
-      }, 0);
+      setTimeout(() => searchInputRef.current?.focus(), 0);
     },
     []
   );
@@ -162,6 +201,7 @@ export function SearchableFilterSelect({
           e.preventDefault();
           e.stopPropagation();
           setOpen(false);
+          focusTrigger(triggerWrapperRef);
           break;
         case "Enter":
           e.preventDefault();
@@ -188,21 +228,10 @@ export function SearchableFilterSelect({
 
   const handleOpenChange = React.useCallback(
     (next: boolean) => {
-      if (disabled) return;
+      if (disabled || isLoading) return;
       setOpen(next);
     },
-    [disabled]
-  );
-
-  const getItemStyle = React.useCallback(
-    (index: number): React.CSSProperties =>
-      search
-        ? {
-            animationDelay: `${index * CONSTANTS.ANIMATION_DELAY_MS}ms`,
-            animationDuration: `${CONSTANTS.ANIMATION_DURATION_MS}ms`,
-          }
-        : {},
-    [search]
+    [disabled, isLoading]
   );
 
   React.useEffect(() => {
@@ -218,12 +247,16 @@ export function SearchableFilterSelect({
     }
   }, [open]);
 
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+
   return (
     <div
       className={cn("flex w-full flex-col", sizeStyles.container, className)}
       data-disabled={disabled || undefined}
     >
-      {/* label px comes from sizeStyles.label so it scales with breakpoints */}
+      {/* Label */}
       <label
         className={cn(
           SELECT_BASE_STYLES.label,
@@ -244,16 +277,37 @@ export function SearchableFilterSelect({
         )}
       </label>
 
-      <div className="relative flex w-full items-center">
+      {/* Trigger + Dropdown — wrapper div holds the ref used for focus return */}
+      <div
+        ref={triggerWrapperRef}
+        className="relative flex w-full items-center"
+      >
         <Select
           value={radixValue}
           onValueChange={handleValueChange}
-          disabled={disabled}
+          disabled={disabled || isLoading}
           open={open}
           onOpenChange={handleOpenChange}
         >
+          {/* No ref prop on SelectTrigger — SelectTrigger in select.tsx is not
+              a forwardRef component. Focus is managed via triggerWrapperRef. */}
           <SelectTrigger
-            aria-disabled={disabled}
+            aria-disabled={disabled || isLoading}
+            aria-required={required}
+            aria-invalid={!!error}
+            aria-busy={isLoading}
+            aria-label={
+              hasValue
+                ? `${label}: ${selectedLabel}, press to change`
+                : `${label}, press to select`
+            }
+            aria-describedby={
+              error
+                ? `${safeId}-error`
+                : helperText
+                  ? `${safeId}-helper`
+                  : undefined
+            }
             className={cn(
               SELECT_BASE_STYLES.trigger,
               sizeStyles.trigger,
@@ -261,39 +315,35 @@ export function SearchableFilterSelect({
               open && "border-primary bg-grey-100 ring-ring/20 ring-2",
               error &&
                 "border-destructive bg-destructive/5 focus:border-destructive focus:ring-destructive/20",
-              clearable && hasValue && "pr-9",
               "w-full"
             )}
-            aria-required={required}
-            aria-invalid={!!error}
-            aria-describedby={
-              error
-                ? `${label}-error`
-                : helperText
-                  ? `${label}-helper`
-                  : undefined
-            }
           >
             <span
               className={cn(
                 "flex-1 truncate text-left capitalize",
                 "text-base leading-[20px] font-normal tracking-[-0.56px]",
-                hasValue ? "text-primary-500" : "text-primary-100"
+                hasValue && !isLoading ? "text-primary-500" : "text-primary-100"
               )}
             >
-              {hasValue ? selectedLabel : placeholder}
+              {hasValue && !isLoading ? selectedLabel : placeholder}
             </span>
 
-            {/* Figma: w-[20px] h-[19.003px] */}
-            <ChevronDown
-              className={cn(
-                "shrink-0 transition-transform duration-200 ease-in-out",
-                hasValue ? "text-primary-500" : "text-primary-100",
-                open && "rotate-180"
-              )}
-              style={{ width: 20, height: 19 }}
-              aria-hidden="true"
-            />
+            {isLoading ? (
+              <Loader2
+                className="text-primary-100 size-4 shrink-0 animate-spin"
+                aria-hidden="true"
+              />
+            ) : (
+              <ChevronDown
+                className={cn(
+                  "shrink-0 transition-transform duration-200 ease-in-out",
+                  hasValue ? "text-primary-500" : "text-primary-100",
+                  open && "rotate-180"
+                )}
+                style={{ width: 20, height: 19 }}
+                aria-hidden="true"
+              />
+            )}
           </SelectTrigger>
 
           <SelectContent
@@ -301,8 +351,8 @@ export function SearchableFilterSelect({
               SELECT_BASE_STYLES.content,
               "w-[var(--radix-select-trigger-width)]"
             )}
-            onCloseAutoFocus={(e) => e.preventDefault()}
           >
+            {/* Search input */}
             <div
               className={cn(
                 SELECT_BASE_STYLES.searchContainer,
@@ -336,6 +386,7 @@ export function SearchableFilterSelect({
                   autoCapitalize="off"
                   spellCheck={false}
                 />
+
                 {search && (
                   <button
                     type="button"
@@ -353,12 +404,25 @@ export function SearchableFilterSelect({
                     )}
                     aria-label="Clear search"
                   >
-                    <X className={sizeStyles.clearIcon} aria-hidden="true" />
+                    <svg
+                      viewBox="0 0 14 14"
+                      fill="none"
+                      className={sizeStyles.clearIcon}
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M1 1l12 12M13 1L1 13"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                      />
+                    </svg>
                   </button>
                 )}
               </div>
             </div>
 
+            {/* Scrollable options area */}
             <div
               className={cn(SELECT_BASE_STYLES.scrollbar, sizeStyles.maxHeight)}
             >
@@ -367,7 +431,32 @@ export function SearchableFilterSelect({
                 aria-hidden="true"
               />
 
-              {filteredOptions.length === 0 && (
+              {isLoading && (
+                <div
+                  role="status"
+                  aria-label={mergedTexts.loadingTitle}
+                  aria-live="polite"
+                  className="flex flex-col px-2 py-2"
+                >
+                  {[0, 1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "flex items-center rounded-lg px-3 py-2.5",
+                        sizeStyles.item
+                      )}
+                    >
+                      <div
+                        className="bg-grey-200 h-3.5 animate-pulse rounded-md"
+                        style={{ width: `${55 + (i % 3) * 15}%` }}
+                      />
+                    </div>
+                  ))}
+                  <p className="sr-only">{mergedTexts.loadingTitle}</p>
+                </div>
+              )}
+
+              {!isLoading && filteredOptions.length === 0 && (
                 <div
                   className={SELECT_BASE_STYLES.emptyState}
                   role="status"
@@ -406,23 +495,45 @@ export function SearchableFilterSelect({
                 </div>
               )}
 
-              {filteredOptions.map((opt, index) => (
-                <SelectItem
-                  key={opt.value}
-                  value={opt.value}
-                  disabled={opt.disabled || disabled}
-                  className={cn(
-                    SELECT_BASE_STYLES.item,
-                    sizeStyles.item,
-                    opt.disabled &&
-                      "cursor-not-allowed opacity-50 hover:bg-transparent",
-                    search && "animate-in fade-in-0 slide-in-from-top-1"
-                  )}
-                  style={getItemStyle(index)}
-                >
-                  {opt.label}
-                </SelectItem>
-              ))}
+              {!isLoading &&
+                filteredOptions.map((opt) => {
+                  const isSelected = opt.value === value;
+                  return (
+                    <SelectItem
+                      key={opt.value}
+                      value={opt.value}
+                      disabled={opt.disabled || disabled}
+                      className={cn(
+                        SELECT_BASE_STYLES.item,
+                        sizeStyles.item,
+                        opt.disabled &&
+                          "cursor-not-allowed opacity-50 hover:bg-transparent",
+                        search && "animate-in fade-in-0 slide-in-from-top-1",
+                        isSelected && "bg-primary/10 font-medium"
+                      )}
+                      onPointerDown={(e) => {
+                        if (isSelected) {
+                          e.preventDefault();
+                          onValueChange?.("");
+                          setOpen(false);
+                          focusTrigger(triggerWrapperRef);
+                        }
+                      }}
+                    >
+                      <span className="flex w-full items-center justify-between gap-2">
+                        <span className="flex-1 truncate">{opt.label}</span>
+                        {isSelected && (
+                          <span className="flex shrink-0 items-center gap-1.5">
+                            <Check
+                              className="text-primary size-4"
+                              aria-label="Selected — click to deselect"
+                            />
+                          </span>
+                        )}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
 
               <div
                 className={SELECT_BASE_STYLES.gradient.bottom}
@@ -430,7 +541,7 @@ export function SearchableFilterSelect({
               />
             </div>
 
-            {search && filteredOptions.length > 0 && (
+            {!isLoading && search && filteredOptions.length > 0 && (
               <div
                 className={cn(SELECT_BASE_STYLES.footer, sizeStyles.footer)}
                 aria-live="polite"
@@ -444,39 +555,15 @@ export function SearchableFilterSelect({
             )}
           </SelectContent>
         </Select>
-
-        {clearable && hasValue && !disabled && (
-          <button
-            type="button"
-            onClick={handleClear}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleClear(e);
-              }
-            }}
-            onMouseDown={(e) => e.stopPropagation()}
-            onPointerDown={(e) => e.stopPropagation()}
-            className={cn(
-              "absolute top-1/2 right-2.5 z-10 -translate-y-1/2",
-              "rounded-md p-0.5 transition-all duration-200",
-              "text-primary-100",
-              "hover:bg-grey-200 hover:text-primary-500",
-              "focus:ring-ring/50 focus:ring-2 focus:outline-none"
-            )}
-            aria-label="Clear selection"
-          >
-            <X className={sizeStyles.clearIcon} aria-hidden="true" />
-          </button>
-        )}
       </div>
 
+      {/* Helper text */}
       {helperText && !error && (
         <p
-          id={`${label}-helper`}
+          id={`${safeId}-helper`}
           className={cn(
             "text-primary-100 mt-1 leading-[20px] tracking-[-0.56px]",
-            sizeStyles.label, // reuse label px for alignment
+            sizeStyles.label,
             sizeStyles.error
           )}
         >
@@ -484,8 +571,9 @@ export function SearchableFilterSelect({
         </p>
       )}
 
+      {/* Error message */}
       <div
-        id={`${label}-error`}
+        id={`${safeId}-error`}
         role="alert"
         aria-live="polite"
         aria-atomic="true"

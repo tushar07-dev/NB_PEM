@@ -8,10 +8,9 @@ interface RoleGuardProps {
 }
 
 export const RoleGuard = ({ children, allowedRoles }: RoleGuardProps) => {
-  const { authToken, currentUser, isLoading } = useAuth();
+  const { currentUser, isLoading } = useAuth(); // ← removed authToken
   const location = useLocation();
 
-  // Show loading state while checking auth
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -20,16 +19,13 @@ export const RoleGuard = ({ children, allowedRoles }: RoleGuardProps) => {
     );
   }
 
-  // Not logged in → redirect to login
-  if (!authToken || !currentUser) {
+  if (!currentUser) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Logged in but role not allowed → unauthorized
   if (!allowedRoles.includes(currentUser.role)) {
     return <Navigate to="/unauthorized" replace />;
   }
 
-  // Render children if provided, otherwise render Outlet for nested routes
   return children ? <>{children}</> : <Outlet />;
 };

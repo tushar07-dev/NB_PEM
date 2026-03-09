@@ -2,11 +2,12 @@
 import {
   useQuery,
   useMutation,
+  useQueryClient,
   type UseQueryResult,
   type UseMutationResult,
 } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { customInstance } from "@/api/mutator/custom-instance";
-import { queryClient } from "@/api/query-client";
 
 import type {
   DisciplineResponseDto,
@@ -107,11 +108,16 @@ export function transformAreas(data: AreaResponseDto[]): DropdownItem[] {
     .sort((a, b) => a.label.localeCompare(b.label));
 }
 
-// In transformGenericPEMs — add dedup: // removed dublicate values based on pemName, and sort by label
-export function transformGenericPEMs(data: GenericPEMResponseDto[]): DropdownItem[] {
+// Deduplicated by pemName — backend sometimes returns duplicates
+export function transformGenericPEMs(
+  data: GenericPEMResponseDto[]
+): DropdownItem[] {
   const seen = new Set<string>();
   return data
-    .filter((item) => item.pemName && !seen.has(item.pemName!) && seen.add(item.pemName!))
+    .filter(
+      (item) =>
+        item.pemName && !seen.has(item.pemName!) && seen.add(item.pemName!)
+    )
     .map((item) => ({ value: item.pemName!, label: item.pemName! }))
     .sort((a, b) => a.label.localeCompare(b.label));
 }
@@ -140,10 +146,7 @@ function validateApiResponse<
   T extends { status?: number | null; message?: string | null },
 >(response: T, errorMessage: string): void {
   const status = response.status ?? 0;
-  // Treat 0 (field absent) and 2xx as success; throw on 4xx/5xx body status codes
-  // if (status !== 0 && (status < 200 || status >= 300)) {
-  //   throw new Error(response.message ?? errorMessage);
-  // }
+  // Treat 0 (field absent) and 2xx as success; throw on 4xx/5xx body status
   if (status !== 0 && status !== -1 && (status < 200 || status >= 300)) {
     throw new Error(response.message ?? errorMessage);
   }
@@ -177,7 +180,6 @@ export function useGenericPEMs(): UseQueryResult<DropdownItem[], Error> {
           url: "/api/GenericPEM/GetGenericPEM",
           method: "GET",
         });
-
       validateApiResponse(response, "Failed to fetch generic PEMs");
       return transformGenericPEMs(response.data ?? []);
     },
@@ -220,7 +222,11 @@ export function useDocumentTypes(
   });
 }
 
-export function useFacilityCodes(): UseQueryResult<DropdownItem[], Error> {
+// FIX #4: was ignoring the enabled param — fired on every mount regardless
+// of whether the parent filter was active, causing unnecessary API calls.
+export function useFacilityCodes(
+  enabled = true
+): UseQueryResult<DropdownItem[], Error> {
   return useQuery({
     queryKey: documentQueryKeys.facilityCodes(),
     queryFn: async (): Promise<DropdownItem[]> => {
@@ -233,10 +239,14 @@ export function useFacilityCodes(): UseQueryResult<DropdownItem[], Error> {
       return transformFacilityCodes(response.data ?? []);
     },
     staleTime: 10 * 60 * 1000,
+    enabled,
   });
 }
 
-export function useSystems(): UseQueryResult<DropdownItem[], Error> {
+// FIX #4: same as useFacilityCodes — enabled param was ignored
+export function useSystems(
+  enabled = true
+): UseQueryResult<DropdownItem[], Error> {
   return useQuery({
     queryKey: documentQueryKeys.systems(),
     queryFn: async (): Promise<DropdownItem[]> => {
@@ -248,10 +258,14 @@ export function useSystems(): UseQueryResult<DropdownItem[], Error> {
       return transformSystems(response.data ?? []);
     },
     staleTime: 10 * 60 * 1000,
+    enabled,
   });
 }
 
-export function useAreas(): UseQueryResult<DropdownItem[], Error> {
+// FIX #4: same as useFacilityCodes — enabled param was ignored
+export function useAreas(
+  enabled = true
+): UseQueryResult<DropdownItem[], Error> {
   return useQuery({
     queryKey: documentQueryKeys.areas(),
     queryFn: async (): Promise<DropdownItem[]> => {
@@ -263,6 +277,7 @@ export function useAreas(): UseQueryResult<DropdownItem[], Error> {
       return transformAreas(response.data ?? []);
     },
     staleTime: 10 * 60 * 1000,
+    enabled,
   });
 }
 
@@ -317,6 +332,10 @@ export function useAssignDocumentRoles(): UseMutationResult<
   Error,
   AssignProjectDocumentRolesRequestDto
 > {
+  // FIX: use useQueryClient() hook instead of imported singleton —
+  // the hook version is always in sync with the nearest QueryClientProvider.
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (
       payload: AssignProjectDocumentRolesRequestDto
@@ -331,7 +350,29 @@ export function useAssignDocumentRoles(): UseMutationResult<
       validateApiResponse(response, "Failed to assign document roles");
       return response;
     },
+
+    // FIX #7: specific success toast — was relying on DocumentTable to fire
+    // toast manually after mutateAsync resolved. Centralising it here means
+    // any future caller gets feedback automatically.
     onSuccess: () => {
+      toast.success("Responsibilities assigned", {
+        description: "Document roles have been updated successfully.",
+      });
+    },
+
+    // FIX #7: specific error toast — was falling back to generic global
+    // MutationCache.onError message which just shows error.message raw.
+    onError: (error: Error) => {
+      toast.error("Failed to assign responsibilities", {
+        description: error.message ?? "An unexpected error occurred.",
+        duration: 6000,
+      });
+    },
+
+    // FIX #6: was onSuccess — onSettled fires whether mutation succeeds or
+    // errors, so the cache is always revalidated. Critical once optimistic
+    // updates are added; a failed mutation would otherwise leave stale data.
+    onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: documentQueryKeys.all });
     },
   });
@@ -340,7 +381,6 @@ export function useAssignDocumentRoles(): UseMutationResult<
 // ============================================
 // Send Email Mutation
 // ============================================
-
 interface EmailResult {
   isSuccess: boolean;
   message?: string;
@@ -351,6 +391,8 @@ export function useSendDocumentEmail(): UseMutationResult<
   Error,
   EmailRequestDto
 > {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (payload: EmailRequestDto): Promise<EmailResult> => {
       const response = await customInstance<EmailResult>({
@@ -364,7 +406,24 @@ export function useSendDocumentEmail(): UseMutationResult<
       }
       return response;
     },
+
+    // FIX #7: specific success toast
     onSuccess: () => {
+      toast.success("Email sent", {
+        description: "The document email has been sent successfully.",
+      });
+    },
+
+    // FIX #7: specific error toast
+    onError: (error: Error) => {
+      toast.error("Failed to send email", {
+        description: error.message ?? "An unexpected error occurred.",
+        duration: 6000,
+      });
+    },
+
+    // FIX #6: was onSuccess
+    onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: documentQueryKeys.all });
     },
   });

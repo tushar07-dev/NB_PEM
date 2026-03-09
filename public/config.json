@@ -1,6 +1,6 @@
 {
   "api": {
-    "baseUrl": "http://pemdigitaldevapi.akersolutions.com",
+    "baseUrl": "https://pemdigitaldevapi.akersolutions.com",
     "timeout": 10000
   },
   "auth": {

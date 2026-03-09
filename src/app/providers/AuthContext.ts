@@ -2,11 +2,12 @@ import { createContext } from "react";
 import type { User } from "@/types/user";
 
 export type AuthContextType = {
-  authToken: string | null;
   currentUser: User | null;
-  handleLogin: (email: string, password: string) => Promise<void>;
-  handleLogout: () => void;
+  authToken: string | null;
   isLoading: boolean;
+  handleLogin: () => Promise<void>;
+  handleLogout: () => Promise<void>;
+  refreshToken: () => Promise<string | null>;
 };
 
 export const AuthContext = createContext<AuthContextType | undefined>(

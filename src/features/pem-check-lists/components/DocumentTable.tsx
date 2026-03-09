@@ -9,7 +9,6 @@ import { DataTableSortList } from "@/shared/components/data-table/data-table-sor
 import { useDataTable } from "@/shared/hooks/data-table/use-data-table";
 import { Button } from "@/shared/components/ui/button";
 import { Clock, X, AlertCircle, FileSearch, FileX } from "lucide-react";
-import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +31,7 @@ import {
 
 // ============================================
 // Mock users (frontend-only until backend ready)
+// TODO: Replace with useUsers() hook once backend provides /api/Users endpoint
 // ============================================
 const ALL_USERS = [
   {
@@ -215,14 +215,14 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
   }, []);
 
   // ── Workflow: Save (AC3 + AC4) ────────────────────────────────────────────
+  // Toasts are now owned by the mutation hooks (onSuccess / onError in queries.ts).
+  // This component only handles navigation on success and stays put on error.
   const handleWorkflowSave = useCallback(
     async (vals: ResponsibilityValues) => {
       if (!workflowRow) return;
 
       try {
         // Step 1: Assign roles via API
-        // NOTE: projectDocumentId will be null until backend adds it to GetProjectDocuments.
-        // Once backend adds it, remove the fallback (0) and use workflowRow.projectDocumentId directly.
         if (workflowRow.projectDocumentId !== null) {
           await assignRoles({
             projectDocumentId: workflowRow.projectDocumentId,
@@ -239,7 +239,7 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
           }
         }
 
-        // Step 2: Send real email notification via API
+        // Step 2: Send email notification via API (if checker assigned)
         if (vals.checker) {
           await sendEmail({
             to: [vals.checker],
@@ -253,16 +253,10 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
               .filter(Boolean)
               .join("\n"),
           });
-
-          toast.success("Document assigned & email sent", {
-            description: `To: ${vals.checker}${vals.approver ? ` · CC: ${vals.approver}` : ""}`,
-            duration: 5000,
-          });
-        } else {
-          toast.success("Responsibilities saved");
         }
 
-        // Step 3: Navigate to checklist with updated state
+        // Step 3: Navigate to checklist on full success.
+        // Toasts (success or error) are fired by the mutation hooks — not here.
         navigate(CHECKLIST_ROUTE, {
           state: {
             document: {
@@ -273,12 +267,9 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
             },
           },
         });
-      } catch (err) {
-        toast.error("Failed to assign responsibilities", {
-          description:
-            err instanceof Error ? err.message : "An unexpected error occurred",
-          duration: 6000,
-        });
+      } catch {
+        // Mutation hooks already show a specific toast.error via their onError.
+        // No duplicate toast here — just stay on the page so the user can retry.
       }
     },
     [workflowRow, navigate, assignRoles, sendEmail]

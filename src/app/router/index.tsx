@@ -2,7 +2,6 @@
 import { lazy } from "react";
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
-import { RoleGuard } from "@/app/router/RoleGuard";
 import { RoleBasedLayout } from "@/app/layouts/RoleBasedLayout";
 import RouterError from "./RouterError";
 import LoginPage from "@/features/auth/pages/LoginPage";
@@ -13,6 +12,7 @@ import { LazyRoute } from "@/shared/components/ui/lazy-route";
 import DocumentRequirementPage from "@/features/pem-requirements/pages/document-requirement/DocumentRequirementPage";
 import ControlObjectChecklistPage from "@/features/pem-check-lists/pages/control-object-checklist-page";
 import DisciplineActivityChecklistPage from "@/features/pem-check-lists/pages/discipline-activity-checklist-page";
+import { ROLES } from "@/shared/types/roles";
 
 const lazyPage = (title: string) =>
   lazy(async () => ({
@@ -27,21 +27,24 @@ const DashboardPage = lazy(() =>
 );
 const DocumentChecklistDetailPage = lazyPage("Document Checklist Detail");
 
-// PEM Requirements Pages
+// PEM Requirements
 const ControlObjectRequirementPage = lazyPage("Control Object Requirement");
-
 const DisciplineActivityRequirementPage = lazyPage(
   "Discipline Activity Requirement"
 );
 
-// Admin Pages
+// Admin
 const AdminSettingsPage = lazyPage("Admin Settings");
 
 // ==========================================
 // ROUTER CONFIGURATION
 // ==========================================
+// Role checking happens exactly ONCE per navigation — inside each
+// page's <LazyRoute roles={[...]}> via RoleGuard.
+// Section wrappers use plain <Outlet /> — no double role-checking.
+// ==========================================
 export const router = createBrowserRouter([
-  // Public routes
+  // ── Public routes ──────────────────────────────────────────────────────────
   {
     path: "/login",
     element: <LoginPage />,
@@ -51,7 +54,7 @@ export const router = createBrowserRouter([
     element: <UnauthorizedPage />,
   },
 
-  // Protected app routes
+  // ── Protected app routes ───────────────────────────────────────────────────
   {
     path: "/",
     element: (
@@ -67,24 +70,20 @@ export const router = createBrowserRouter([
         element: <Navigate to="/dashboard" replace />,
       },
 
-      // Dashboard (accessible to all authenticated users)
+      // Dashboard
       {
         path: "dashboard",
         element: (
-          <LazyRoute roles={["admin", "user"]}>
+          <LazyRoute roles={[ROLES.ADMIN, ROLES.USER]}>
             <DashboardPage />
           </LazyRoute>
         ),
       },
 
-      // PEM Requirements section
+      // ── PEM Requirements ─────────────────────────────────────────────────
       {
         path: "pem-requirements",
-        element: (
-          <RoleGuard allowedRoles={["admin", "user"]}>
-            <Outlet />
-          </RoleGuard>
-        ),
+        element: <Outlet />,
         children: [
           {
             index: true,
@@ -93,7 +92,7 @@ export const router = createBrowserRouter([
           {
             path: "control-object-requirement",
             element: (
-              <LazyRoute roles={["admin", "user"]}>
+              <LazyRoute roles={[ROLES.ADMIN, ROLES.USER]}>
                 <ControlObjectRequirementPage />
               </LazyRoute>
             ),
@@ -101,7 +100,7 @@ export const router = createBrowserRouter([
           {
             path: "document-requirement",
             element: (
-              <LazyRoute roles={["admin"]}>
+              <LazyRoute roles={[ROLES.ADMIN]}>
                 <DocumentRequirementPage />
               </LazyRoute>
             ),
@@ -109,7 +108,7 @@ export const router = createBrowserRouter([
           {
             path: "discipline-activity-requirement",
             element: (
-              <LazyRoute roles={["admin"]}>
+              <LazyRoute roles={[ROLES.ADMIN]}>
                 <DisciplineActivityRequirementPage />
               </LazyRoute>
             ),
@@ -117,14 +116,10 @@ export const router = createBrowserRouter([
         ],
       },
 
-      // PEM Checklists section
+      // ── PEM Checklists ───────────────────────────────────────────────────
       {
         path: "pem-checklists",
-        element: (
-          <RoleGuard allowedRoles={["admin", "user"]}>
-            <Outlet />
-          </RoleGuard>
-        ),
+        element: <Outlet />,
         children: [
           {
             index: true,
@@ -133,19 +128,18 @@ export const router = createBrowserRouter([
           {
             path: "control-object-checklist",
             element: (
-              <LazyRoute roles={["admin"]}>
+              <LazyRoute roles={[ROLES.ADMIN]}>
                 <ControlObjectChecklistPage />
               </LazyRoute>
             ),
           },
-          // AFTER
           {
             path: "document-checklist",
             children: [
               {
                 index: true,
                 element: (
-                  <LazyRoute roles={["admin"]}>
+                  <LazyRoute roles={[ROLES.ADMIN]}>
                     <DocumentChecklistPage />
                   </LazyRoute>
                 ),
@@ -153,7 +147,7 @@ export const router = createBrowserRouter([
               {
                 path: "checklist",
                 element: (
-                  <LazyRoute roles={["admin"]}>
+                  <LazyRoute roles={[ROLES.ADMIN]}>
                     <DocumentChecklistDetailPage />
                   </LazyRoute>
                 ),
@@ -163,7 +157,7 @@ export const router = createBrowserRouter([
           {
             path: "discipline-activity-checklist",
             element: (
-              <LazyRoute roles={["admin"]}>
+              <LazyRoute roles={[ROLES.ADMIN]}>
                 <DisciplineActivityChecklistPage />
               </LazyRoute>
             ),
@@ -171,14 +165,10 @@ export const router = createBrowserRouter([
         ],
       },
 
-      // Admin routes
+      // ── Admin ─────────────────────────────────────────────────────────────
       {
         path: "admin",
-        element: (
-          <RoleGuard allowedRoles={["admin"]}>
-            <Outlet />
-          </RoleGuard>
-        ),
+        element: <Outlet />,
         children: [
           {
             index: true,
@@ -187,7 +177,7 @@ export const router = createBrowserRouter([
           {
             path: "settings",
             element: (
-              <LazyRoute roles={["admin"]}>
+              <LazyRoute roles={[ROLES.ADMIN]}>
                 <AdminSettingsPage />
               </LazyRoute>
             ),
@@ -197,16 +187,20 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // 404 catch-all
+  // ── 404 catch-all ─────────────────────────────────────────────────────────
+  // Wrapped in ProtectedRoute: unauthenticated users are redirected to /login
+  // instead of seeing a 404 for URLs typed while logged out.
   {
     path: "*",
     element: (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900">404</h1>
-          <p className="text-muted-foreground mt-2">Page Not Found</p>
+      <ProtectedRoute>
+        <div className="flex h-screen items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900">404</h1>
+            <p className="text-muted-foreground mt-2">Page Not Found</p>
+          </div>
         </div>
-      </div>
+      </ProtectedRoute>
     ),
   },
 ]);

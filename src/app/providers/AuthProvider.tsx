@@ -13,7 +13,10 @@ import {
 import { useAuthStore } from "@/shared/store/authStore";
 import { useProjectStore } from "@/shared/store/projectStore";
 import { useFilterStore } from "@/shared/store/filter-store";
+import { useGenericPEMStore } from "@/shared/store/genericPemStore";
 import { AuthContext } from "./AuthContext";
+import { ROLES } from "@/shared/types/roles";
+import type { User } from "@/shared/types/user";
 
 // ── Hardcoded admin emails (TECH DEBT) ────────────────────────────────────────
 // TODO: Replace with MSAL token claims (account.idTokenClaims?.roles) once
@@ -22,25 +25,36 @@ const ADMIN_EMAILS = [
   "tushar.shelke@akersolutions.com",
   "sanghati.chatterjee2@akersolutions.com",
   "nilesh.thakur@akersolutions.com",
+  "Rohit.Shelar@akersolutions.com",
 ];
 
-interface CurrentUser {
-  name: string;
-  email: string;
-  role: "admin" | "user";
+/**
+ * Builds a User object from an MSAL AccountInfo.
+ * Uses account.localAccountId as the stable unique id — this is a GUID
+ * that MSAL assigns per account and is consistent across sessions.
+ */
+function buildUser(account: AccountInfo): User {
+  const email = account.username ?? "";
+  const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
+  return {
+    id: account.localAccountId,
+    name: account.name ?? email,
+    email,
+    role: isAdmin ? ROLES.ADMIN : ROLES.USER,
+  };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { setProfile, clearProfile } = useAuthStore();
   const clearProject = useProjectStore((s) => s.clearProject);
   const resetFilters = useFilterStore((s) => s.resetFilters);
+  const clearGenericPEM = useGenericPEMStore((s) => s.clearGenericPEM);
 
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // ── Token acquisition: silent → popup fallback ────────────────────────────
-  // NOTE: msalInitPromise must be awaited before this is called.
   const acquireToken = useCallback(
     async (account: AccountInfo): Promise<string | null> => {
       try {
@@ -85,29 +99,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // MSAL v3+ REQUIREMENT: initialize() must complete before any other
-        // MSAL API (getAllAccounts, acquireTokenSilent, loginPopup, etc).
-        // msalInitPromise is created once when msalConfig.ts is imported,
-        // so awaiting it here is safe and idempotent.
         await msalInitPromise;
 
         const accounts = msalInstance.getAllAccounts();
-        if (accounts.length === 0) {
-          return; // No session — show login page
-        }
+        if (accounts.length === 0) return;
 
         const account = accounts[0];
+        if (!account) return;
         const token = await acquireToken(account);
 
         if (token) {
-          const email = account.username ?? "";
-          const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
-          const user: CurrentUser = {
-            name: account.name ?? email,
-            email,
-            role: isAdmin ? "admin" : "user",
-          };
-
+          const user = buildUser(account);
           setCurrentUser(user);
           setAuthToken(token);
           setApiToken(token);
@@ -127,13 +129,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ── Wire token refresh callback to Axios interceptor ─────────────────────
   const refreshToken = useCallback(async (): Promise<string | null> => {
-    // msalInitPromise is already resolved by the time any API call triggers
-    // a 401, but await it defensively in case of edge-case early calls.
     await msalInitPromise;
     const accounts = msalInstance.getAllAccounts();
     if (accounts.length === 0) return null;
 
-    const token = await acquireToken(accounts[0]);
+    const account = accounts[0];
+    if (!account) return null;
+    const token = await acquireToken(account);
     if (token) {
       setAuthToken(token);
       setApiToken(token);
@@ -148,22 +150,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ── Login ─────────────────────────────────────────────────────────────────
   const handleLogin = useCallback(async () => {
     try {
-      // Must await initialization before loginPopup — this is what was
-      // causing the login button to silently do nothing.
       await msalInitPromise;
 
       const result = await msalInstance.loginPopup(loginRequest);
       const token = await acquireToken(result.account);
 
       if (token) {
-        const email = result.account.username ?? "";
-        const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
-        const user: CurrentUser = {
-          name: result.account.name ?? email,
-          email,
-          role: isAdmin ? "admin" : "user",
-        };
-
+        const user = buildUser(result.account);
         setCurrentUser(user);
         setAuthToken(token);
         setApiToken(token);
@@ -173,7 +166,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (import.meta.env.DEV) {
         console.error("[AuthProvider] Login failed:", error);
       }
-      // Re-throw so LoginPage's try/catch can handle navigation correctly
       throw error;
     }
   }, [acquireToken, setProfile]);
@@ -189,9 +181,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setApiToken(null);
       clearProfile();
       clearProject();
+      clearGenericPEM();
       resetFilters();
     }
-  }, [clearProfile, clearProject, resetFilters]);
+  }, [clearProfile, clearProject, clearGenericPEM, resetFilters]);
 
   return (
     <AuthContext.Provider
@@ -201,6 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         handleLogin,
         handleLogout,
+        refreshToken,
       }}
     >
       {children}

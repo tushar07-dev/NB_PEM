@@ -1,6 +1,7 @@
 // src/api/queries/project.queries.ts
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { customInstance } from "@/api/mutator/custom-instance";
+import { validateApiResponse } from "@/api/utils";
 import type {
   ProjectResponseDto,
   ProjectResponseDtoListApiResponse,
@@ -40,12 +41,7 @@ export function useProjects(): UseQueryResult<Project[], Error> {
         method: "GET",
       });
 
-      // Accept -1, 0, or 200 as success
-      const status = response.status ?? 0;
-      if (status > 0 && status !== 200) {
-        throw new Error(response.message ?? "Failed to fetch projects");
-      }
-
+      validateApiResponse(response, "Failed to fetch projects");
       return transformProjects(response.data ?? []);
     },
     staleTime: 10 * 60 * 1000, // Projects don't change often - cache 10min

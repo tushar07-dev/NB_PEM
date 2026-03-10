@@ -1,19 +1,23 @@
 import { useState, useCallback, useMemo } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { SearchableFilterSelect } from "@/shared/components/ui/SearchableFilterSelect";
 import { cn } from "@/shared/lib/utils";
 import type { Option } from "@/shared/components/ui/SearchableFilterSelect";
+import {
+  defineSchema,
+  sendSchema,
+  type ResponsibilityValues,
+} from "../../types/DocumentWorkflowSchema";
+
+// ─── Re-export so existing imports from this file keep working ─────────────────
+export type { ResponsibilityValues };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type DialogVariant = "define" | "send";
-
-export interface ResponsibilityValues {
-  originator: string;
-  checker: string;
-  approver: string;
-}
 
 interface DocumentWorkflowDialogProps {
   open: boolean;
@@ -86,78 +90,6 @@ function PopupHeader({
       >
         <X className="text-primary-300 size-[13px] lg:size-[16px]" />
       </button>
-    </div>
-  );
-}
-
-// ─── Responsibility Fields ────────────────────────────────────────────────────
-// AC5: each dropdown excludes emails already selected in the other two roles
-
-function ResponsibilityFields({
-  variant,
-  allOptions,
-  values,
-  onChange,
-}: {
-  variant: DialogVariant;
-  allOptions: Option[];
-  values: ResponsibilityValues;
-  onChange: (v: ResponsibilityValues) => void;
-}) {
-  const allRequired = variant === "send";
-
-  // AC5: filter out already-selected values from sibling roles
-  const originatorOptions = useMemo(
-    () =>
-      allOptions.filter(
-        (o) => o.value !== values.checker && o.value !== values.approver
-      ),
-    [allOptions, values.checker, values.approver]
-  );
-  const checkerOptions = useMemo(
-    () =>
-      allOptions.filter(
-        (o) => o.value !== values.originator && o.value !== values.approver
-      ),
-    [allOptions, values.originator, values.approver]
-  );
-  const approverOptions = useMemo(
-    () =>
-      allOptions.filter(
-        (o) => o.value !== values.originator && o.value !== values.checker
-      ),
-    [allOptions, values.originator, values.checker]
-  );
-
-  return (
-    <div className="flex w-full flex-col gap-[20px] lg:gap-[30px]">
-      <SearchableFilterSelect
-        label="Originator (Responsible)"
-        placeholder="EG. Amir"
-        options={originatorOptions}
-        value={values.originator}
-        onValueChange={(v) => onChange({ ...values, originator: v })}
-        required
-        size="md"
-      />
-      <SearchableFilterSelect
-        label="Checker (Reviewer)"
-        placeholder="EG. Sanghati"
-        options={checkerOptions}
-        value={values.checker}
-        onValueChange={(v) => onChange({ ...values, checker: v })}
-        required={allRequired}
-        size="md"
-      />
-      <SearchableFilterSelect
-        label="Approver (Accountable)"
-        placeholder="EG. Xavier"
-        options={approverOptions}
-        value={values.approver}
-        onValueChange={(v) => onChange({ ...values, approver: v })}
-        required={allRequired}
-        size="md"
-      />
     </div>
   );
 }
@@ -235,51 +167,84 @@ export function DocumentWorkflowDialog({
   onSendToChecker,
   isSaving = false,
 }: DocumentWorkflowDialogProps) {
-  const [local, setLocal] = useState<ResponsibilityValues>(values ?? EMPTY);
+  const schema = variant === "send" ? sendSchema : defineSchema;
 
-  // Sync if parent passes new values (e.g. when row changes)
-  const handleChange = useCallback(
-    (v: ResponsibilityValues) => {
-      setLocal(v);
-      onChange?.(v);
-    },
-    [onChange]
+  const form = useForm<ResponsibilityValues>({
+    resolver: zodResolver(schema),
+    defaultValues: values ?? EMPTY,
+    // Only validate on submit — show errors after first attempt, then on change
+    mode: "onSubmit",
+    reValidateMode: "onChange",
+  });
+
+  // Live values needed for AC5 cross-field option filtering
+  const currentValues = form.watch();
+
+  // ── AC5: each dropdown hides emails already selected in sibling roles ──────
+  const originatorOptions = useMemo(
+    () =>
+      userOptions.filter(
+        (o) =>
+          o.value !== currentValues.checker &&
+          o.value !== currentValues.approver
+      ),
+    [userOptions, currentValues.checker, currentValues.approver]
+  );
+  const checkerOptions = useMemo(
+    () =>
+      userOptions.filter(
+        (o) =>
+          o.value !== currentValues.originator &&
+          o.value !== currentValues.approver
+      ),
+    [userOptions, currentValues.originator, currentValues.approver]
+  );
+  const approverOptions = useMemo(
+    () =>
+      userOptions.filter(
+        (o) =>
+          o.value !== currentValues.originator &&
+          o.value !== currentValues.checker
+      ),
+    [userOptions, currentValues.originator, currentValues.checker]
   );
 
-  const handleClose = useCallback(() => {
-    setLocal(values ?? EMPTY);
-    onClose();
-  }, [values, onClose]);
+  // ── Handlers ──────────────────────────────────────────────────────────────
 
-  const handleViewOnly = () => {
+  const handleClose = useCallback(() => {
+    form.reset(values ?? EMPTY);
+    onClose();
+  }, [form, values, onClose]);
+
+  const handleViewOnly = useCallback(() => {
     onViewOnly?.();
     handleClose();
-  };
-  const handleSave = () => {
-    onSave?.(local);
-    handleClose();
-  };
-  const handleSaveDraft = () => {
-    onSaveDraft?.(local);
-  };
-  const handleSendToChecker = () => {
-    onSendToChecker?.(local);
-    handleClose();
-  };
+  }, [onViewOnly, handleClose]);
 
-  // "define": only originator required
-  // "send":   all 3 required
-  const defineDisabled = !local.originator || isSaving;
-  const sendDisabled = !local.originator || !local.checker || !local.approver || isSaving;
+  // "define" primary — validated submit
+  const handleSave = form.handleSubmit((data) => {
+    onSave?.(data);
+    // Notify parent of final committed values
+    onChange?.(data);
+    handleClose();
+  });
 
+  // "send" primary — validated submit
+  const handleSendToCheckerSubmit = form.handleSubmit((data) => {
+    onSendToChecker?.(data);
+    onChange?.(data);
+    handleClose();
+  });
+
+  // "send" secondary — draft save, no validation required
+  const handleSaveDraft = useCallback(() => {
+    onSaveDraft?.(form.getValues());
+  }, [form, onSaveDraft]);
+
+  const isSubmitting = form.formState.isSubmitting || isSaving;
+  const allRequired = variant === "send";
   const title =
     variant === "define" ? "Define Responsibilities" : "Send Document";
-
-  // Sync local state when the dialog opens with new values
-  // (handles case where user clicks different rows)
-  const syncedValues = values ?? EMPTY;
-  // TODO: Use syncedValues when implementing form pre-population
-  void syncedValues;
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
@@ -301,12 +266,66 @@ export function DocumentWorkflowDialog({
         <PopupHeader title={title} onClose={handleClose} />
 
         <div className="flex w-full flex-col gap-[16px] lg:gap-[24px]">
-          <ResponsibilityFields
-            variant={variant}
-            allOptions={userOptions}
-            values={local}
-            onChange={handleChange}
-          />
+          {/* ── Fields ── */}
+          <div className="flex w-full flex-col gap-[20px] lg:gap-[30px]">
+            <Controller
+              name="originator"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <SearchableFilterSelect
+                  label="Originator (Responsible)"
+                  placeholder="EG. Amir"
+                  options={originatorOptions}
+                  value={field.value}
+                  onValueChange={(v) => {
+                    field.onChange(v);
+                    onChange?.({ ...form.getValues(), originator: v });
+                  }}
+                  error={fieldState.error?.message}
+                  required
+                  size="md"
+                />
+              )}
+            />
+            <Controller
+              name="checker"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <SearchableFilterSelect
+                  label="Checker (Reviewer)"
+                  placeholder="EG. Sanghati"
+                  options={checkerOptions}
+                  value={field.value}
+                  onValueChange={(v) => {
+                    field.onChange(v);
+                    onChange?.({ ...form.getValues(), checker: v });
+                  }}
+                  error={fieldState.error?.message}
+                  required={allRequired}
+                  size="md"
+                />
+              )}
+            />
+            <Controller
+              name="approver"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <SearchableFilterSelect
+                  label="Approver (Accountable)"
+                  placeholder="EG. Xavier"
+                  options={approverOptions}
+                  value={field.value}
+                  onValueChange={(v) => {
+                    field.onChange(v);
+                    onChange?.({ ...form.getValues(), approver: v });
+                  }}
+                  error={fieldState.error?.message}
+                  required={allRequired}
+                  size="md"
+                />
+              )}
+            />
+          </div>
           <YellowNote />
         </div>
 
@@ -316,15 +335,15 @@ export function DocumentWorkflowDialog({
             rightLabel="Save"
             onLeft={handleViewOnly}
             onRight={handleSave}
-            rightDisabled={defineDisabled}
+            rightDisabled={isSubmitting}
           />
         ) : (
           <ActionButtons
             leftLabel="Save"
             rightLabel="Send To Checker"
             onLeft={handleSaveDraft}
-            onRight={handleSendToChecker}
-            rightDisabled={sendDisabled}
+            onRight={handleSendToCheckerSubmit}
+            rightDisabled={isSubmitting}
             rightAutoWidth
           />
         )}

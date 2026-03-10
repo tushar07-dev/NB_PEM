@@ -23,7 +23,8 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-     /* alias */
+    "noUncheckedIndexedAccess": true,
+    /* alias */
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],

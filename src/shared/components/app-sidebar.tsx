@@ -12,16 +12,19 @@ import {
 } from "@/shared/components/ui/sidebar";
 import { cn } from "@/shared/lib/utils";
 import { Icons } from "./icons";
-import { ROLE_NAVIGATION } from "@/app/config/navigation";
+import { ROLE_NAVIGATION } from "@/shared/config/navigation";
 import { useAuth } from "@/app/providers/useAuth";
+import { ROLES } from "@/shared/types/roles";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state, toggleSidebar } = useSidebar();
   const { currentUser } = useAuth();
+
   const navigationData = React.useMemo(
-    () => ROLE_NAVIGATION[currentUser?.role || "user"] || [],
+    () => ROLE_NAVIGATION[currentUser?.role ?? ROLES.USER] ?? [],
     [currentUser?.role]
   );
+
   const isCollapsed = state === "collapsed";
 
   return (
@@ -30,12 +33,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {...props}
       className="transition-[width] duration-200"
     >
-      {/* Main Navigation */}
       <SidebarContent>
         <NavMain items={navigationData} />
       </SidebarContent>
 
-      {/* Footer with Collapse/Expand Button */}
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -57,14 +58,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   )}
                 >
                   {isCollapsed ? (
-                    <Icons.SidebarToggle
-                    // className="text-grey-700 h-5 w-5"
-                    />
+                    <Icons.SidebarToggle />
                   ) : (
-                    <Icons.SidebarToggle
-                      isCollapsed
-                      // className="text-grey-700 h-5 w-5"
-                    />
+                    <Icons.SidebarToggle isCollapsed />
                   )}
                 </div>
                 {!isCollapsed && (

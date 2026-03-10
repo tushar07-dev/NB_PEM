@@ -20,8 +20,8 @@ const UnauthorizedPage = () => {
     navigate("/dashboard");
   };
 
-  const handleLogoutClick = () => {
-    handleLogout();
+  const handleLogoutClick = async () => {
+    await handleLogout();
     navigate("/login");
   };
 

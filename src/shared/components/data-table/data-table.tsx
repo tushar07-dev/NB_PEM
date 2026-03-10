@@ -175,13 +175,15 @@ export function DataTable<TData>({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className={cn(
-                    onRowClick ? "hover:bg-muted/50 cursor-pointer" : "",
+                    onRowClick
+                      ? "hover:bg-muted/50 focus-visible:ring-ring cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
+                      : "",
                     getRowClassName(row.original)
                   )}
+                  tabIndex={onRowClick ? 0 : undefined}
                   onMouseDown={onMouseDown}
                   onClick={(e) => {
                     if (isDrag(e)) return;
-                    // Don't trigger row click if clicking on interactive elements
                     const target = e.target as HTMLElement;
                     const isInteractive =
                       target.closest("button") ||
@@ -193,6 +195,16 @@ export function DataTable<TData>({
                       onRowClick?.(row.original);
                     }
                   }}
+                  onKeyDown={
+                    onRowClick
+                      ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onRowClick(row.original);
+                          }
+                        }
+                      : undefined
+                  }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

@@ -1,14 +1,15 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../providers/useAuth";
 import type { ReactNode } from "react";
+import type { Role } from "@/shared/types/roles";
 
 interface RoleGuardProps {
   children?: ReactNode;
-  allowedRoles: ("admin" | "user")[];
+  allowedRoles: Role[];
 }
 
 export const RoleGuard = ({ children, allowedRoles }: RoleGuardProps) => {
-  const { currentUser, isLoading } = useAuth(); // ← removed authToken
+  const { currentUser, isLoading } = useAuth();
   const location = useLocation();
 
   if (isLoading) {

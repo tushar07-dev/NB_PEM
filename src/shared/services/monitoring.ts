@@ -1,17 +1,16 @@
 import { ApplicationInsights } from "@microsoft/applicationinsights-web";
-import { configService } from "@/shared/config/configService";
+import { env } from "@/config/env";
 
 let appInsights: ApplicationInsights | null = null;
 
 export function initMonitoring(): void {
-  const { appInsightsConnectionString, enableMonitoring } =
-    configService.monitoringConfig;
+  const connectionString = env.VITE_APP_INSIGHTS_CONNECTION_STRING;
 
-  if (!enableMonitoring || !appInsightsConnectionString) return;
+  if (!connectionString) return;
 
   appInsights = new ApplicationInsights({
     config: {
-      connectionString: appInsightsConnectionString,
+      connectionString,
       enableAutoRouteTracking: true,
     },
   });

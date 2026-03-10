@@ -42,6 +42,7 @@ const ALL_USERS = [
   { value: "nilesh.thakur@akersolutions.com", label: "Nilesh Thakur" },
   { value: "tushar.shelke@akersolutions.com", label: "Tushar Shelke" },
   { value: "shiv.kumar@akersolutions.com", label: "Shiv Kumar" },
+  { value: "Rohit.Shelar@akersolutions.com", label: "Rohit Shelar" },
 ];
 
 const CHECKLIST_ROUTE = "/pem-checklists/document-checklist/checklist";
@@ -101,6 +102,7 @@ function transformToDocumentEntry(
     id: item.documentNo ?? String(index),
     // TODO: replace with item.projectDocumentId once backend adds it to response
     projectDocumentId: null,
+    // projectDocumentId: item.projectDocumentId ?? null,
     title: item.documentName ?? "",
     documentNo: item.documentNo ?? "",
     reasonForIssue: item.reasonForIssue ?? "",
@@ -215,6 +217,7 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
   }, []);
 
   // ── Workflow: Save (AC3 + AC4) ────────────────────────────────────────────
+  // FIX: Removed duplicate toast.success / toast.error calls that were here.
   // Toasts are now owned by the mutation hooks (onSuccess / onError in queries.ts).
   // This component only handles navigation on success and stays put on error.
   const handleWorkflowSave = useCallback(
@@ -504,6 +507,7 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
 
       {/* ── Define Responsibilities dialog ── */}
       <DocumentWorkflowDialog
+        key={workflowRow?.id ?? "no-row"}
         {...dialogState}
         onClose={closeWorkflow}
         userOptions={ALL_USERS}

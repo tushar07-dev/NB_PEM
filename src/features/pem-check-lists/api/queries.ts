@@ -32,6 +32,8 @@ import type {
   EmailRequestDto,
 } from "@/api/generated/schemas";
 
+import { validateApiResponse } from "@/api/utils";
+
 export type {
   PagedRequest,
   ProjectDocumentsResponseDto,
@@ -138,19 +140,6 @@ export const documentQueryKeys = {
   projectDocuments: (request: PagedRequest) =>
     [...documentQueryKeys.all, "projectDocuments", request] as const,
 };
-
-// ============================================
-// API Helper
-// ============================================
-function validateApiResponse<
-  T extends { status?: number | null; message?: string | null },
->(response: T, errorMessage: string): void {
-  const status = response.status ?? 0;
-  // Treat 0 (field absent) and 2xx as success; throw on 4xx/5xx body status
-  if (status !== 0 && status !== -1 && (status < 200 || status >= 300)) {
-    throw new Error(response.message ?? errorMessage);
-  }
-}
 
 // ============================================
 // Dropdown Hooks

@@ -1,14 +1,15 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../providers/useAuth";
 import type { ReactNode } from "react";
-import type { Role } from "@/shared/types/roles";
+import type { Permission } from "@/shared/config/permissions";
+import { hasPermission } from "@/shared/config/permissions";
 
 interface RoleGuardProps {
   children?: ReactNode;
-  allowedRoles: Role[];
+  permission: Permission;
 }
 
-export const RoleGuard = ({ children, allowedRoles }: RoleGuardProps) => {
+export const RoleGuard = ({ children, permission }: RoleGuardProps) => {
   const { currentUser, isLoading } = useAuth();
   const location = useLocation();
 
@@ -23,9 +24,8 @@ export const RoleGuard = ({ children, allowedRoles }: RoleGuardProps) => {
   if (!currentUser) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
-  console.log(allowedRoles, currentUser.role);
 
-  if (!allowedRoles.includes(currentUser.role)) {
+  if (!hasPermission(currentUser.role, permission)) {
     return <Navigate to="/unauthorized" replace />;
   }
 

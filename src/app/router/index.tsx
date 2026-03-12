@@ -12,8 +12,8 @@ import { LazyRoute } from "@/shared/components/ui/lazy-route";
 import DocumentRequirementPage from "@/features/pem-requirements/pages/document-requirement/DocumentRequirementPage";
 import ControlObjectChecklistPage from "@/features/pem-check-lists/pages/control-object-checklist-page";
 import DisciplineActivityChecklistPage from "@/features/pem-check-lists/pages/discipline-activity-checklist-page";
-import { ROLES } from "@/shared/types/roles";
 import { ChecklistDetailPage } from "@/features/pem-check-lists/pages/checklist-detail-page";
+import { PERMISSIONS } from "@/shared/config/permissions";
 
 const lazyPage = (title: string) =>
   lazy(async () => ({
@@ -39,9 +39,9 @@ const AdminSettingsPage = lazyPage("Admin Settings");
 // ==========================================
 // ROUTER CONFIGURATION
 // ==========================================
-// Role checking happens exactly ONCE per navigation — inside each
-// page's <LazyRoute roles={[...]}> via RoleGuard.
-// Section wrappers use plain <Outlet /> — no double role-checking.
+// Access control is declared per-route via a single `permission` prop.
+// Which roles have which permissions is defined in permissions.ts only.
+// To open/close a route to a role: edit ROLE_PERMISSIONS in permissions.ts.
 // ==========================================
 export const router = createBrowserRouter([
   // ── Public routes ──────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ export const router = createBrowserRouter([
       {
         path: "dashboard",
         element: (
-          <LazyRoute roles={[ROLES.ADMIN, ROLES.USER]}>
+          <LazyRoute permission={PERMISSIONS.VIEW_DASHBOARD}>
             <DashboardPage />
           </LazyRoute>
         ),
@@ -92,7 +92,7 @@ export const router = createBrowserRouter([
           {
             path: "control-object-requirement",
             element: (
-              <LazyRoute roles={[ROLES.ADMIN, ROLES.USER]}>
+              <LazyRoute permission={PERMISSIONS.VIEW_PEM_REQUIREMENTS}>
                 <ControlObjectRequirementPage />
               </LazyRoute>
             ),
@@ -100,7 +100,7 @@ export const router = createBrowserRouter([
           {
             path: "document-requirement",
             element: (
-              <LazyRoute roles={[ROLES.ADMIN]}>
+              <LazyRoute permission={PERMISSIONS.VIEW_DOCUMENT_REQUIREMENT}>
                 <DocumentRequirementPage />
               </LazyRoute>
             ),
@@ -108,7 +108,7 @@ export const router = createBrowserRouter([
           {
             path: "discipline-activity-requirement",
             element: (
-              <LazyRoute roles={[ROLES.ADMIN]}>
+              <LazyRoute permission={PERMISSIONS.VIEW_DISCIPLINE_ACTIVITY_REQ}>
                 <DisciplineActivityRequirementPage />
               </LazyRoute>
             ),
@@ -128,7 +128,7 @@ export const router = createBrowserRouter([
           {
             path: "control-object-checklist",
             element: (
-              <LazyRoute roles={[ROLES.ADMIN]}>
+              <LazyRoute permission={PERMISSIONS.VIEW_CONTROL_OBJECT_CHECKLIST}>
                 <ControlObjectChecklistPage />
               </LazyRoute>
             ),
@@ -139,7 +139,7 @@ export const router = createBrowserRouter([
               {
                 index: true,
                 element: (
-                  <LazyRoute roles={[ROLES.ADMIN]}>
+                  <LazyRoute permission={PERMISSIONS.VIEW_DOCUMENT_CHECKLIST}>
                     <DocumentChecklistPage />
                   </LazyRoute>
                 ),
@@ -147,7 +147,7 @@ export const router = createBrowserRouter([
               {
                 path: "checklist",
                 element: (
-                  <LazyRoute roles={[ROLES.ADMIN]}>
+                  <LazyRoute permission={PERMISSIONS.VIEW_DOCUMENT_CHECKLIST}>
                     <ChecklistDetailPage />
                   </LazyRoute>
                 ),
@@ -157,7 +157,9 @@ export const router = createBrowserRouter([
           {
             path: "discipline-activity-checklist",
             element: (
-              <LazyRoute roles={[ROLES.ADMIN]}>
+              <LazyRoute
+                permission={PERMISSIONS.VIEW_DISCIPLINE_ACTIVITY_CHECKLIST}
+              >
                 <DisciplineActivityChecklistPage />
               </LazyRoute>
             ),
@@ -177,7 +179,7 @@ export const router = createBrowserRouter([
           {
             path: "settings",
             element: (
-              <LazyRoute roles={[ROLES.ADMIN]}>
+              <LazyRoute permission={PERMISSIONS.ACCESS_ADMIN}>
                 <AdminSettingsPage />
               </LazyRoute>
             ),

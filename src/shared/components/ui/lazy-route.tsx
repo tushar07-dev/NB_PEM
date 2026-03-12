@@ -1,16 +1,16 @@
 import { RoleGuard } from "@/app/router/RoleGuard";
 import { Suspense } from "react";
 import { PageLoader } from "./page-loader";
-import type { Role } from "@/shared/types/roles";
+import type { Permission } from "@/shared/config/permissions";
 
 interface LazyRouteProps {
   children: React.ReactNode;
-  roles: Role[];
+  permission: Permission;
 }
 
-export function LazyRoute({ children, roles }: LazyRouteProps) {
+export function LazyRoute({ children, permission }: LazyRouteProps) {
   return (
-    <RoleGuard allowedRoles={roles}>
+    <RoleGuard permission={permission}>
       <Suspense fallback={<PageLoader />}>{children}</Suspense>
     </RoleGuard>
   );

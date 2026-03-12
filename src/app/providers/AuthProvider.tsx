@@ -19,16 +19,17 @@ import { AuthContext } from "./AuthContext";
 import { ROLES } from "@/shared/types/roles";
 import type { User } from "@/shared/types/user";
 
-// ── Hardcoded admin emails (TECH DEBT) ────────────────────────────────────────
 // TODO: Replace with MSAL token claims (account.idTokenClaims?.roles) once
 // Azure AD App Roles are configured in the app manifest by the backend team.
-const ADMIN_EMAILS = [
-  "tushar.shelke@akersolutions.com",
+const ADMIN_EMAILS = new Set([
+  // "tushar.shelke@akersolutions.com",
   "sanghati.chatterjee2@akersolutions.com",
   "nilesh.thakur@akersolutions.com",
-  "Rohit.Shelar@akersolutions.com",
-  "Amir.H.Ashtari@akersolutions.com",
-];
+  "rohit.shelar@akersolutions.com",
+  "amir.h.ashtari@akersolutions.com",
+]);
+
+const ALLOWED_DOMAIN = "@akersolutions.com";
 
 /**
  * Builds a User object from an MSAL AccountInfo.
@@ -36,8 +37,14 @@ const ADMIN_EMAILS = [
  * that MSAL assigns per account and is consistent across sessions.
  */
 function buildUser(account: AccountInfo): User {
-  const email = account.username ?? "";
-  const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
+  const email = (account.username ?? "").toLowerCase();
+
+  // Domain guard — only Aker Solutions accounts allowed
+  if (!email.endsWith(ALLOWED_DOMAIN)) {
+    throw new Error("Access restricted to Aker Solutions accounts only.");
+  }
+
+  const isAdmin = ADMIN_EMAILS.has(email);
   return {
     id: account.localAccountId,
     name: account.name ?? email,

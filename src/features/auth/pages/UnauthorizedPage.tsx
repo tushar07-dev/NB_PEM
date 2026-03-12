@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/shared/config/routes";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -7,7 +8,6 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { useAuth } from "@/app/providers/useAuth";
-import { ROUTES } from "@/shared/config/routes";
 
 const UnauthorizedPage = () => {
   const navigate = useNavigate();

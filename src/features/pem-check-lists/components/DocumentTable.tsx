@@ -72,11 +72,11 @@ export type DocumentWorkflowStatus =
  * Progress values.
  *
  * Backend contract — field: progress
- * Expected values (exact, case-sensitive): Completed | In-Progress | Not Started
+ * Canonical values: NOT_STARTED | IN_PROGRESS | COMPLETED
  *
- * Backend sends "" | null | inconsistent casing → frontend shows "Not Started".
+ * Backend sends any variant → normalizeProgress() maps to canonical.
  */
-export type DocumentProgress = "Completed" | "In-Progress" | "Not Started";
+export type DocumentProgress = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
 
 export interface DocumentEntry {
   id: string;
@@ -136,16 +136,15 @@ function normalizeWorkflowStatus(
  * Anything unrecognised → "Not Started".
  */
 function normalizeProgress(raw: string | null | undefined): DocumentProgress {
-  if (!raw) return "Not Started";
+  if (!raw) return "NOT_STARTED";
 
-  // Strip spaces and hyphens, lowercase — handles "Not-Started", "not started", "notstarted"
-  const key = raw.toLowerCase().replace(/[-\s]+/g, "");
+  // Strip hyphens, underscores, spaces then lowercase — handles all variants:
+  const key = raw.toLowerCase().replace(/[-_\s]+/g, "");
 
-  if (key === "completed" || key === "complete") return "Completed";
-  if (key === "inprogress") return "In-Progress";
-  if (key === "notstarted") return "Not Started";
+  if (key === "completed" || key === "complete") return "COMPLETED";
+  if (key === "inprogress") return "IN_PROGRESS";
 
-  return "Not Started";
+  return "NOT_STARTED";
 }
 
 // ============================================
@@ -189,10 +188,19 @@ const revisionStatusOptions = [
 ];
 
 const progressOptions = [
-  { label: "Completed", value: "Completed" },
-  { label: "In-Progress", value: "In-Progress" },
-  { label: "Not Started", value: "Not Started" },
+  { label: "Not Started", value: "NOT_STARTED" },
+  { label: "In Progress", value: "IN_PROGRESS" },
+  { label: "Completed", value: "COMPLETED" },
 ];
+
+const PROGRESS_CONFIG: Record<
+  DocumentProgress,
+  { label: string; className: string }
+> = {
+  NOT_STARTED: { label: "Not Started", className: "status-not-started" },
+  IN_PROGRESS: { label: "In Progress", className: "status-in-progress" },
+  COMPLETED: { label: "Completed", className: "status-completed" },
+};
 
 const workflowStatusOptions = [
   { label: "Not Started", value: "NOT_STARTED" },
@@ -410,7 +418,9 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
 
   const handleWorkflowViewOnly = useCallback(() => {
     if (!workflowRow) return;
-    navigate(ROUTES.PEM_CHECKLISTS.CHECKLIST_DETAIL, { state: { document: workflowRow } });
+    navigate(ROUTES.PEM_CHECKLISTS.CHECKLIST_DETAIL, {
+      state: { document: workflowRow },
+    });
   }, [workflowRow, navigate]);
 
   // ── Columns ───────────────────────────────────────────────────────────────
@@ -572,13 +582,10 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
         ),
         cell: ({ row }) => {
           const progress = row.getValue("progress") as DocumentProgress;
-          const className =
-            progress === "Completed"
-              ? "status-completed"
-              : progress === "In-Progress"
-                ? "status-in-progress"
-                : "status-not-started";
-          return <span className={`text-sm ${className}`}>{progress}</span>;
+          const cfg = PROGRESS_CONFIG[progress] ?? PROGRESS_CONFIG.NOT_STARTED;
+          return (
+            <span className={`text-sm ${cfg.className}`}>{cfg.label}</span>
+          );
         },
         meta: {
           label: "Progress",

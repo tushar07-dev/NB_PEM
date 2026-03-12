@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { ROUTES } from "@/shared/config/routes";
 import { useAuth } from "@/app/providers/useAuth";
 import { ErrorBoundary } from "@/shared/errors/ErrorBoundary";
 import { Button } from "@/shared/components/ui/button";
@@ -8,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { ROUTES } from "@/shared/config/routes";
 
 const LoginForm = () => {
   const navigate = useNavigate();

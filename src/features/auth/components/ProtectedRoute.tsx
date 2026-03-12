@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
+import { ROUTES } from "@/shared/config/routes";
 import { useAuth } from "@/app/providers/useAuth";
 import type { ReactNode } from "react";
 
@@ -21,7 +22,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   // No user after MSAL check → redirect to login
   if (!currentUser) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />;
   }
 
   return <>{children}</>;

@@ -77,7 +77,7 @@ const HeaderSelectors = memo(function HeaderSelectors() {
         <Skeleton className="hidden h-9 w-40 rounded-full bg-gray-50 md:flex lg:h-11 lg:w-44 xl:w-48" />
       ) : (
         <Select
-          value={selectedGenericPEM?.value}
+          value={selectedGenericPEM?.value ?? ""}
           onValueChange={handleGenericPEMChange}
         >
           <SelectTrigger className={SELECT_TRIGGER_CLS}>
@@ -103,7 +103,10 @@ const HeaderSelectors = memo(function HeaderSelectors() {
       {loadingProjects ? (
         <Skeleton className="hidden h-9 w-40 rounded-full bg-gray-50 md:flex lg:h-11 lg:w-44 xl:w-48" />
       ) : (
-        <Select value={selectedProject?.id} onValueChange={handleProjectChange}>
+        <Select
+          value={selectedProject?.id ?? ""}
+          onValueChange={handleProjectChange}
+        >
           <SelectTrigger className={SELECT_TRIGGER_CLS}>
             <SelectValue placeholder="Select Project" />
           </SelectTrigger>

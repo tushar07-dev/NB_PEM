@@ -146,7 +146,7 @@ export const router = createBrowserRouter([
                 ),
               },
               {
-                path: "checklist",
+                path: "checklist-details",
                 element: (
                   <LazyRoute permission={PERMISSIONS.VIEW_DOCUMENT_CHECKLIST}>
                     <ChecklistDetailPage />

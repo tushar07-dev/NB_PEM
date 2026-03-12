@@ -20,7 +20,7 @@ export const ROUTES = {
     ROOT: "/pem-checklists",
     CONTROL_OBJECT: "/pem-checklists/control-object-checklist",
     DOCUMENT_CHECKLIST: "/pem-checklists/document-checklist",
-    CHECKLIST_DETAIL: "/pem-checklists/document-checklist/checklist",
+    CHECKLIST_DETAIL: "/pem-checklists/document-checklist/checklist-details",
     DISCIPLINE_ACTIVITY: "/pem-checklists/discipline-activity-checklist",
   },
 

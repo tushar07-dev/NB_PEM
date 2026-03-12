@@ -1,4 +1,5 @@
 import React from "react";
+import { ROUTES } from "@/shared/config/routes";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Breadcrumb,
@@ -9,7 +10,6 @@ import {
   BreadcrumbSeparator,
 } from "@/shared/components/ui/breadcrumb";
 import { Icons } from "./icons";
-import { ROUTES } from "@/shared/config/routes";
 
 // Route segment → human-readable label.
 // Add a new entry here whenever a new page/route is created.

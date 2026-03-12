@@ -1,4 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { ROUTES } from "@/shared/config/routes";
 import { useAuth } from "../providers/useAuth";
 import type { ReactNode } from "react";
 import type { Permission } from "@/shared/config/permissions";
@@ -22,11 +23,11 @@ export const RoleGuard = ({ children, permission }: RoleGuardProps) => {
   }
 
   if (!currentUser) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />;
   }
 
   if (!hasPermission(currentUser.role, permission)) {
-    return <Navigate to="/unauthorized" replace />;
+    return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;

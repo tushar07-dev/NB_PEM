@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { ROUTES } from "@/shared/config/routes";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const LoginForm = () => {
 
   const from =
     (location.state as { from?: { pathname?: string } })?.from?.pathname ||
-    "/dashboard";
+    ROUTES.DASHBOARD;
 
   const handleLoginClick = async () => {
     try {

@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/shared/config/routes";
 import { type ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/shared/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/shared/components/data-table/data-table-column-header";
@@ -43,8 +44,6 @@ const ALL_USERS = [
   { value: "tushar.shelke@akersolutions.com", label: "Tushar Shelke" },
   { value: "shiv.kumar@akersolutions.com", label: "Shiv Kumar" },
 ];
-
-const CHECKLIST_ROUTE = "/pem-checklists/document-checklist/checklist";
 
 // ============================================
 // Types
@@ -317,7 +316,9 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
         setWorkflowRow(row);
         openWorkflow("define");
       } else {
-        navigate(CHECKLIST_ROUTE, { state: { document: row } });
+        navigate(ROUTES.PEM_CHECKLISTS.CHECKLIST_DETAIL, {
+          state: { document: row },
+        });
       }
     },
     [navigate, openWorkflow]
@@ -390,7 +391,7 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
           });
         }
 
-        navigate(CHECKLIST_ROUTE, {
+        navigate(ROUTES.PEM_CHECKLISTS.CHECKLIST_DETAIL, {
           state: {
             document: {
               ...workflowRow,
@@ -409,7 +410,7 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
 
   const handleWorkflowViewOnly = useCallback(() => {
     if (!workflowRow) return;
-    navigate(CHECKLIST_ROUTE, { state: { document: workflowRow } });
+    navigate(ROUTES.PEM_CHECKLISTS.CHECKLIST_DETAIL, { state: { document: workflowRow } });
   }, [workflowRow, navigate]);
 
   // ── Columns ───────────────────────────────────────────────────────────────

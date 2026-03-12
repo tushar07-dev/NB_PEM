@@ -16,15 +16,26 @@ import { cn } from "@/shared/lib/utils";
 import { useAuth } from "@/app/providers/useAuth";
 import { useProjectStore } from "@/shared/store/projectStore";
 import { useGenericPEMStore } from "@/shared/store/genericPemStore";
-import type { DocumentEntry, DocumentWorkflowStatus } from "../components/DocumentTable";
+import type {
+  DocumentEntry,
+  DocumentWorkflowStatus,
+} from "../components/DocumentTable";
 import type { DocumentRole } from "../types/checklist";
+import { ROUTES } from "@/shared/config/routes";
 
 // Inline lock derivation — checklist.ts does not export deriveIsLocked
-function deriveIsLocked(role: DocumentRole, status: DocumentWorkflowStatus): boolean {
+function deriveIsLocked(
+  role: DocumentRole,
+  status: DocumentWorkflowStatus
+): boolean {
   if (status === "COMPLETED") return true;
   switch (role) {
     case "ORIGINATOR":
-      return !["PENDING_WITH_ORIGINATOR", "REJECTED_BY_CHECKER", "REJECTED_BY_APPROVER"].includes(status);
+      return ![
+        "PENDING_WITH_ORIGINATOR",
+        "REJECTED_BY_CHECKER",
+        "REJECTED_BY_APPROVER",
+      ].includes(status);
     case "CHECKER":
       return status !== "PENDING_WITH_CHECKER";
     case "APPROVER":
@@ -39,7 +50,8 @@ function deriveIsLocked(role: DocumentRole, status: DocumentWorkflowStatus): boo
 
 function deriveRole(userEmail: string, document: DocumentEntry): DocumentRole {
   const email = userEmail.toLowerCase();
-  if (document.originatorSelfCheck?.toLowerCase() === email) return "ORIGINATOR";
+  if (document.originatorSelfCheck?.toLowerCase() === email)
+    return "ORIGINATOR";
   if (document.checker?.toLowerCase() === email) return "CHECKER";
   if (document.approver?.toLowerCase() === email) return "APPROVER";
   return "READ_ONLY";
@@ -69,7 +81,14 @@ const ROLE_BADGE: Record<DocumentRole, { label: string; className: string }> = {
 // ─── Workflow stepper ─────────────────────────────────────────────────────────
 
 const WORKFLOW_STEPS: { status: DocumentWorkflowStatus[]; label: string }[] = [
-  { status: ["PENDING_WITH_ORIGINATOR", "REJECTED_BY_CHECKER", "REJECTED_BY_APPROVER"], label: "Originator" },
+  {
+    status: [
+      "PENDING_WITH_ORIGINATOR",
+      "REJECTED_BY_CHECKER",
+      "REJECTED_BY_APPROVER",
+    ],
+    label: "Originator",
+  },
   { status: ["PENDING_WITH_CHECKER"], label: "Checker" },
   { status: ["PENDING_WITH_APPROVER"], label: "Approver" },
   { status: ["COMPLETED"], label: "Completed" },
@@ -107,9 +126,15 @@ function WorkflowStepper({ status }: WorkflowStepperProps) {
                 className={cn(
                   "flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-semibold transition-colors",
                   isDone && "border-green-500 bg-green-500 text-white",
-                  isActive && !isRejected && "border-blue-500 bg-blue-500 text-white",
-                  isActive && isRejected && "border-red-500 bg-red-50 text-red-600",
-                  !isDone && !isActive && "border-gray-200 bg-white text-gray-400"
+                  isActive &&
+                    !isRejected &&
+                    "border-blue-500 bg-blue-500 text-white",
+                  isActive &&
+                    isRejected &&
+                    "border-red-500 bg-red-50 text-red-600",
+                  !isDone &&
+                    !isActive &&
+                    "border-gray-200 bg-white text-gray-400"
                 )}
               >
                 {isDone ? "✓" : i + 1}
@@ -181,7 +206,9 @@ function AssignedRoles({ originator, checker, approver }: AssignedRolesProps) {
           <User className="text-primary-100 size-3.5 shrink-0" />
           <span className="text-primary-100 text-xs">{label}:</span>
           <span className="text-primary-400 text-xs font-medium">
-            {value ?? <span className="italic text-gray-300">Not assigned</span>}
+            {value ?? (
+              <span className="text-gray-300 italic">Not assigned</span>
+            )}
           </span>
         </div>
       ))}
@@ -208,7 +235,7 @@ export function ChecklistDetailPage() {
   // ── Guards ────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!document) {
-      navigate("/pem-checklists/document-checklist", { replace: true });
+      navigate(ROUTES.PEM_CHECKLISTS.DOCUMENT_CHECKLIST, { replace: true });
     }
   }, [document, navigate]);
 
@@ -220,9 +247,15 @@ export function ChecklistDetailPage() {
       selectedProject?.id !== mountedProjectId ||
       selectedGenericPEM?.value !== mountedPEMValue
     ) {
-      navigate("/pem-checklists/document-checklist", { replace: true });
+      navigate(ROUTES.PEM_CHECKLISTS.DOCUMENT_CHECKLIST, { replace: true });
     }
-  }, [selectedProject?.id, selectedGenericPEM?.value, mountedProjectId, mountedPEMValue, navigate]);
+  }, [
+    selectedProject?.id,
+    selectedGenericPEM?.value,
+    mountedProjectId,
+    mountedPEMValue,
+    navigate,
+  ]);
 
   // ── Role + lock ────────────────────────────────────────────────────────────
   const role = useMemo<DocumentRole>(() => {
@@ -253,7 +286,7 @@ export function ChecklistDetailPage() {
   // ── Warning messages per role + status ────────────────────────────────────
   const warningMessage: string | null = (() => {
     if (role === "ORIGINATOR" && status === "PENDING_WITH_ORIGINATOR") {
-      return "You haven't sent this document to the checker yet. Complete the checklist and click \"Send to Checker\".";
+      return 'You haven\'t sent this document to the checker yet. Complete the checklist and click "Send to Checker".';
     }
     if (role === "ORIGINATOR" && status === "REJECTED_BY_CHECKER") {
       return "The checker has rejected this document. Check your email for the reason, update the checklist, and re-send.";
@@ -272,13 +305,10 @@ export function ChecklistDetailPage() {
 
   return (
     <div className="flex flex-col gap-4 px-7.5 pb-10">
-
       {/* ── Header card ── */}
       <div className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-
         {/* Row 1: Title + Stepper */}
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-
           {/* Left: doc info */}
           <div className="flex flex-col gap-1.5">
             <div className="flex flex-wrap items-center gap-3">
@@ -306,13 +336,17 @@ export function ChecklistDetailPage() {
               {document.reasonForIssue && (
                 <span>
                   Reason:{" "}
-                  <span className="text-primary-400">{document.reasonForIssue}</span>
+                  <span className="text-primary-400">
+                    {document.reasonForIssue}
+                  </span>
                 </span>
               )}
               {document.revisionStatus && (
                 <span>
                   Rev Status:{" "}
-                  <span className="text-primary-400">{document.revisionStatus}</span>
+                  <span className="text-primary-400">
+                    {document.revisionStatus}
+                  </span>
                 </span>
               )}
               {document.revision && (
@@ -340,15 +374,18 @@ export function ChecklistDetailPage() {
 
         {/* Row 3: Progress + Actions (role-specific) */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
           {/* Progress — Originator only (checker/approver don't need to track this) */}
           {role === "ORIGINATOR" && (
             <div className="flex min-w-[220px] flex-col gap-1.5">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-primary-300 text-xs font-medium">Progress</span>
+                <span className="text-primary-300 text-xs font-medium">
+                  Progress
+                </span>
                 <span className="text-primary-500 text-sm font-semibold">
                   {done}/{total}
-                  <span className="text-primary-100 ml-1 font-normal">({pct}%)</span>
+                  <span className="text-primary-100 ml-1 font-normal">
+                    ({pct}%)
+                  </span>
                 </span>
               </div>
               <Progress value={pct} className="h-2 w-full" />
@@ -365,16 +402,17 @@ export function ChecklistDetailPage() {
 
           {/* Action buttons — role-specific */}
           <div className="flex items-center gap-2">
-
             {/* ORIGINATOR */}
             {role === "ORIGINATOR" && (
               <button
                 type="button"
                 onClick={() => setSendFlowOpen(true)}
                 disabled={!canSend}
-                title={!canSend ? "Complete all checklist items first" : undefined}
+                title={
+                  !canSend ? "Complete all checklist items first" : undefined
+                }
                 className={cn(
-                  "flex items-center gap-2 h-9 rounded-lg px-4 text-sm font-medium text-white transition-colors",
+                  "flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-medium text-white transition-colors",
                   "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
                   canSend
                     ? "bg-primary-600 hover:bg-primary-500"
@@ -391,16 +429,20 @@ export function ChecklistDetailPage() {
               <>
                 <button
                   type="button"
-                  onClick={() => {/* open CheckerActionFlow reject */}}
-                  className="flex items-center gap-2 h-9 rounded-lg border border-red-200 bg-red-50 px-4 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none"
+                  onClick={() => {
+                    /* open CheckerActionFlow reject */
+                  }}
+                  className="focus-visible:ring-ring flex h-9 items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <XCircle className="size-3.5" />
                   Check Rejected
                 </button>
                 <button
                   type="button"
-                  onClick={() => {/* open CheckerActionFlow complete */}}
-                  className="flex items-center gap-2 h-9 rounded-lg bg-green-600 px-4 text-sm font-medium text-white transition-colors hover:bg-green-500 focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none"
+                  onClick={() => {
+                    /* open CheckerActionFlow complete */
+                  }}
+                  className="focus-visible:ring-ring flex h-9 items-center gap-2 rounded-lg bg-green-600 px-4 text-sm font-medium text-white transition-colors hover:bg-green-500 focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <CheckCircle2 className="size-3.5" />
                   Check Completed
@@ -413,16 +455,20 @@ export function ChecklistDetailPage() {
               <>
                 <button
                   type="button"
-                  onClick={() => {/* open ApproverActionFlow reject */}}
-                  className="flex items-center gap-2 h-9 rounded-lg border border-red-200 bg-red-50 px-4 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none"
+                  onClick={() => {
+                    /* open ApproverActionFlow reject */
+                  }}
+                  className="focus-visible:ring-ring flex h-9 items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <XCircle className="size-3.5" />
                   Reject
                 </button>
                 <button
                   type="button"
-                  onClick={() => {/* open ApproverActionFlow release */}}
-                  className="flex items-center gap-2 h-9 rounded-lg bg-primary-600 px-4 text-sm font-medium text-white transition-colors hover:bg-primary-500 focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none"
+                  onClick={() => {
+                    /* open ApproverActionFlow release */
+                  }}
+                  className="bg-primary-600 hover:bg-primary-500 focus-visible:ring-ring flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-medium text-white transition-colors focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <Rocket className="size-3.5" />
                   Approve & Release
@@ -432,7 +478,10 @@ export function ChecklistDetailPage() {
 
             {/* COMPLETED — all roles */}
             {status === "COMPLETED" && (
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 px-3 py-1">
+              <Badge
+                variant="outline"
+                className="border-green-200 bg-green-50 px-3 py-1 text-green-700"
+              >
                 ✓ Document Released
               </Badge>
             )}
@@ -444,7 +493,6 @@ export function ChecklistDetailPage() {
       {warningMessage && <WarningBanner message={warningMessage} />}
 
       {/* ── Checklist table goes here ── */}
-
     </div>
   );
 }

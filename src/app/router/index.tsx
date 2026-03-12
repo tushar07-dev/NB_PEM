@@ -14,6 +14,7 @@ import ControlObjectChecklistPage from "@/features/pem-check-lists/pages/control
 import DisciplineActivityChecklistPage from "@/features/pem-check-lists/pages/discipline-activity-checklist-page";
 import { ChecklistDetailPage } from "@/features/pem-check-lists/pages/checklist-detail-page";
 import { PERMISSIONS } from "@/shared/config/permissions";
+import { ROUTES } from "@/shared/config/routes";
 
 const lazyPage = (title: string) =>
   lazy(async () => ({
@@ -67,7 +68,7 @@ export const router = createBrowserRouter([
       // Root redirect
       {
         index: true,
-        element: <Navigate to="/dashboard" replace />,
+        element: <Navigate to={ROUTES.DASHBOARD} replace />,
       },
 
       // Dashboard

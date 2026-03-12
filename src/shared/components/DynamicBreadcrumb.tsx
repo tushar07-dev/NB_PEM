@@ -9,6 +9,7 @@ import {
   BreadcrumbSeparator,
 } from "@/shared/components/ui/breadcrumb";
 import { Icons } from "./icons";
+import { ROUTES } from "@/shared/config/routes";
 
 // Route segment → human-readable label.
 // Add a new entry here whenever a new page/route is created.
@@ -70,7 +71,7 @@ export function DynamicBreadcrumb() {
 
   // "Home" is always the first crumb, linking to /dashboard
   const homeCrumb = {
-    url: "/dashboard",
+    url: ROUTES.DASHBOARD,
     label: "Home",
     isLast: false,
     isRedirectOnly: false,

@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { useAuth } from "@/app/providers/useAuth";
+import { ROUTES } from "@/shared/config/routes";
 
 const UnauthorizedPage = () => {
   const navigate = useNavigate();
@@ -17,12 +18,12 @@ const UnauthorizedPage = () => {
   };
 
   const handleGoHome = () => {
-    navigate("/dashboard");
+    navigate(ROUTES.DASHBOARD);
   };
 
   const handleLogoutClick = async () => {
     await handleLogout();
-    navigate("/login");
+    navigate(ROUTES.LOGIN);
   };
 
   return (

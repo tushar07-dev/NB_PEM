@@ -3,6 +3,7 @@ import { Icons } from "@/shared/components/icons";
 import { Settings2 } from "lucide-react";
 import type { Role } from "@/shared/types/roles";
 import { ROLES } from "@/shared/types/roles";
+import { ROUTES } from "@/shared/config/routes";
 
 export interface NavItem {
   title: string;
@@ -17,50 +18,50 @@ export const ROLE_NAVIGATION: Record<Role, NavItem[]> = {
   [ROLES.ADMIN]: [
     {
       title: "Home",
-      url: "/dashboard",
+      url: ROUTES.DASHBOARD,
       icon: Icons.HomeIcon,
     },
     {
       title: "PEM Requirements",
-      url: "/pem-requirements",
+      url: ROUTES.PEM_REQUIREMENTS.ROOT,
       icon: Icons.PEMRequirementsIcon,
       items: [
         {
           title: "Control Object Requirement",
-          url: "/pem-requirements/control-object-requirement",
+          url: ROUTES.PEM_REQUIREMENTS.CONTROL_OBJECT,
         },
         {
           title: "Document Requirement",
-          url: "/pem-requirements/document-requirement",
+          url: ROUTES.PEM_REQUIREMENTS.DOCUMENT,
         },
         {
           title: "Discipline Activity Requirement",
-          url: "/pem-requirements/discipline-activity-requirement",
+          url: ROUTES.PEM_REQUIREMENTS.DISCIPLINE_ACTIVITY,
         },
       ],
     },
     {
       title: "PEM Check Lists",
-      url: "/pem-checklists",
+      url: ROUTES.PEM_CHECKLISTS.ROOT,
       icon: Icons.DocumentsChecklistIcon,
       items: [
         {
           title: "Control Object Check List",
-          url: "/pem-checklists/control-object-checklist",
+          url: ROUTES.PEM_CHECKLISTS.CONTROL_OBJECT,
         },
         {
           title: "Document Check List",
-          url: "/pem-checklists/document-checklist",
+          url: ROUTES.PEM_CHECKLISTS.DOCUMENT_CHECKLIST,
         },
         {
           title: "Discipline Activity Check List",
-          url: "/pem-checklists/discipline-activity-checklist",
+          url: ROUTES.PEM_CHECKLISTS.DISCIPLINE_ACTIVITY,
         },
       ],
     },
     {
       title: "Admin Settings",
-      url: "/admin/settings",
+      url: ROUTES.ADMIN.SETTINGS,
       icon: Settings2,
     },
   ],
@@ -69,36 +70,36 @@ export const ROLE_NAVIGATION: Record<Role, NavItem[]> = {
   [ROLES.USER]: [
     {
       title: "Home",
-      url: "/dashboard",
+      url: ROUTES.DASHBOARD,
       icon: Icons.HomeIcon,
     },
     {
       title: "PEM Requirements",
-      url: "/pem-requirements",
+      url: ROUTES.PEM_REQUIREMENTS.ROOT,
       icon: Icons.PEMRequirementsIcon,
       items: [
         {
           title: "Control Object Requirement",
-          url: "/pem-requirements/control-object-requirement",
+          url: ROUTES.PEM_REQUIREMENTS.CONTROL_OBJECT,
         },
       ],
     },
     {
       title: "PEM Check Lists",
-      url: "/pem-checklists",
+      url: ROUTES.PEM_CHECKLISTS.ROOT,
       icon: Icons.DocumentsChecklistIcon,
       items: [
         {
           title: "Control Object Check List",
-          url: "/pem-checklists/control-object-checklist",
+          url: ROUTES.PEM_CHECKLISTS.CONTROL_OBJECT,
         },
         {
           title: "Document Check List",
-          url: "/pem-checklists/document-checklist",
+          url: ROUTES.PEM_CHECKLISTS.DOCUMENT_CHECKLIST,
         },
         {
           title: "Discipline Activity Check List",
-          url: "/pem-checklists/discipline-activity-checklist",
+          url: ROUTES.PEM_CHECKLISTS.DISCIPLINE_ACTIVITY,
         },
       ],
     },

@@ -23,6 +23,7 @@ export const RoleGuard = ({ children, allowedRoles }: RoleGuardProps) => {
   if (!currentUser) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
+  console.log(allowedRoles, currentUser.role);
 
   if (!allowedRoles.includes(currentUser.role)) {
     return <Navigate to="/unauthorized" replace />;

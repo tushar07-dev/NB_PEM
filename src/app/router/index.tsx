@@ -13,6 +13,7 @@ import DocumentRequirementPage from "@/features/pem-requirements/pages/document-
 import ControlObjectChecklistPage from "@/features/pem-check-lists/pages/control-object-checklist-page";
 import DisciplineActivityChecklistPage from "@/features/pem-check-lists/pages/discipline-activity-checklist-page";
 import { ROLES } from "@/shared/types/roles";
+import { ChecklistDetailPage } from "@/features/pem-check-lists/pages/checklist-detail-page";
 
 const lazyPage = (title: string) =>
   lazy(async () => ({
@@ -25,7 +26,6 @@ const DashboardPage = lazy(() =>
     default: () => <ComingSoon title="Dashboard" />,
   }))
 );
-const DocumentChecklistDetailPage = lazyPage("Document Checklist Detail");
 
 // PEM Requirements
 const ControlObjectRequirementPage = lazyPage("Control Object Requirement");
@@ -148,7 +148,7 @@ export const router = createBrowserRouter([
                 path: "checklist",
                 element: (
                   <LazyRoute roles={[ROLES.ADMIN]}>
-                    <DocumentChecklistDetailPage />
+                    <ChecklistDetailPage />
                   </LazyRoute>
                 ),
               },
@@ -188,8 +188,6 @@ export const router = createBrowserRouter([
   },
 
   // ── 404 catch-all ─────────────────────────────────────────────────────────
-  // Wrapped in ProtectedRoute: unauthenticated users are redirected to /login
-  // instead of seeing a 404 for URLs typed while logged out.
   {
     path: "*",
     element: (

@@ -1,26 +1,22 @@
-// src/features/pem-check-lists/pages/DocumentChecklistPage.tsx
-import { useState } from "react";
+// src/features/pem-check-lists/pages/document-checklist-page.tsx
+import { useCallback } from "react";
 import { DocumentFilters } from "./components/DocumentFilters";
 import { DocumentTable } from "../components/DocumentTable";
 import { useProjectStore } from "@/shared/store/projectStore";
+import { useDocumentFilterStore } from "@/shared/store/documentFilterStore";
 import type { DocumentFiltersType } from "../types/document";
-
-const EMPTY_FILTERS: DocumentFiltersType = {
-  discipline: undefined,
-  documentGroup: undefined,
-  documentType: undefined,
-  facilityCode: undefined,
-  system: undefined,
-  area: undefined,
-};
 
 export default function DocumentChecklistPage() {
   const selectedProject = useProjectStore((state) => state.selectedProject);
-  const [filters, setFilters] = useState<DocumentFiltersType>(EMPTY_FILTERS);
 
-  const handleFilterChange = (newFilters: Partial<DocumentFiltersType>) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
-  };
+  const { filters, setFilter, resetDocumentFilters } = useDocumentFilterStore();
+
+  const handleFilterChange = useCallback(
+    (updates: Partial<DocumentFiltersType>) => {
+      setFilter(updates);
+    },
+    [setFilter]
+  );
 
   const areMandatoryFiltersSelected =
     !!selectedProject &&
@@ -39,7 +35,7 @@ export default function DocumentChecklistPage() {
       <DocumentFilters
         filters={filters}
         onFilterChange={handleFilterChange}
-        onClearAll={() => setFilters(EMPTY_FILTERS)}
+        onClearAll={resetDocumentFilters}
       />
 
       <DocumentTable enabled={areMandatoryFiltersSelected} filters={filters} />

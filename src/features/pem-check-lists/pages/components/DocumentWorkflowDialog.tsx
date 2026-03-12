@@ -2,7 +2,12 @@ import { useState, useCallback, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
-import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/shared/components/ui/dialog";
 import { SearchableFilterSelect } from "@/shared/components/ui/SearchableFilterSelect";
 import { cn } from "@/shared/lib/utils";
 import type { Option } from "@/shared/components/ui/SearchableFilterSelect";
@@ -263,6 +268,12 @@ export function DocumentWorkflowDialog({
           "gap-[16px] lg:gap-[24px]"
         )}
       >
+        {/* Visually hidden — satisfies Radix a11y requirement. Visual title is in PopupHeader. */}
+        <DialogTitle className="sr-only">{title}</DialogTitle>
+        <DialogDescription className="sr-only">
+          Assign originator, checker, and approver roles for this document.
+        </DialogDescription>
+
         <PopupHeader title={title} onClose={handleClose} />
 
         <div className="flex w-full flex-col gap-[16px] lg:gap-[24px]">

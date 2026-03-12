@@ -17,6 +17,7 @@ import { Icons } from "@/shared/components/icons";
 import { useProjectStore } from "../store/projectStore";
 import { useGenericPEMStore } from "../store/genericPemStore";
 import { useAuthStore } from "../store/authStore";
+import { useDocumentFilterStore } from "../store/documentFilterStore";
 import { useProjects } from "@/api/queries/project.queries";
 import { useGenericPEMs } from "@/features/pem-check-lists/api/queries";
 
@@ -49,15 +50,24 @@ const HeaderSelectors = memo(function HeaderSelectors() {
   const { data: genericPEMs = [], isLoading: loadingPEMs } = useGenericPEMs();
   const { selectedProject, setSelectedProject } = useProjectStore();
   const { selectedGenericPEM, setSelectedGenericPEM } = useGenericPEMStore();
+  const resetDocumentFilters = useDocumentFilterStore(
+    (s) => s.resetDocumentFilters
+  );
 
   const handleProjectChange = (projectId: string) => {
     const project = projects.find((p) => p.id === projectId);
-    if (project) setSelectedProject(project);
+    if (project) {
+      setSelectedProject(project);
+      resetDocumentFilters();
+    }
   };
 
   const handleGenericPEMChange = (pemValue: string) => {
     const pem = genericPEMs.find((p) => p.value === pemValue);
-    if (pem) setSelectedGenericPEM(pem);
+    if (pem) {
+      setSelectedGenericPEM(pem);
+      resetDocumentFilters();
+    }
   };
 
   return (

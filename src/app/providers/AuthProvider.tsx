@@ -14,6 +14,7 @@ import { useAuthStore } from "@/shared/store/authStore";
 import { useProjectStore } from "@/shared/store/projectStore";
 import { useFilterStore } from "@/shared/store/filter-store";
 import { useGenericPEMStore } from "@/shared/store/genericPemStore";
+import { useDocumentFilterStore } from "@/shared/store/documentFilterStore";
 import { AuthContext } from "./AuthContext";
 import { ROLES } from "@/shared/types/roles";
 import type { User } from "@/shared/types/user";
@@ -26,6 +27,7 @@ const ADMIN_EMAILS = [
   "sanghati.chatterjee2@akersolutions.com",
   "nilesh.thakur@akersolutions.com",
   "Rohit.Shelar@akersolutions.com",
+  "Amir.H.Ashtari@akersolutions.com",
 ];
 
 /**
@@ -49,6 +51,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearProject = useProjectStore((s) => s.clearProject);
   const resetFilters = useFilterStore((s) => s.resetFilters);
   const clearGenericPEM = useGenericPEMStore((s) => s.clearGenericPEM);
+  const resetDocumentFilters = useDocumentFilterStore(
+    (s) => s.resetDocumentFilters
+  );
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
@@ -183,8 +188,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearProject();
       clearGenericPEM();
       resetFilters();
+      resetDocumentFilters();
     }
-  }, [clearProfile, clearProject, clearGenericPEM, resetFilters]);
+  }, [
+    clearProfile,
+    clearProject,
+    clearGenericPEM,
+    resetFilters,
+    resetDocumentFilters,
+  ]);
 
   return (
     <AuthContext.Provider

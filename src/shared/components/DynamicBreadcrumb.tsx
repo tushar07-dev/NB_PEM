@@ -23,7 +23,7 @@ const ROUTE_NAMES: Record<string, string> = {
   "pem-checklists": "PEM Check Lists",
   "control-object-checklist": "Control Object Check List",
   "document-checklist": "Document Check List",
-  checklist: "Document Checklist Detail",
+  checklist: "Document Checklist Detaile",
   "discipline-activity-checklist": "Discipline Activity Check List",
   // Admin
   admin: "Admin",

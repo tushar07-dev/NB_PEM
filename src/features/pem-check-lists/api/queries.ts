@@ -30,6 +30,8 @@ import type {
   AssignProjectDocumentRolesRequestDto,
   AssignProjectDocumentRolesResponseDtoApiResponse,
   EmailRequestDto,
+  SaveCheckResultsRequestDto,
+  SaveCheckResultsResponseDtoApiResponse,
 } from "@/api/generated/schemas";
 
 import { validateApiResponse } from "@/api/utils";
@@ -166,7 +168,7 @@ export function useGenericPEMs(): UseQueryResult<DropdownItem[], Error> {
     queryFn: async (): Promise<DropdownItem[]> => {
       const response =
         await customInstance<GenericPEMResponseDtoListApiResponse>({
-          url: "/api/GenericPEM/GetGenericPEM",
+          url: "/api/GenericPEM/GetGenericPEM/1",
           method: "GET",
         });
       validateApiResponse(response, "Failed to fetch generic PEMs");
@@ -415,5 +417,64 @@ export function useSendDocumentEmail(): UseMutationResult<
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: documentQueryKeys.all });
     },
+  });
+}
+
+// ============================================
+// Save Check Result Mutation
+// TODO: Replace stub with real API call once
+// POST /api/Checklist/SaveCheckResult endpoint is available.
+// ============================================
+
+/** Payload sent to the backend — matches SaveCheckResultsRequestDto */
+export interface SaveCheckResultPayload {
+  checkpointId: number;
+  checkResult: "OK" | "NA" | null;
+  /** buildSignature(currentUser.name) — set by ORIGINATOR */
+  originatorSignature: string | null;
+  /** buildSignature(currentUser.name) — set by CHECKER */
+  checkerSignature: string | null;
+}
+
+export interface SaveCheckResultResponse {
+  isSuccess: boolean;
+  message?: string;
+}
+
+export function useSaveCheckResult(): UseMutationResult<
+  SaveCheckResultsResponseDtoApiResponse,
+  Error,
+  SaveCheckResultPayload
+> {
+  return useMutation({
+    mutationFn: async (
+      payload: SaveCheckResultPayload
+    ): Promise<SaveCheckResultsResponseDtoApiResponse> => {
+      const body: SaveCheckResultsRequestDto = {
+        checkpointId: payload.checkpointId,
+        checkResult: payload.checkResult,
+        originatorSignature: payload.originatorSignature,
+        checkerSignature: payload.checkerSignature,
+      };
+      const response =
+        await customInstance<SaveCheckResultsResponseDtoApiResponse>({
+          url: "/api/ProjectDocumentChecklists/SaveCheckResults",
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          data: body,
+        });
+      validateApiResponse(response, "Failed to save check result");
+      return response;
+    },
+
+    onError: (error: Error) => {
+      toast.error("Auto-save failed", {
+        description: error.message ?? "Check result could not be saved.",
+        duration: 6000,
+      });
+    },
+
+    // No success toast — auto-save is silent (UI shows signature stamp instead)
+    retry: 2,
   });
 }

@@ -8,6 +8,7 @@ import { DataTableFilterList } from "@/shared/components/data-table/data-table-f
 import { DataTableSortList } from "@/shared/components/data-table/data-table-sort-list";
 import { useDataTable } from "@/shared/hooks/data-table/use-data-table";
 import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
 import { Clock, X, AlertCircle, FileSearch, FileX } from "lucide-react";
 import {
   Dialog,
@@ -30,19 +31,17 @@ import {
 } from "../pages/components/DocumentWorkflowDialog";
 
 // ============================================
-// Mock users (frontend-only until backend ready)
-// TODO: Replace with useUsers() hook once backend provides /api/Users endpoint
+// Mock users — frontend-only until backend provides /api/Users
+// TODO: Replace with useUsers() hook once endpoint is available
 // ============================================
 const ALL_USERS = [
   {
     value: "sanghati.chatterjee2@akersolutions.com",
-    name: "sanghati.chatterjee2@akersolutions.com",
     label: "Sanghati Chatterjee",
   },
   { value: "nilesh.thakur@akersolutions.com", label: "Nilesh Thakur" },
   { value: "tushar.shelke@akersolutions.com", label: "Tushar Shelke" },
   { value: "shiv.kumar@akersolutions.com", label: "Shiv Kumar" },
-  { value: "Rohit.Shelar@akersolutions.com", label: "Rohit Shelar" },
 ];
 
 const CHECKLIST_ROUTE = "/pem-checklists/document-checklist/checklist";
@@ -50,10 +49,38 @@ const CHECKLIST_ROUTE = "/pem-checklists/document-checklist/checklist";
 // ============================================
 // Types
 // ============================================
+
+/**
+ * 7-value workflow status.
+ *
+ * Backend contract — field: workflowStatus
+ * Expected values (exact, case-sensitive):
+ *   NOT_STARTED | PENDING_WITH_ORIGINATOR | PENDING_WITH_CHECKER |
+ *   PENDING_WITH_APPROVER | REJECTED_BY_CHECKER | REJECTED_BY_APPROVER | COMPLETED
+ *
+ * Backend sends "" | null when not yet set → frontend shows NOT_STARTED.
+ */
+export type DocumentWorkflowStatus =
+  | "NOT_STARTED"
+  | "PENDING_WITH_ORIGINATOR"
+  | "PENDING_WITH_CHECKER"
+  | "PENDING_WITH_APPROVER"
+  | "REJECTED_BY_CHECKER"
+  | "REJECTED_BY_APPROVER"
+  | "COMPLETED";
+
+/**
+ * Progress values.
+ *
+ * Backend contract — field: progress
+ * Expected values (exact, case-sensitive): Completed | In-Progress | Not Started
+ *
+ * Backend sends "" | null | inconsistent casing → frontend shows "Not Started".
+ */
+export type DocumentProgress = "Completed" | "In-Progress" | "Not Started";
+
 export interface DocumentEntry {
   id: string;
-  // NOTE: projectDocumentId is required by AssignProjectDocumentRoles.
-  // Ask backend to include it in GetProjectDocuments response.
   projectDocumentId: number | null;
   title: string;
   documentNo: string;
@@ -63,46 +90,76 @@ export interface DocumentEntry {
   originatorSelfCheck: string | null;
   checker: string | null;
   approver: string | null;
-  progress: "Completed" | "Not Started" | "In-Progress";
+  progress: DocumentProgress;
+  workflowStatus: DocumentWorkflowStatus;
 }
 
 interface DocumentTableProps {
-  /** Gates the API fetch — true only when project + discipline + group + type are selected */
   enabled: boolean;
   filters: DocumentFiltersType;
 }
 
 // ============================================
-// Transform
+// Valid value sets — single source of truth
 // ============================================
+
+const VALID_WORKFLOW_STATUSES = new Set<string>([
+  "NOT_STARTED",
+  "PENDING_WITH_ORIGINATOR",
+  "PENDING_WITH_CHECKER",
+  "PENDING_WITH_APPROVER",
+  "REJECTED_BY_CHECKER",
+  "REJECTED_BY_APPROVER",
+  "COMPLETED",
+]);
+
+// ============================================
+// Normalizers — called once at the API boundary in transform
+// ============================================
+
+/**
+ * AC2: If backend sends a valid enum key → use it.
+ * Anything else (empty string, null, unknown) → NOT_STARTED.
+ * No business logic, no guessing from other fields.
+ */
+function normalizeWorkflowStatus(
+  raw: string | null | undefined
+): DocumentWorkflowStatus {
+  if (raw && VALID_WORKFLOW_STATUSES.has(raw)) {
+    return raw as DocumentWorkflowStatus;
+  }
+  return "NOT_STARTED";
+}
+
+/**
+ * AC3: Collapse all backend variants to one of the 3 canonical progress values.
+ * Strips case, spaces, hyphens to a flat key for comparison.
+ * Anything unrecognised → "Not Started".
+ */
+function normalizeProgress(raw: string | null | undefined): DocumentProgress {
+  if (!raw) return "Not Started";
+
+  // Strip spaces and hyphens, lowercase — handles "Not-Started", "not started", "notstarted"
+  const key = raw.toLowerCase().replace(/[-\s]+/g, "");
+
+  if (key === "completed" || key === "complete") return "Completed";
+  if (key === "inprogress") return "In-Progress";
+  if (key === "notstarted") return "Not Started";
+
+  return "Not Started";
+}
+
+// ============================================
+// Transform — API response → DocumentEntry
+// ============================================
+
 function transformToDocumentEntry(
   item: ProjectDocumentsResponseDto,
   index: number
 ): DocumentEntry {
-  const progressMap: Record<
-    string,
-    "Completed" | "Not Started" | "In-Progress"
-  > = {
-    completed: "Completed",
-    complete: "Completed",
-    "in-progress": "In-Progress",
-    inprogress: "In-Progress",
-    "not started": "Not Started",
-    notstarted: "Not Started",
-  };
-
-  const normalizeProgress = (
-    progress: string | null | undefined
-  ): "Completed" | "Not Started" | "In-Progress" => {
-    const key = progress?.toLowerCase().trim() ?? "";
-    return progressMap[key] ?? "Not Started";
-  };
-
   return {
     id: item.documentNo ?? String(index),
-    // TODO: replace with item.projectDocumentId once backend adds it to response
-    projectDocumentId: null,
-    // projectDocumentId: item.projectDocumentId ?? null,
+    projectDocumentId: item.projectDocumentId ?? null,
     title: item.documentName ?? "",
     documentNo: item.documentNo ?? "",
     reasonForIssue: item.reasonForIssue ?? "",
@@ -112,12 +169,14 @@ function transformToDocumentEntry(
     checker: item.checker ?? null,
     approver: item.approver ?? null,
     progress: normalizeProgress(item.progress),
+    workflowStatus: normalizeWorkflowStatus(item.workflowStatus),
   };
 }
 
 // ============================================
-// Static filter options
+// Filter options
 // ============================================
+
 const reasonForIssueOptions = [
   { label: "IFC", value: "IFC" },
   { label: "IFA", value: "IFA" },
@@ -136,44 +195,97 @@ const progressOptions = [
   { label: "Not Started", value: "Not Started" },
 ];
 
+const workflowStatusOptions = [
+  { label: "Not Started", value: "NOT_STARTED" },
+  { label: "Pending with Originator", value: "PENDING_WITH_ORIGINATOR" },
+  { label: "Pending with Checker", value: "PENDING_WITH_CHECKER" },
+  { label: "Pending with Approver", value: "PENDING_WITH_APPROVER" },
+  { label: "Rejected by Checker", value: "REJECTED_BY_CHECKER" },
+  { label: "Rejected by Approver", value: "REJECTED_BY_APPROVER" },
+  { label: "Completed", value: "COMPLETED" },
+];
+
+// ============================================
+// Status badge config
+// ============================================
+
+const WORKFLOW_STATUS_CONFIG: Record<
+  DocumentWorkflowStatus,
+  { label: string; className: string }
+> = {
+  NOT_STARTED: {
+    label: "Not Started",
+    className: "bg-gray-100 text-gray-500 border-gray-200",
+  },
+  PENDING_WITH_ORIGINATOR: {
+    label: "With Originator",
+    className: "bg-blue-50 text-blue-700 border-blue-200",
+  },
+  PENDING_WITH_CHECKER: {
+    label: "With Checker",
+    className: "bg-amber-50 text-amber-700 border-amber-200",
+  },
+  PENDING_WITH_APPROVER: {
+    label: "With Approver",
+    className: "bg-amber-50 text-amber-700 border-amber-200",
+  },
+  REJECTED_BY_CHECKER: {
+    label: "Rejected by Checker",
+    className: "bg-red-50 text-red-700 border-red-200",
+  },
+  REJECTED_BY_APPROVER: {
+    label: "Rejected by Approver",
+    className: "bg-red-50 text-red-700 border-red-200",
+  },
+  COMPLETED: {
+    label: "Completed",
+    className: "bg-green-50 text-green-700 border-green-200",
+  },
+};
+
 // ============================================
 // Component
 // ============================================
+
 export function DocumentTable({ enabled, filters }: DocumentTableProps) {
   const navigate = useNavigate();
-
   const { currentUser } = useAuth();
-  // TODO: Use filters and currentUser for server-side filtering when API supports it
+  // TODO: Pass filters + currentUser to API once server-side filtering is supported
   void filters;
   void currentUser;
 
-  // ── Rev History dialog ────────────────────────────────────────────────────
   const [selectedRow, setSelectedRow] = useState<DocumentEntry | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // ── Workflow dialog ───────────────────────────────────────────────────────
   const {
     dialogState,
     open: openWorkflow,
     close: closeWorkflow,
   } = useDocumentWorkflowDialog();
 
+  const EMPTY_RESPONSIBILITIES: ResponsibilityValues = {
+    originator: "",
+    checker: "",
+    approver: "",
+  };
+
   const [workflowRow, setWorkflowRow] = useState<DocumentEntry | null>(null);
-
   const [responsibilities, setResponsibilities] =
-    useState<ResponsibilityValues>({
-      originator: "",
-      checker: "",
-      approver: "",
-    });
+    useState<ResponsibilityValues>(EMPTY_RESPONSIBILITIES);
 
-  // ── API: Queries ──────────────────────────────────────────────────────────
+  const handleCloseWorkflow = useCallback(() => {
+    closeWorkflow();
+    setWorkflowRow(null);
+    setResponsibilities(EMPTY_RESPONSIBILITIES);
+  }, [closeWorkflow]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── API ───────────────────────────────────────────────────────────────────
+
   const { data, isLoading, isError, error } = useProjectDocuments(
     { page: 1, pageSize: 100 },
     enabled
   );
 
-  // ── API: Mutations ────────────────────────────────────────────────────────
   const { mutateAsync: assignRoles, isPending: isAssigning } =
     useAssignDocumentRoles();
 
@@ -182,7 +294,6 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
 
   const isSaving = isAssigning || isSendingEmail;
 
-  // ── Documents ─────────────────────────────────────────────────────────────
   const documents = useMemo<DocumentEntry[]>(() => {
     if (!enabled || !data?.items) return [];
     return data.items.map((item, index) =>
@@ -192,7 +303,9 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
 
   const pageCount = Math.ceil((data?.total ?? 0) / (data?.pageSize ?? 10));
 
-  // ── Row click handler ─────────────────────────────────────────────────────
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
+  // AC5: no originator → Define Responsibilities; originator set → checklist
   const handleRowClick = useCallback(
     (row: DocumentEntry) => {
       if (!row.originatorSelfCheck) {
@@ -210,22 +323,24 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
     [navigate, openWorkflow]
   );
 
-  // ── Rev History ───────────────────────────────────────────────────────────
   const handleRevHistoryClick = useCallback((row: DocumentEntry) => {
     setSelectedRow(row);
     setIsModalOpen(true);
   }, []);
 
-  // ── Workflow: Save (AC3 + AC4) ────────────────────────────────────────────
-  // FIX: Removed duplicate toast.success / toast.error calls that were here.
-  // Toasts are now owned by the mutation hooks (onSuccess / onError in queries.ts).
-  // This component only handles navigation on success and stays put on error.
   const handleWorkflowSave = useCallback(
-    async (vals: ResponsibilityValues) => {
+    async (raw: ResponsibilityValues) => {
       if (!workflowRow) return;
 
+      const vals: ResponsibilityValues = {
+        originator: raw.originator.trim(),
+        checker: raw.checker.trim(),
+        approver: raw.approver.trim(),
+      };
+
+      if (!vals.originator) return;
+
       try {
-        // Step 1: Assign roles via API
         if (workflowRow.projectDocumentId !== null) {
           await assignRoles({
             projectDocumentId: workflowRow.projectDocumentId,
@@ -236,30 +351,45 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
         } else {
           if (import.meta.env.DEV) {
             console.warn(
-              "[DocumentTable] projectDocumentId is null — skipping AssignProjectDocumentRoles call. " +
-                "Ask backend to include projectDocumentId in GetProjectDocuments response."
+              "[DocumentTable] projectDocumentId is null — skipping AssignProjectDocumentRoles."
             );
           }
         }
 
-        // Step 2: Send email notification via API (if checker assigned)
-        if (vals.checker) {
+        const toRecipients = [vals.checker, vals.approver].filter(
+          Boolean
+        ) as string[];
+
+        const emailBody = [
+          "Roles have been assigned for the following document.",
+          "",
+          `Document No  : ${workflowRow.documentNo}`,
+          `Title        : ${workflowRow.title}`,
+          `Originator   : ${vals.originator}`,
+          vals.checker
+            ? `Checker  : ${vals.checker}`
+            : "Checker  : Not assigned",
+          vals.approver
+            ? `Approver : ${vals.approver}`
+            : "Approver : Not assigned",
+        ].join("\n");
+
+        if (toRecipients.length > 0) {
           await sendEmail({
-            to: [vals.checker],
-            cc: vals.approver ? [vals.approver] : [],
+            to: toRecipients,
+            cc: [vals.originator],
             subject: `Document Assigned: ${workflowRow.documentNo}`,
-            body: [
-              `You have been assigned as Checker for document ${workflowRow.documentNo}.`,
-              `Title: ${workflowRow.title}`,
-              vals.approver ? `Approver: ${vals.approver}` : "",
-            ]
-              .filter(Boolean)
-              .join("\n"),
+            body: emailBody,
+          });
+        } else {
+          await sendEmail({
+            to: [vals.originator],
+            cc: [],
+            subject: `Document Saved: ${workflowRow.documentNo}`,
+            body: emailBody,
           });
         }
 
-        // Step 3: Navigate to checklist on full success.
-        // Toasts (success or error) are fired by the mutation hooks — not here.
         navigate(CHECKLIST_ROUTE, {
           state: {
             document: {
@@ -271,20 +401,19 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
           },
         });
       } catch {
-        // Mutation hooks already show a specific toast.error via their onError.
-        // No duplicate toast here — just stay on the page so the user can retry.
+        // Toasts handled by mutation hooks — stay on page so user can retry
       }
     },
     [workflowRow, navigate, assignRoles, sendEmail]
   );
 
-  // ── Workflow: View Only ───────────────────────────────────────────────────
   const handleWorkflowViewOnly = useCallback(() => {
     if (!workflowRow) return;
     navigate(CHECKLIST_ROUTE, { state: { document: workflowRow } });
   }, [workflowRow, navigate]);
 
   // ── Columns ───────────────────────────────────────────────────────────────
+
   const columns = useMemo<ColumnDef<DocumentEntry>[]>(
     () => [
       {
@@ -348,7 +477,7 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
         header: ({ column }) => (
           <DataTableColumnHeader
             column={column}
-            label="Originator(Self Check)"
+            label="Originator (Self Check)"
           />
         ),
         cell: ({ row }) => (
@@ -357,7 +486,7 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
           </span>
         ),
         meta: {
-          label: "Originator(Self Check)",
+          label: "Originator (Self Check)",
           placeholder: "Search originator...",
           variant: "text",
         },
@@ -367,9 +496,19 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Checker" />
         ),
-        cell: ({ row }) => (
-          <span>{(row.getValue("checker") as string | null) ?? "-"}</span>
-        ),
+        cell: ({ row }) => {
+          const checker = row.getValue("checker") as string | null;
+          // AC6: amber highlight only when checker is the active stage
+          const isActive =
+            row.original.workflowStatus === "PENDING_WITH_CHECKER";
+          return checker ? (
+            <span className={isActive ? "font-medium text-amber-700" : ""}>
+              {checker}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          );
+        },
         meta: {
           label: "Checker",
           placeholder: "Search checker...",
@@ -381,9 +520,19 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Approver" />
         ),
-        cell: ({ row }) => (
-          <span>{(row.getValue("approver") as string | null) ?? "-"}</span>
-        ),
+        cell: ({ row }) => {
+          const approver = row.getValue("approver") as string | null;
+          // AC6: amber highlight only when approver is the active stage
+          const isActive =
+            row.original.workflowStatus === "PENDING_WITH_APPROVER";
+          return approver ? (
+            <span className={isActive ? "font-medium text-amber-700" : ""}>
+              {approver}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          );
+        },
         meta: {
           label: "Approver",
           placeholder: "Search approver...",
@@ -391,25 +540,44 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
         },
       },
       {
+        accessorKey: "workflowStatus",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Status" />
+        ),
+        cell: ({ row }) => {
+          const status = row.original.workflowStatus;
+          // AC4: normalizeWorkflowStatus guarantees a valid key.
+          // Fallback to NOT_STARTED as absolute last resort.
+          const cfg =
+            WORKFLOW_STATUS_CONFIG[status] ??
+            WORKFLOW_STATUS_CONFIG.NOT_STARTED;
+          return (
+            <Badge variant="outline" className={`text-xs ${cfg.className}`}>
+              {cfg.label}
+            </Badge>
+          );
+        },
+        meta: {
+          label: "Status",
+          variant: "multiSelect",
+          options: workflowStatusOptions,
+        },
+        filterFn: (row, id, value) => value.includes(row.getValue(id)),
+      },
+      {
         accessorKey: "progress",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Progress" />
         ),
         cell: ({ row }) => {
-          const progress = row.getValue("progress") as string;
-          return (
-            <span
-              className={`text-sm ${
-                progress === "Completed"
-                  ? "status-completed"
-                  : progress === "Not Started"
-                    ? "status-not-started"
-                    : "status-in-progress"
-              }`}
-            >
-              {progress}
-            </span>
-          );
+          const progress = row.getValue("progress") as DocumentProgress;
+          const className =
+            progress === "Completed"
+              ? "status-completed"
+              : progress === "In-Progress"
+                ? "status-in-progress"
+                : "status-not-started";
+          return <span className={`text-sm ${className}`}>{progress}</span>;
         },
         meta: {
           label: "Progress",
@@ -424,6 +592,7 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
         cell: ({ row }) => (
           <button
             className="icon-btn-dark-blue"
+            aria-label={`View revision history for ${row.original.documentNo}`}
             onClick={(e) => {
               e.stopPropagation();
               handleRevHistoryClick(row.original);
@@ -448,6 +617,7 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
   });
 
   // ── Empty states ──────────────────────────────────────────────────────────
+
   const emptyState = !enabled ? (
     <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
       <div className="bg-grey-200 rounded-full p-4">
@@ -509,7 +679,7 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
       <DocumentWorkflowDialog
         key={workflowRow?.id ?? "no-row"}
         {...dialogState}
-        onClose={closeWorkflow}
+        onClose={handleCloseWorkflow}
         userOptions={ALL_USERS}
         values={responsibilities}
         onChange={setResponsibilities}
@@ -616,17 +786,7 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
                           <p className="text-muted-foreground text-sm">
                             Progress
                           </p>
-                          <p
-                            className={`font-medium ${
-                              selectedRow.progress === "Completed"
-                                ? "status-completed"
-                                : selectedRow.progress === "Not Started"
-                                  ? "status-not-started"
-                                  : "status-in-progress"
-                            }`}
-                          >
-                            {selectedRow.progress}
-                          </p>
+                          <p className="font-medium">{selectedRow.progress}</p>
                         </div>
                       </div>
                     </div>

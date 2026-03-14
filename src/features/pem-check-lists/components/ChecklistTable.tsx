@@ -63,10 +63,10 @@ function CheckCell({ item, role, canEdit, onCheckResult }: CheckCellProps) {
   const handleToggle = useCallback(
     async (result: CheckResult) => {
       if (!isEditable || saving) return;
-      const next: CheckResult = item.checkResult === result ? null : result;
+      if (item.checkResult === result) return; // same value — do nothing
       setSaving(true);
       try {
-        await onCheckResult(item.checkpointId, next);
+        await onCheckResult(item.checkpointId, result); // always OK or NA, never null
       } finally {
         setSaving(false);
       }

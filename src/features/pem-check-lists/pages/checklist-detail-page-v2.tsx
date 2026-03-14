@@ -147,27 +147,25 @@ export function ChecklistDetailPage() {
   // Role-aware auto-save:
   //   ORIGINATOR → writes originatorSignature, preserves checkerSignature
   //   CHECKER    → writes checkerSignature,    preserves originatorSignature
-  const handleCheckResult = useCallback(
-    async (checkpointId: number, result: CheckResult) => {
-      const item = checklistItems.find((i) => i.checkpointId === checkpointId);
-      if (item?.checkResult === result) return;
-      const name = currentUser?.name ?? "";
-      const isOriginator = role === "ORIGINATOR";
-      const newSig = result !== null ? buildSignature(name) : null;
+const handleCheckResult = useCallback(
+  async (checkpointId: number, result: CheckResult) => {
+    const item = checklistItems.find((i) => i.checkpointId === checkpointId);
+    if (item?.checkResult === result) return; // same value — do nothing
+    const name = currentUser?.name ?? "";
+    const isOriginator = role === "ORIGINATOR";
+    const newSig = buildSignature(name); // result is always OK or NA
 
-      await saveCheckResult({
-        checkpointId,
-        checkResult: result,
-        originatorSignature: isOriginator
-          ? newSig
-          : (item?.originatorSignature ?? null),
-        checkerSignature: !isOriginator
-          ? newSig
-          : (item?.checkerSignature ?? null),
-      });
-    },
-    [saveCheckResult, currentUser, role, checklistItems]
-  );
+    await saveCheckResult({
+      checkpointId,
+      checkResult: result,
+      originatorSignature: isOriginator
+        ? newSig
+        : item?.originatorSignature || null,
+      checkerSignature: !isOriginator ? newSig : item?.checkerSignature || null,
+    });
+  },
+  [saveCheckResult, currentUser, role, checklistItems]
+);
 
   // Progress counts items where any value (OK/NA) has been selected — visible to all roles
   const originatorDone = checklistItems.filter(

@@ -18,6 +18,7 @@ import { useDocumentFilterStore } from "@/shared/store/documentFilterStore";
 import { AuthContext } from "./AuthContext";
 import { ROLES } from "@/shared/types/roles";
 import type { User } from "@/shared/types/user";
+import { useActiveDocumentStore } from "@/shared/store/ActiveDocumentStore";
 
 // TODO: Replace with MSAL token claims (account.idTokenClaims?.roles) once
 // Azure AD App Roles are configured in the app manifest by the backend team.
@@ -61,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const resetDocumentFilters = useDocumentFilterStore(
     (s) => s.resetDocumentFilters
   );
+const clearDocument = useActiveDocumentStore((s) => s.clearDocument);
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
@@ -196,6 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearGenericPEM();
       resetFilters();
       resetDocumentFilters();
+      clearDocument();
     }
   }, [
     clearProfile,
@@ -203,6 +206,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clearGenericPEM,
     resetFilters,
     resetDocumentFilters,
+    clearDocument,
   ]);
 
   return (

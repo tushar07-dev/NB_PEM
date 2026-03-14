@@ -1,22 +1,22 @@
 // src/features/pem-check-lists/pages/checklist-detail-page-v2.tsx
 
-import { useState, useMemo, useEffect, useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useMemo, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Lock, CheckCircle2, Rocket, User } from "lucide-react";
 import { Progress } from "@/shared/components/ui/progress";
 import { Badge } from "@/shared/components/ui/badge";
 import { cn } from "@/shared/lib/utils";
 
 import { ROUTES } from "@/shared/config/routes";
+import { ALL_USERS } from "@/shared/config/users";
 import { useAuth } from "@/app/providers/useAuth";
 import { useProjectStore } from "@/shared/store/projectStore";
 import { useGenericPEMStore } from "@/shared/store/genericPemStore";
+import { useActiveDocumentStore } from "@/shared/store/ActiveDocumentStore";
 
-import type { DocumentEntry } from "../components/DocumentTable";
 import type { CheckResult } from "../types/checklist";
 import { buildSignature } from "../types/checklist";
 import type { ResponsibilityValues } from "../types/DocumentWorkflowSchema";
-import type { Option } from "@/shared/components/ui/SearchableFilterSelect";
 
 import {
   useChecklistItems,
@@ -34,19 +34,7 @@ import {
   ConfirmActionDialog,
   type ConfirmRecipient,
 } from "./components/ConfirmActionDialog";
-
-// ─── User options (replace with useUsers() hook when /api/Users is ready) ─────
-
-const ALL_USER_OPTIONS: Option[] = [
-  {
-    label: "Sanghati Chatterjee",
-    value: "sanghati.chatterjee2@akersolutions.com",
-  },
-  { label: "Nilesh Thakur", value: "nilesh.thakur@akersolutions.com" },
-  { label: "Tushar Shelke", value: "tushar.shelke@akersolutions.com" },
-  { label: "Shiv Kumar", value: "shiv.kumar@akersolutions.com" },
-  { label: "Rohit Shelar", value: "rohit.shelar@akersolutions.com" },
-];
+import { useState } from "react";
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -102,25 +90,16 @@ function OriginatorProgress({ done, total }: { done: number; total: number }) {
 
 export function ChecklistDetailPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { currentUser } = useAuth();
 
-  // Normalize emails to lowercase on entry so they always match ALL_USER_OPTIONS
-  const [document, setDocument] = useState<DocumentEntry | undefined>(() => {
-    const doc = location.state?.document as DocumentEntry | undefined;
-    if (!doc) return undefined;
-    return {
-      ...doc,
-      originatorSelfCheck: doc.originatorSelfCheck?.toLowerCase() ?? null,
-      checker: doc.checker?.toLowerCase() ?? null,
-      approver: doc.approver?.toLowerCase() ?? null,
-    };
-  });
+  // Document comes from the store (set by DocumentTable on row click).
+  // Persisted in sessionStorage — survives refresh.
+  const { document, patchDocument } = useActiveDocumentStore();
 
   const selectedProject = useProjectStore((s) => s.selectedProject);
   const selectedGenericPEM = useGenericPEMStore((s) => s.selectedGenericPEM);
 
-  // Redirect if no document in state
+  // Redirect if store has no document (e.g. direct URL access)
   useEffect(() => {
     if (!document) {
       navigate(ROUTES.PEM_CHECKLISTS.DOCUMENT_CHECKLIST, { replace: true });
@@ -148,9 +127,9 @@ export function ChecklistDetailPage() {
     navigate,
   ]);
 
-  // Permissions — reactive to local document state
+  // Permissions — reactive to store document
   const { role, permissions, roleBadge, status } = useDocumentPermissions(
-    document,
+    document ?? undefined,
     currentUser?.email
   );
 
@@ -171,6 +150,7 @@ export function ChecklistDetailPage() {
   const handleCheckResult = useCallback(
     async (checkpointId: number, result: CheckResult) => {
       const item = checklistItems.find((i) => i.checkpointId === checkpointId);
+      if (item?.checkResult === result) return;
       const name = currentUser?.name ?? "";
       const isOriginator = role === "ORIGINATOR";
       const newSig = result !== null ? buildSignature(name) : null;
@@ -189,28 +169,35 @@ export function ChecklistDetailPage() {
     [saveCheckResult, currentUser, role, checklistItems]
   );
 
-  // Progress counts originatorSignature only — visible to all roles
+  // Progress counts items where any value (OK/NA) has been selected — visible to all roles
   const originatorDone = checklistItems.filter(
-    (i) => i.originatorSignature !== null
+    (i) => i.checkResult !== null
   ).length;
-  const total = checklistItems.length;
 
+  const total = checklistItems.length;
+  console.log(checklistItems, total, originatorDone);
   // Dialog open states
   const [sendFlowOpen, setSendFlowOpen] = useState(false);
   const [checkerCompleteOpen, setCheckerCompleteOpen] = useState(false);
   const [approverApproveOpen, setApproverApproveOpen] = useState(false);
 
-  const patchDocument = useCallback((patch: Partial<DocumentEntry>) => {
-    setDocument((prev) => (prev ? { ...prev, ...patch } : prev));
-  }, []);
-
-  // Called by SendDocumentFlow after all Step 3 API calls succeed.
-  // SetStatusAndComments is already fired inside the flow — no need to repeat it here.
+  // Called by SendDocumentFlow after Step 3 API calls succeed (status already changed inside flow)
   const handleSent = useCallback(
     (vals: ResponsibilityValues) => {
       patchDocument({
         workflowStatus: "PENDING_WITH_CHECKER",
         originatorSelfCheck: vals.originator.toLowerCase(),
+        checker: vals.checker.toLowerCase(),
+        approver: vals.approver.toLowerCase(),
+      });
+    },
+    [patchDocument]
+  );
+
+  // Called by SendDocumentFlow after Save (Step 1) API succeeds
+  const handleSaved = useCallback(
+    (vals: ResponsibilityValues) => {
+      patchDocument({
         checker: vals.checker.toLowerCase(),
         approver: vals.approver.toLowerCase(),
       });
@@ -364,7 +351,7 @@ export function ChecklistDetailPage() {
               )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-gray-400">
+            <div className="hidden flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-gray-400">
               {document.reasonForIssue && (
                 <span>
                   Reason:{" "}
@@ -398,7 +385,7 @@ export function ChecklistDetailPage() {
             </div>
           </div>
 
-          {/* Progress bar + action buttons */}
+          {/* Progress + action buttons */}
           <div className="flex flex-wrap items-center gap-3">
             {total > 0 && (
               <OriginatorProgress done={originatorDone} total={total} />
@@ -433,14 +420,14 @@ export function ChecklistDetailPage() {
           </div>
         </div>
 
-        {role === "ORIGINATOR" &&
+        {/* {role === "ORIGINATOR" &&
           permissions.canSend &&
           originatorDone < total &&
           total > 0 && (
             <p className="mt-1 text-[10px] text-amber-500">
-              Sign all {total} items to enable Send to Checker
+              Complete all {total} checkpoints to enable Send to Checker
             </p>
-          )}
+          )} */}
       </div>
 
       <StatusBanner banner={permissions.banner} />
@@ -459,10 +446,11 @@ export function ChecklistDetailPage() {
         document={document}
         originatorEmail={currentUser?.email ?? ""}
         originatorName={currentUser?.name ?? ""}
-        userOptions={ALL_USER_OPTIONS}
+        userOptions={ALL_USERS}
         done={originatorDone}
         total={total}
         onSent={handleSent}
+        onSaved={handleSaved}
       />
 
       <ConfirmActionDialog

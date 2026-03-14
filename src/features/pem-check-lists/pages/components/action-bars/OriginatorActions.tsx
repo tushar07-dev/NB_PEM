@@ -14,11 +14,12 @@ interface OriginatorActionsProps {
 }
 
 export function OriginatorActions({
-  done,
-  total,
+//   done,
+//   total,
   onSend,
 }: OriginatorActionsProps) {
-  const canSend = done === total && total > 0;
+//   const canSend = done === total && total > 0;
+  const canSend = true;
 
   return (
     <button

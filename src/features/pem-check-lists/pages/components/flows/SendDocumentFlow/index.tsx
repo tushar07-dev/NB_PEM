@@ -1,31 +1,4 @@
 // src/features/pem-check-lists/pages/components/flows/SendDocumentFlow/index.tsx
-//
-// Orchestrates the 3-step "Send Document" flow for the ORIGINATOR.
-// This is the ONLY file in this folder that is imported externally.
-//
-// ─── Step ownership ───────────────────────────────────────────────────────────
-//   Step 1 (Step1Roles)   — role dropdowns, Save + Send To Checker
-//   Step 2 (Step2Notes)   — optional notes textarea
-//   Step 3 (Step3Confirm) — illustration + final confirm
-//
-// ─── State owned here ────────────────────────────────────────────────────────
-//   step         — FlowStep 1 | 2 | 3
-//   notes        — free-text from Step 2 (in-memory, not persisted)
-//   roleValues   — validated ResponsibilityValues from Step 1 (carried to Step 3)
-//
-// ─── API calls ────────────────────────────────────────────────────────────────
-//   SAVE (Step 1):
-//     AssignDocumentRoles (originator fixed, checker/approver nullable) → toast → close
-//
-//   SEND TO CHECKER (Step 3):
-//     1. SetStatusAndComments → PENDING_WITH_CHECKER + notes (PRIORITY — must succeed)
-//     2. AssignDocumentRoles + sendEmail fired in parallel (best-effort)
-//     If #1 succeeds and #2 partially fails → warning toast, still close + call onSent
-//     If #1 fails → show error, stay on step 3
-//
-// ─── Email recipients ────────────────────────────────────────────────────────
-//   To:  checker
-//   CC:  originator + approver
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
@@ -43,12 +16,12 @@ import {
   useSendDocumentEmail,
   useSetStatusAndComments,
 } from "@/features/pem-check-lists/api/queries";
-import { Step1Roles } from "@/features/pem-check-lists/pages/components/flows/SendDocumentFlow/Step1Roles";
-import { Step2Notes } from "@/features/pem-check-lists/pages/components/flows/SendDocumentFlow/Step2Notes";
-import { Step3Confirm } from "@/features/pem-check-lists/pages/components/flows/SendDocumentFlow/Step3Confirm";
+import { Step1Roles } from "./Step1Roles";
+import { Step2Notes } from "./Step2Notes";
+import { Step3Confirm } from "./Step3Confirm";
 
 // ─── Dialog shell ─────────────────────────────────────────────────────────────
- 
+
 const DIALOG_SHELL = cn(
   "[&>button:last-child]:hidden",
   "gap-0 border-0 p-0 shadow-xl outline-none",
@@ -59,11 +32,11 @@ const DIALOG_SHELL = cn(
   "flex flex-col",
   "gap-[16px] lg:gap-[24px]"
 );
- 
+
 type FlowStep = 1 | 2 | 3;
- 
+
 // ─── Props ────────────────────────────────────────────────────────────────────
- 
+
 export interface SendDocumentFlowProps {
   open: boolean;
   onClose: () => void;
@@ -75,12 +48,14 @@ export interface SendDocumentFlowProps {
   /** Originator-signature count — passed to Step 1 for checkpoint validation */
   done: number;
   total: number;
-  /** Fired after a successful send — page patches local document state */
+  /** Fired after Step 3 send succeeds — caller updates store with new roles + status */
   onSent: (responsibilities: ResponsibilityValues) => void;
+  /** Fired after Step 1 save succeeds — caller updates store with new roles only */
+  onSaved?: (responsibilities: ResponsibilityValues) => void;
 }
- 
+
 // ─── Component ────────────────────────────────────────────────────────────────
- 
+
 export function SendDocumentFlow({
   open,
   onClose,
@@ -91,19 +66,17 @@ export function SendDocumentFlow({
   done,
   total,
   onSent,
+  onSaved,
 }: SendDocumentFlowProps) {
   const [step, setStep] = useState<FlowStep>(1);
   const [notes, setNotes] = useState("");
 
-  // null until Step 1 validates and submits — carries values forward to Step 3.
-  // Step1Roles always gets initialValues directly from props (+ key remount),
-  // so we never need to seed this from props here.
+  // null until Step 1 validates + submits; carries values forward to Step 3
   const [roleValues, setRoleValues] = useState<ResponsibilityValues | null>(
     null
   );
 
-  // Safe resolved values for Step 3 API calls — falls back to current document
-  // props if the user somehow reaches Step 3 without Step 1 setting roleValues.
+  // Falls back to document props if user skips Step 1 (shouldn't happen, but safe)
   const resolved: ResponsibilityValues = roleValues ?? {
     originator: originatorEmail,
     checker: document.checker ?? "",
@@ -122,7 +95,6 @@ export function SendDocumentFlow({
   // ── Reset + close ───────────────────────────────────────────────────────────
   const handleClose = useCallback(() => {
     onClose();
-    // Reset internal state after the close animation (~300ms)
     setTimeout(() => {
       setStep(1);
       setNotes("");
@@ -131,42 +103,58 @@ export function SendDocumentFlow({
   }, [onClose]);
 
   // ── SAVE (Step 1) ───────────────────────────────────────────────────────────
-  // Partial assign — checker/approver may be null. Originator is always set.
-  // Mutation hook fires its own success/error toast.
-  const handleSave = useCallback(
-    async (vals: ResponsibilityValues) => {
-      if (!document.projectDocumentId) return;
-      await assignRoles({
-        projectDocumentId: document.projectDocumentId,
-        originator: originatorEmail,
-        checker: vals.checker || null,
-        approver: vals.approver || null,
-      });
+  // Partial assign — checker/approver may be null.
+  // After success: notifies caller (store patchDocument) then closes.
+const handleSave = useCallback(
+  async (vals: ResponsibilityValues) => {
+    if (!document.projectDocumentId) return;
+    const checkerUnchanged = vals.checker === (document.checker ?? "");
+    const approverUnchanged = vals.approver === (document.approver ?? "");
+
+    if (checkerUnchanged && approverUnchanged) {
       handleClose();
-    },
-    [assignRoles, document.projectDocumentId, originatorEmail, handleClose]
-  );
+      return;
+    }
+
+    await assignRoles({
+      projectDocumentId: document.projectDocumentId,
+      originator: originatorEmail,
+      checker: vals.checker || null,
+      approver: vals.approver || null,
+    });
+    onSaved?.(vals);
+    handleClose();
+  },
+  [
+    assignRoles,
+    document.projectDocumentId,
+    document.checker,
+    document.approver,
+    originatorEmail,
+    onSaved,
+    handleClose,
+  ]
+);
 
   // ── Step 1 → Step 2 ──────────────────────────────────────────────────────────
-  // Only called after Step1Roles passes all validation.
   const handleStep1Next = useCallback((vals: ResponsibilityValues) => {
     setRoleValues(vals);
     setStep(2);
   }, []);
 
   // ── SEND TO CHECKER (Step 3) ─────────────────────────────────────────────────
+  // 1. SetStatusAndComments must succeed (priority)
+  // 2. AssignDocumentRoles + sendEmail run in parallel (best-effort)
   const handleSend = useCallback(async () => {
     if (!document.projectDocumentId) return;
 
     try {
-      // 1. PRIORITY — must succeed
       await setStatusAndComments({
         projectDocumentId: document.projectDocumentId,
         workflowStatus: "PENDING_WITH_CHECKER",
         comments: notes.trim() || null,
       });
 
-      // 2. BEST-EFFORT — parallel, non-blocking
       const [rolesResult, emailResult] = await Promise.allSettled([
         assignRoles({
           projectDocumentId: document.projectDocumentId,
@@ -228,12 +216,9 @@ export function SendDocumentFlow({
   return (
     <Dialog open={open} onOpenChange={(o) => !o && !isBusy && handleClose()}>
       <DialogContent className={DIALOG_SHELL}>
-        {/* Hidden title satisfies Radix accessibility requirement */}
         <DialogTitle className="sr-only">Send Document</DialogTitle>
 
         {step === 1 && (
-          // key forces full remount on every open so useForm defaultValues
-          // always picks up the latest document.checker / document.approver
           <Step1Roles
             key={`step1-${document.projectDocumentId ?? "new"}-${String(open)}`}
             initialValues={{

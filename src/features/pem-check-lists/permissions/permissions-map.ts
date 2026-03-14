@@ -93,11 +93,11 @@ const PERMISSIONS_MAP: Record<PermissionKey, DocumentPermissions> = {
     canSend: true, // UI will disable until 100% complete
     showProgress: true,
     isLocked: false,
-    banner: {
-      variant: "warning",
-      message:
-        'You haven\'t sent this document to the checker yet. Complete the checklist and click "Send to Checker".',
-    },
+    // banner: {
+    //   variant: "warning",
+    //   message:
+    //     'You haven\'t sent this document to the checker yet. Complete the checklist and click "Send to Checker".',
+    // },
   }),
   "ORIGINATOR:REJECTED_BY_CHECKER": withOverrides({
     canEditChecklist: true,

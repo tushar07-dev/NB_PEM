@@ -12,9 +12,10 @@ import { LazyRoute } from "@/shared/components/ui/lazy-route";
 import DocumentRequirementPage from "@/features/pem-requirements/pages/document-requirement/DocumentRequirementPage";
 import ControlObjectChecklistPage from "@/features/pem-check-lists/pages/control-object-checklist-page";
 import DisciplineActivityChecklistPage from "@/features/pem-check-lists/pages/discipline-activity-checklist-page";
-import { ChecklistDetailPage } from "@/features/pem-check-lists/pages/checklist-detail-page";
+// import { ChecklistDetailPage } from "@/features/pem-check-lists/pages/checklist-detail-page";
 import { PERMISSIONS } from "@/shared/config/permissions";
 import { ROUTES } from "@/shared/config/routes";
+import { ChecklistDetailPage } from "@/features/pem-check-lists/pages/checklist-detail-page-v2";
 
 const lazyPage = (title: string) =>
   lazy(async () => ({

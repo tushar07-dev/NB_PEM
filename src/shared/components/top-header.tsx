@@ -36,7 +36,7 @@ const HeaderLeft = memo(function HeaderLeft() {
           type="text"
           placeholder="Search Anything..."
           title="Search coming soon"
-          className="header-pill text-primary-700 h-8 px-4 pr-10 text-sm opacity-60 lg:h-11"
+          className="header-pill text-primary-700 h-8 px-4 pr-10 text-sm lg:h-11"
         />
         <Search className="text-primary-400 absolute top-1/2 right-3 size-4 -translate-y-1/2" />
       </div>

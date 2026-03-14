@@ -1,10 +1,7 @@
 // src/features/pem-check-lists/types/checklist.ts
 
 // ─── Document role — derived at runtime from currentUser.email ────────────────
-// READ_ONLY  : user is not assigned to this document
-// ORIGINATOR : user's email === document.originatorSelfCheck
-// CHECKER    : user's email === document.checker  AND doc has been sent to checker
-// APPROVER   : user's email === document.approver AND doc has been sent to approver
+// Priority: ORIGINATOR > CHECKER > APPROVER > READ_ONLY
 export type DocumentRole = "READ_ONLY" | "ORIGINATOR" | "CHECKER" | "APPROVER";
 
 // ─── Document workflow status ─────────────────────────────────────────────────
@@ -20,43 +17,34 @@ export type DocumentStatus =
 export type CheckResult = "OK" | "NA" | null;
 
 // ─── A single checklist item ──────────────────────────────────────────────────
+// Backend: GET /api/ProjectDocumentChecklists/GetProjectDocumentChecklists/{id}
+// Signature format: "Full Name|2025-02-12T10:30:00.000Z"
+// Use buildSignature() / parseSignature() below — never construct the string manually
 export interface ChecklistItem {
-  /** React list key — same value as checkpointId as string */
-  id: string;
-  /** Backend primary key — sent to SaveCheckResults */
-  checkpointId: number;
-  serialNo: number;
-  description: string;
-  category: string | null;
-  qualityLevel: string[] | null;
-  checkResult: CheckResult;
-  /** Raw backend value: "name|ISO" — use parseSignature() to display */
-  originatorSignature: string | null;
-  /** Raw backend value: "name|ISO" — use parseSignature() to display */
-  checkerSignature: string | null;
+  id: string;                          // String(checkpointId)
+  serialNo: number;                    // 1-based display index
+  checkpointId: number;               // Required for SaveCheckResults payload
+  description: string;                // checkpoint text
+  category: string;                   // checkpoint category
+  qualityLevel: string[];             // array from API — display as badges
+  checkResult: CheckResult;           // "OK" | "NA" | null
+  originatorSignature: string | null; // "Name|ISO timestamp" — set by ORIGINATOR
+  checkerSignature: string | null;    // "Name|ISO timestamp" — set by CHECKER
 }
 
 // ─── Signature helpers ────────────────────────────────────────────────────────
-// Format stored on the backend: "Full Name|2025-02-12T10:30:00.000Z"
-
+/** Build the pipe-delimited signature string the API expects. */
 export function buildSignature(name: string): string {
   return `${name}|${new Date().toISOString()}`;
 }
-
+/** Parse a signature string back into its parts. Returns null if invalid. */
 export function parseSignature(
-  raw: string | null | undefined
+  signature: string | null | undefined
 ): { name: string; date: string } | null {
-  if (!raw) return null;
-  const idx = raw.lastIndexOf("|");
-  if (idx === -1) return null;
-  const name = raw.slice(0, idx).trim();
-  const iso = raw.slice(idx + 1).trim();
-  const d = new Date(iso);
-  if (!name || isNaN(d.getTime())) return null;
-  const date = d.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-  return { name, date };
+   if (!signature) return null;
+   const [name, dateStr] = signature.split("|");
+   if (!name || !dateStr) return null;
+   const date = new Date(dateStr);
+   if (isNaN(date.getTime())) return null;
+  return { name, date: date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) };
 }

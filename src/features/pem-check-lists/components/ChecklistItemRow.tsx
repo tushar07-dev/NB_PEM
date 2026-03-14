@@ -7,12 +7,12 @@ import type {
   ChecklistItem,
   CheckResult,
   DocumentRole,
-} from "../types/checklist";  
+} from "../types/checklist";
 
 interface ChecklistItemRowProps {
   item: ChecklistItem;
   role: DocumentRole;
-  /** Called when originator toggles OK or NA */
+  /** Called when originator toggles OK or NA — receives checkpointId (number, not string) */
   onCheckResult: (checkpointId: number, result: CheckResult) => Promise<void>;
 }
 
@@ -34,7 +34,6 @@ function CheckButton({
   onClick,
 }: CheckButtonProps) {
   const isOK = label === "OK";
-
   return (
     <button
       type="button"
@@ -43,20 +42,14 @@ function CheckButton({
       aria-label={`Mark as ${label}`}
       aria-pressed={active}
       className={cn(
-        // Base
-        "inline-flex items-center justify-center gap-1.5",
-        "h-8 min-w-[52px] rounded-md px-3",
-        "text-xs font-semibold tracking-wider uppercase",
-        "border transition-all duration-150",
+        "inline-flex h-8 min-w-[52px] items-center justify-center gap-1.5 rounded-md px-3",
+        "border text-xs font-semibold tracking-wider uppercase transition-all duration-150",
         "focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none",
-        // Disabled / saving state
         (disabled || saving) && "cursor-not-allowed opacity-40",
-        // OK button colours
         isOK &&
           !active &&
           "border-green-300 bg-white text-green-600 hover:bg-green-50",
         isOK && active && "border-green-500 bg-green-500 text-white shadow-sm",
-        // NA button colours
         !isOK &&
           !active &&
           "border-gray-300 bg-white text-gray-500 hover:bg-gray-50",
@@ -75,28 +68,23 @@ function CheckButton({
   );
 }
 
-// ─── Timestamp + signature pill ───────────────────────────────────────────────
+// ─── Timestamp pill (parses "Name|ISODate" signature string) ─────────────────
 
-function SavedStamp({
-  savedAt,
-  savedBy,
-}: {
-  savedAt: string;
-  savedBy: string;
-}) {
-  const formatted = new Date(savedAt).toLocaleString(undefined, {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
+function SavedStamp({ signature }: { signature: string | null }) {
+  const parsed = parseSignature(signature);
+  if (!parsed) return null;
+const formatted = new Date(parsed.date).toLocaleString("en-IN", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
   return (
     <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
       <Clock className="size-3 shrink-0" />
       <span>
-        {savedBy} · {formatted}
+        {parsed.name} · {formatted}
       </span>
     </div>
   );
@@ -115,7 +103,6 @@ export function ChecklistItemRow({
   const handleToggle = useCallback(
     async (result: CheckResult) => {
       if (!isOriginator || saving) return;
-      // Clicking the active button again clears the result
       const next: CheckResult = item.checkResult === result ? null : result;
       setSaving(true);
       try {
@@ -146,21 +133,28 @@ export function ChecklistItemRow({
         {String(item.serialNo).padStart(2, "0")}
       </span>
 
-      {/* Description + timestamp */}
+      {/* Checkpoint text + quality levels + originator stamp */}
       <div className="flex flex-col gap-1">
         <p className="text-primary-500 text-sm leading-snug">
           {item.description}
         </p>
-        {(() => {
-          const sig = parseSignature(item.originatorSignature);
-          return sig ? (
-            <SavedStamp savedAt={sig.date} savedBy={sig.name} />
-          ) : null;
-        })()}
+        {item.qualityLevel.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {item.qualityLevel.map((ql) => (
+              <span
+                key={ql}
+                className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500"
+              >
+                {ql}
+              </span>
+            ))}
+          </div>
+        )}
+        <SavedStamp signature={item.originatorSignature} />
       </div>
 
       {/* OK / NA buttons */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" data-no-row-click>
         <CheckButton
           label="OK"
           active={item.checkResult === "OK"}

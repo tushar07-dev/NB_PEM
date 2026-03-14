@@ -32,9 +32,14 @@ import type {
   EmailRequestDto,
   SaveCheckResultsRequestDto,
   SaveCheckResultsResponseDtoApiResponse,
+  SetStatusAndCommentsRequestDto,
+  SetStatusAndCommentsResponseDtoApiResponse,
+  ProjectDocumentChecklistsResponseDtoListApiResponse,
 } from "@/api/generated/schemas";
-
+import type { ChecklistItem, CheckResult } from "../types/checklist";
 import { validateApiResponse } from "@/api/utils";
+
+const TEST_MODE = false;
 
 export type {
   PagedRequest,
@@ -331,6 +336,18 @@ export function useAssignDocumentRoles(): UseMutationResult<
     mutationFn: async (
       payload: AssignProjectDocumentRolesRequestDto
     ): Promise<AssignProjectDocumentRolesResponseDtoApiResponse> => {
+      if (TEST_MODE) {
+        console.log(
+          "🚫 TEST_MODE: AssignProjectDocumentRoles blocked",
+          payload
+        );
+
+        return {
+          isSuccess: true,
+          message: "Mock success (TEST_MODE)",
+          data: undefined,
+        } as AssignProjectDocumentRolesResponseDtoApiResponse;
+      }
       const response =
         await customInstance<AssignProjectDocumentRolesResponseDtoApiResponse>({
           url: "/api/ProjectDocuments/AssignProjectDocumentRoles",
@@ -341,7 +358,6 @@ export function useAssignDocumentRoles(): UseMutationResult<
       validateApiResponse(response, "Failed to assign document roles");
       return response;
     },
-
     // FIX #7: specific success toast — was relying on DocumentTable to fire
     // toast manually after mutateAsync resolved. Centralising it here means
     // any future caller gets feedback automatically.
@@ -350,7 +366,6 @@ export function useAssignDocumentRoles(): UseMutationResult<
         description: "Document roles have been updated successfully.",
       });
     },
-
     // FIX #7: specific error toast — was falling back to generic global
     // MutationCache.onError message which just shows error.message raw.
     onError: (error: Error) => {
@@ -359,7 +374,6 @@ export function useAssignDocumentRoles(): UseMutationResult<
         duration: 6000,
       });
     },
-
     // FIX #6: was onSuccess — onSettled fires whether mutation succeeds or
     // errors, so the cache is always revalidated. Critical once optimistic
     // updates are added; a failed mutation would otherwise leave stale data.
@@ -386,6 +400,13 @@ export function useSendDocumentEmail(): UseMutationResult<
 
   return useMutation({
     mutationFn: async (payload: EmailRequestDto): Promise<EmailResult> => {
+      if (TEST_MODE) {
+        console.log("🚫 TEST_MODE: SendEmail blocked", payload);
+        return {
+          isSuccess: true,
+          message: "Mock email sent (TEST_MODE)",
+        } as EmailResult;
+      }
       const response = await customInstance<EmailResult>({
         url: "/api/ProjectDocuments/SendEmail",
         method: "POST",
@@ -397,14 +418,12 @@ export function useSendDocumentEmail(): UseMutationResult<
       }
       return response;
     },
-
     // FIX #7: specific success toast
     onSuccess: () => {
       toast.success("Email sent", {
         description: "The document email has been sent successfully.",
       });
     },
-
     // FIX #7: specific error toast
     onError: (error: Error) => {
       toast.error("Failed to send email", {
@@ -412,7 +431,6 @@ export function useSendDocumentEmail(): UseMutationResult<
         duration: 6000,
       });
     },
-
     // FIX #6: was onSuccess
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: documentQueryKeys.all });
@@ -421,60 +439,151 @@ export function useSendDocumentEmail(): UseMutationResult<
 }
 
 // ============================================
-// Save Check Result Mutation
-// TODO: Replace stub with real API call once
-// POST /api/Checklist/SaveCheckResult endpoint is available.
-// ============================================
 
-/** Payload sent to the backend — matches SaveCheckResultsRequestDto */
+// Checklist Items Query
+
+// GET /api/ProjectDocumentChecklists/GetProjectDocumentChecklists/{projectDocumentId}
+
+function normalizeCheckResult(raw: string | null | undefined): CheckResult {
+  if (raw === "OK") return "OK";
+  if (raw === "NA") return "NA";
+  return null;
+}
+
+export function useChecklistItems(
+  projectDocumentId: number | null,
+  enabled = true
+): UseQueryResult<ChecklistItem[], Error> {
+  return useQuery({
+    queryKey: ["checklistItems", projectDocumentId],
+    queryFn: async (): Promise<ChecklistItem[]> => {
+      const response =
+        await customInstance<ProjectDocumentChecklistsResponseDtoListApiResponse>(
+          {
+            url: `/api/ProjectDocumentChecklists/GetProjectDocumentChecklists/${projectDocumentId!}`,
+            method: "GET",
+          }
+        );
+      validateApiResponse(response, "Failed to fetch checklist items");
+      return (response.data ?? []).map((item, i) => ({
+        id: String(item.checkpointId ?? i),
+        serialNo: i + 1,
+        checkpointId: item.checkpointId ?? 0,
+        description: item.checkpoint ?? "",
+        category: item.category ?? "",
+        qualityLevel: item.qualityLevel ?? [],
+        checkResult: normalizeCheckResult(item.checkResult),
+        originatorSignature: item.originatorSignature ?? null,
+        checkerSignature: item.checkerSignature ?? null,
+      }));
+    },
+    enabled: enabled && projectDocumentId != null && projectDocumentId > 0,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+// ============================================
+// Save Check Result Mutation
+// POST /api/ProjectDocumentChecklists/SaveCheckResults// ============================================
+
 export interface SaveCheckResultPayload {
   checkpointId: number;
-  checkResult: "OK" | "NA" | null;
-  /** buildSignature(currentUser.name) — set by ORIGINATOR */
+  checkResult: CheckResult;
   originatorSignature: string | null;
-  /** buildSignature(currentUser.name) — set by CHECKER */
   checkerSignature: string | null;
 }
 
-export interface SaveCheckResultResponse {
-  isSuccess: boolean;
-  message?: string;
-}
-
-export function useSaveCheckResult(): UseMutationResult<
-  SaveCheckResultsResponseDtoApiResponse,
-  Error,
-  SaveCheckResultPayload
-> {
+export function useSaveCheckResult(
+  projectDocumentId: number | null
+): UseMutationResult<void, Error, SaveCheckResultPayload> {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (
-      payload: SaveCheckResultPayload
-    ): Promise<SaveCheckResultsResponseDtoApiResponse> => {
-      const body: SaveCheckResultsRequestDto = {
-        checkpointId: payload.checkpointId,
-        checkResult: payload.checkResult,
-        originatorSignature: payload.originatorSignature,
-        checkerSignature: payload.checkerSignature,
-      };
+    mutationFn: async (payload: SaveCheckResultPayload): Promise<void> => {
+      // 🚫 Block API in TEST_MODE
+      // if (TEST_MODE) {
+      //   console.log("🚫 TEST_MODE: SaveCheckResults blocked", payload);
+      //   return; // return void
+      // }
       const response =
         await customInstance<SaveCheckResultsResponseDtoApiResponse>({
           url: "/api/ProjectDocumentChecklists/SaveCheckResults",
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          data: body,
+          data: {
+            checkpointId: payload.checkpointId,
+            checkResult: payload.checkResult,
+            originatorSignature: payload.originatorSignature,
+            checkerSignature: payload.checkerSignature,
+          } satisfies SaveCheckResultsRequestDto,
         });
       validateApiResponse(response, "Failed to save check result");
-      return response;
+    },
+    retry: (failureCount, error) => {
+      const status = (error as { status?: number })?.status;
+      if (status && status >= 400) return false;
+      return failureCount < 2;
     },
 
+    // Only invalidate on success, not on every failure
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["checklistItems", projectDocumentId],
+      });
+    },
+    // auto-save silent retry
+  });
+}
+
+// ============================================
+// Set Status And Comments Mutation
+// POST /api/ProjectDocuments/SetStatusAndComments
+// ============================================
+
+export interface SetStatusAndCommentsPayload {
+  projectDocumentId: number;
+  workflowStatus: string | null;
+  comments: string | null;
+}
+
+export function useSetStatusAndComments(): UseMutationResult<
+  void,
+  Error,
+  SetStatusAndCommentsPayload
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: SetStatusAndCommentsPayload): Promise<void> => {
+      const response =
+        await customInstance<SetStatusAndCommentsResponseDtoApiResponse>({
+          url: "/api/ProjectDocuments/SetStatusAndComments",
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          data: {
+            projectDocumentId: payload.projectDocumentId,
+            workflowStatus: payload.workflowStatus,
+            comments: payload.comments,
+          } satisfies SetStatusAndCommentsRequestDto,
+        });
+      validateApiResponse(response, "Failed to update document status");
+    },
+    onSuccess: () => {
+      toast.success("Status updated", {
+        description: "Document workflow status has been updated.",
+      });
+    },
     onError: (error: Error) => {
-      toast.error("Auto-save failed", {
-        description: error.message ?? "Check result could not be saved.",
+      toast.error("Failed to update status", {
+        description: error.message ?? "An unexpected error occurred.",
         duration: 6000,
       });
     },
-
-    // No success toast — auto-save is silent (UI shows signature stamp instead)
-    retry: 2,
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: documentQueryKeys.all });
+    },
+    retry: (failureCount, error) => {
+      const status = (error as { status?: number })?.status;
+      if (status && status >= 400) return false;
+      return failureCount < 2;
+    },
   });
 }

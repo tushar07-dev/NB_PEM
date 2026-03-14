@@ -21,6 +21,7 @@ import {
   useProjectDocuments,
   useAssignDocumentRoles,
   useSendDocumentEmail,
+  useSetStatusAndComments,
   type ProjectDocumentsResponseDto,
 } from "../api/queries";
 import type { DocumentFiltersType } from "../types/document";
@@ -43,6 +44,7 @@ const ALL_USERS = [
   { value: "nilesh.thakur@akersolutions.com", label: "Nilesh Thakur" },
   { value: "tushar.shelke@akersolutions.com", label: "Tushar Shelke" },
   { value: "shiv.kumar@akersolutions.com", label: "Shiv Kumar" },
+  { value: "rohit.shelar@akersolutions.com", label: "Rohit Shelar" },
 ];
 
 // ============================================
@@ -91,6 +93,10 @@ export interface DocumentEntry {
   approver: string | null;
   progress: DocumentProgress;
   workflowStatus: DocumentWorkflowStatus;
+  // New fields from real API — optional, null when not provided
+  projectId: number | null;
+  disciplineId: number | null;
+  documentTypeId: number | null;
 }
 
 interface DocumentTableProps {
@@ -139,6 +145,7 @@ function normalizeProgress(raw: string | null | undefined): DocumentProgress {
   if (!raw) return "NOT_STARTED";
 
   // Strip hyphens, underscores, spaces then lowercase — handles all variants:
+  // "In Progress", "In-Progress", "IN_PROGRESS", "Not-Started", "NOT_STARTED", ""
   const key = raw.toLowerCase().replace(/[-_\s]+/g, "");
 
   if (key === "completed" || key === "complete") return "COMPLETED";
@@ -168,6 +175,9 @@ function transformToDocumentEntry(
     approver: item.approver ?? null,
     progress: normalizeProgress(item.progress),
     workflowStatus: normalizeWorkflowStatus(item.workflowStatus),
+    projectId: item.projectId ?? null,
+    disciplineId: item.disciplineId ?? null,
+    documentTypeId: item.documentTypeId ?? null,
   };
 }
 
@@ -292,14 +302,17 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
     { page: 1, pageSize: 100 },
     enabled
   );
-
+  console.log("6666");
   const { mutateAsync: assignRoles, isPending: isAssigning } =
     useAssignDocumentRoles();
 
   const { mutateAsync: sendEmail, isPending: isSendingEmail } =
     useSendDocumentEmail();
 
-  const isSaving = isAssigning || isSendingEmail;
+  const { mutateAsync: setStatus, isPending: isSettingStatus } =
+    useSetStatusAndComments();
+
+  const isSaving = isAssigning || isSendingEmail || isSettingStatus;
 
   const documents = useMemo<DocumentEntry[]>(() => {
     if (!enabled || !data?.items) return [];
@@ -357,6 +370,12 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
             checker: vals.checker,
             approver: vals.approver,
           });
+
+          await setStatus({
+            projectDocumentId: workflowRow.projectDocumentId,
+            workflowStatus: "PENDING_WITH_ORIGINATOR",
+            comments: "Roles assigned, workflow started.",
+          });
         } else {
           if (import.meta.env.DEV) {
             console.warn(
@@ -406,15 +425,14 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
               originatorSelfCheck: vals.originator,
               checker: vals.checker,
               approver: vals.approver,
+              workflowStatus: "PENDING_WITH_ORIGINATOR",
             },
           },
         });
       } catch {
         // Toasts handled by mutation hooks — stay on page so user can retry
       }
-    },
-    [workflowRow, navigate, assignRoles, sendEmail]
-  );
+    }, [workflowRow, navigate, assignRoles, sendEmail, setStatus]);
 
   const handleWorkflowViewOnly = useCallback(() => {
     if (!workflowRow) return;
@@ -491,11 +509,36 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
             label="Originator (Self Check)"
           />
         ),
-        cell: ({ row }) => (
-          <span>
-            {(row.getValue("originatorSelfCheck") as string | null) ?? "-"}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const originatorSelfCheck = row.getValue("originatorSelfCheck") as
+            | string
+            | null;
+
+          const status = row.original.workflowStatus;
+
+          const isActive = ["PENDING_WITH_ORIGINATOR"].includes(status);
+
+          const isRejected = [
+            "REJECTED_BY_CHECKER",
+            "REJECTED_BY_APPROVER",
+          ].includes(status);
+
+          return originatorSelfCheck ? (
+            <span
+              className={
+                isRejected
+                  ? "font-medium text-red-600"
+                  : isActive
+                    ? "font-medium text-amber-700"
+                    : ""
+              }
+            >
+              {originatorSelfCheck}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          );
+        },
         meta: {
           label: "Originator (Self Check)",
           placeholder: "Search originator...",

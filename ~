@@ -1,0 +1,82 @@
+Latest code uploaded
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch Tushar/workspace
+# Changes to be committed:
+#	new file:   .vscode/mcp.json
+#	new file:   .vscode/settings.json
+#	new file:   dist/assets/DashboardPage-CEL7-ay6.js
+#	new file:   dist/assets/css/index-CvaXdxPh.css
+#	new file:   dist/assets/index-BWOToZuw.js
+#	new file:   dist/favicon.svg
+#	new file:   dist/fonts/HelveticaNowText 1.woff2
+#	new file:   dist/fonts/HelveticaNowTextMedium 1.woff2
+#	new file:   dist/fonts/SolutioneerPro-Bold.woff2
+#	new file:   dist/fonts/SolutioneerPro-BoldItalic.woff2
+#	new file:   dist/fonts/SolutioneerPro-Light.woff2
+#	new file:   dist/fonts/SolutioneerPro-LightItalic.woff2
+#	new file:   dist/fonts/SolutioneerPro-Regular.woff2
+#	new file:   dist/fonts/SolutioneerPro-RegularItalic.woff2
+#	new file:   dist/index.html
+#	new file:   dist/vite.svg
+#	new file:   src/api/generated/common-document/common-document.ts
+#	new file:   src/api/generated/discipline/discipline.ts
+#	new file:   src/api/generated/document/document.ts
+#	new file:   src/api/generated/generic-pe-m/generic-pe-m.ts
+#	new file:   src/api/generated/project-document-checklists/project-document-checklists.ts
+#	new file:   src/api/generated/project-documents/project-documents.ts
+#	new file:   src/api/generated/project/project.ts
+#	new file:   src/api/generated/schemas/areaResponseDto.ts
+#	new file:   src/api/generated/schemas/areaResponseDtoListApiResponse.ts
+#	new file:   src/api/generated/schemas/areaResponseDtoListApiResponseErrors.ts
+#	new file:   src/api/generated/schemas/assignProjectDocumentRolesRequestDto.ts
+#	new file:   src/api/generated/schemas/assignProjectDocumentRolesResponseDto.ts
+#	new file:   src/api/generated/schemas/assignProjectDocumentRolesResponseDtoApiResponse.ts
+#	new file:   src/api/generated/schemas/assignProjectDocumentRolesResponseDtoApiResponseErrors.ts
+#	new file:   src/api/generated/schemas/disciplineResponseDto.ts
+#	new file:   src/api/generated/schemas/disciplineResponseDtoListApiResponse.ts
+#	new file:   src/api/generated/schemas/disciplineResponseDtoListApiResponseErrors.ts
+#	new file:   src/api/generated/schemas/documentGroupResponseDto.ts
+#	new file:   src/api/generated/schemas/documentGroupResponseDtoListApiResponse.ts
+#	new file:   src/api/generated/schemas/documentGroupResponseDtoListApiResponseErrors.ts
+#	new file:   src/api/generated/schemas/documentTypeResponseDto.ts
+#	new file:   src/api/generated/schemas/documentTypeResponseDtoListApiResponse.ts
+#	new file:   src/api/generated/schemas/documentTypeResponseDtoListApiResponseErrors.ts
+#	new file:   src/api/generated/schemas/emailAttachment.ts
+#	new file:   src/api/generated/schemas/emailRequestDto.ts
+#	new file:   src/api/generated/schemas/emailResult.ts
+#	new file:   src/api/generated/schemas/facilityCodeResponseDto.ts
+#	new file:   src/api/generated/schemas/facilityCodeResponseDtoListApiResponse.ts
+#	new file:   src/api/generated/schemas/facilityCodeResponseDtoListApiResponseErrors.ts
+#	new file:   src/api/generated/schemas/genericPEMResponseDto.ts
+#	new file:   src/api/generated/schemas/genericPEMResponseDtoListApiResponse.ts
+#	new file:   src/api/generated/schemas/genericPEMResponseDtoListApiResponseErrors.ts
+#	new file:   src/api/generated/schemas/index.ts
+#	new file:   src/api/generated/schemas/objectApiResponse.ts
+#	new file:   src/api/generated/schemas/objectApiResponseErrors.ts
+#	new file:   src/api/generated/schemas/pageFilterDto.ts
+#	new file:   src/api/generated/schemas/pageSorting.ts
+#	new file:   src/api/generated/schemas/pagedRequest.ts
+#	new file:   src/api/generated/schemas/projectDocumentChecklistsResponseDto.ts
+#	new file:   src/api/generated/schemas/projectDocumentChecklistsResponseDtoListApiResponse.ts
+#	new file:   src/api/generated/schemas/projectDocumentChecklistsResponseDtoListApiResponseErrors.ts
+#	new file:   src/api/generated/schemas/projectDocumentsResponseDto.ts
+#	new file:   src/api/generated/schemas/projectDocumentsResponseDtoPagedResponse.ts
+#	new file:   src/api/generated/schemas/projectDocumentsResponseDtoPagedResponseApiResponse.ts
+#	new file:   src/api/generated/schemas/projectDocumentsResponseDtoPagedResponseApiResponseErrors.ts
+#	new file:   src/api/generated/schemas/projectResponseDto.ts
+#	new file:   src/api/generated/schemas/projectResponseDtoListApiResponse.ts
+#	new file:   src/api/generated/schemas/projectResponseDtoListApiResponseErrors.ts
+#	new file:   src/api/generated/schemas/saveCheckResultsRequestDto.ts
+#	new file:   src/api/generated/schemas/saveCheckResultsResponseDto.ts
+#	new file:   src/api/generated/schemas/saveCheckResultsResponseDtoApiResponse.ts
+#	new file:   src/api/generated/schemas/saveCheckResultsResponseDtoApiResponseErrors.ts
+#	new file:   src/api/generated/schemas/setStatusAndCommentsRequestDto.ts
+#	new file:   src/api/generated/schemas/setStatusAndCommentsResponseDto.ts
+#	new file:   src/api/generated/schemas/setStatusAndCommentsResponseDtoApiResponse.ts
+#	new file:   src/api/generated/schemas/setStatusAndCommentsResponseDtoApiResponseErrors.ts
+#	new file:   src/api/generated/schemas/systemResponseDto.ts
+#	new file:   src/api/generated/schemas/systemResponseDtoListApiResponse.ts
+#	new file:   src/api/generated/schemas/systemResponseDtoListApiResponseErrors.ts
+#

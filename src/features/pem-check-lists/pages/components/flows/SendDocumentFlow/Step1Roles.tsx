@@ -36,10 +36,10 @@ import type { Option } from "@/shared/components/ui/SearchableFilterSelect";
 // ─── Shared button base (local constant — not exported) ───────────────────────
 
 const BTN_BASE = cn(
-  "flex shrink-0 items-center justify-center gap-[8px]",
+  "flex shrink-0 items-center justify-center gap-2",
   "text-sm font-medium uppercase transition-colors",
   "h-[34px] lg:h-[40px]",
-  "px-[10px] lg:px-[14px]",
+  "px-2 lg:px-[14px]",
   "rounded-[7px] lg:rounded-[8px]"
 );
 
@@ -138,14 +138,14 @@ export function Step1Roles({
         <StepIndicator total={3} current={1} />
       </FlowHeader>
 
-      <div className="flex flex-col gap-[16px] lg:gap-[20px]">
-        <div className="flex flex-col gap-[20px] lg:gap-[24px]">
+      <div className="flex flex-col gap-4 lg:gap-5">
+        <div className="flex flex-col gap-5 lg:gap-6">
           {/* ── Originator — disabled, always the current logged-in user ── */}
           <div className="flex flex-col gap-1.5">
             <label className="text-primary-400 text-sm font-medium">
               Originator (Responsible) <span className="text-red-500">*</span>
             </label>
-            <div className="bg-grey-100 flex h-[42px] cursor-not-allowed items-center rounded-[8px] border border-gray-200 px-3 text-sm text-gray-400 opacity-70 select-none">
+            <div className="bg-grey-100 flex h-11 cursor-not-allowed items-center rounded-2 border border-gray-200 px-3 text-sm text-gray-400 opacity-70 select-none">
               {originatorEmail}
             </div>
           </div>
@@ -206,14 +206,14 @@ export function Step1Roles({
       </div>
 
       {/* ── Footer ── */}
-      <div className="flex w-full items-center justify-end gap-[8px] lg:gap-[10px]">
+      <div className="flex w-full items-center justify-end gap-2 lg:gap-2">
         <button
           type="button"
           onClick={handleSave}
           disabled={isSaving}
           className={cn(
             BTN_BASE,
-            "border-primary-200 text-primary-200 hover:bg-grey-100 w-[90px] border lg:w-[112px]",
+            "border-primary-200 text-primary-200 hover:bg-grey-100 w-23 border lg:w-28",
             isSaving && "cursor-not-allowed opacity-50"
           )}
         >
@@ -225,7 +225,7 @@ export function Step1Roles({
           disabled={isSaving}
           className={cn(
             BTN_BASE,
-            "bg-primary-600 text-grey-50 hover:bg-primary-500 px-[12px] lg:px-[18px]",
+            "bg-primary-600 text-grey-50 hover:bg-primary-500 px-3 lg:px-5",
             isSaving && "cursor-not-allowed opacity-50"
           )}
         >

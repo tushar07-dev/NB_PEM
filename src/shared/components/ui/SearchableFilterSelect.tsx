@@ -268,7 +268,7 @@ export function SearchableFilterSelect({
         {required && (
           <span
             className={cn(
-              "ml-0.5 text-sm leading-[20px] tracking-[-0.48px] opacity-80 transition-colors",
+              "ml-0.5 text-sm leading-5 tracking-[-0.48px] opacity-80 transition-colors",
               disabled ? "text-muted-foreground" : "text-destructive"
             )}
           >
@@ -321,7 +321,7 @@ export function SearchableFilterSelect({
             <span
               className={cn(
                 "flex-1 truncate text-left capitalize",
-                "text-base leading-[20px] font-normal tracking-[-0.56px]",
+                "text-base leading-5 font-normal tracking-[-0.56px]",
                 hasValue && !isLoading ? "text-primary-500" : "text-primary-100"
               )}
             >
@@ -340,7 +340,7 @@ export function SearchableFilterSelect({
                   hasValue ? "text-primary-500" : "text-primary-100",
                   open && "rotate-180"
                 )}
-                style={{ width: 20, height: 19 }}
+                style={{ width: "1.25rem", height: "1.1875rem" }}
                 aria-hidden="true"
               />
             )}
@@ -349,7 +349,7 @@ export function SearchableFilterSelect({
           <SelectContent
             className={cn(
               SELECT_BASE_STYLES.content,
-              "w-[var(--radix-select-trigger-width)]"
+              "w-(--radix-select-trigger-width)"
             )}
           >
             {/* Search input */}
@@ -547,7 +547,7 @@ export function SearchableFilterSelect({
                 aria-live="polite"
                 aria-atomic="true"
               >
-                <p className="text-foreground text-base leading-[20px] font-medium">
+                <p className="text-foreground text-base leading-5 font-medium">
                   <span className="text-primary">{filteredOptions.length}</span>{" "}
                   of {options.length} result{options.length !== 1 ? "s" : ""}
                 </p>
@@ -562,7 +562,7 @@ export function SearchableFilterSelect({
         <p
           id={`${safeId}-helper`}
           className={cn(
-            "text-primary-100 mt-1 leading-[20px] tracking-[-0.56px]",
+            "text-primary-100 mt-1 leading-5 tracking-[-0.56px]",
             sizeStyles.label,
             sizeStyles.error
           )}

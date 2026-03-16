@@ -69,18 +69,18 @@ const DIALOG_SHELL = cn(
   "gap-0 border-0 p-0 shadow-xl outline-none",
   "bg-grey-50 overflow-hidden",
   "rounded-[18px] lg:rounded-[24px]",
-  "px-[20px] pt-[16px] pb-[20px] lg:px-[30px] lg:pt-[24px] lg:pb-[30px]",
-  "w-[340px] lg:w-[500px]",
+  "px-5 pt-4 pb-5 lg:px-8 lg:pt-[24px] lg:pb-8",
+  "px-85 lg:px-125",
   "flex flex-col",
-  "gap-[16px] lg:gap-[24px]"
+  "gap-4 lg:gap-4"
 );
 
 const BTN_BASE = cn(
-  "flex shrink-0 items-center justify-center gap-[8px]",
+  "flex shrink-0 items-center justify-center gap-2",
   "text-sm font-medium uppercase",
   "transition-colors",
   "h-[34px] lg:h-[40px]",
-  "px-[10px] lg:px-[14px]",
+  "px-2 lg:px-[14px]",
   "rounded-[7px] lg:rounded-[8px]"
 );
 
@@ -149,7 +149,7 @@ function FlowHeader({
           type="button"
           onClick={onClose}
           aria-label="Close dialog"
-          className="hover:bg-grey-100 flex size-[30px] items-center justify-center rounded-full transition-colors"
+          className="hover:bg-grey-100 flex size-8 items-center justify-center rounded-full transition-colors"
         >
           <X className="text-primary-300 size-4" />
         </button>
@@ -163,8 +163,8 @@ function FlowHeader({
 
 function YellowNote() {
   return (
-    <div className="flex flex-col gap-[3px] rounded-[10px] border border-[#FFF3A7] bg-[#FFFED6] px-[12px] py-[8px] lg:rounded-[12px] lg:px-[16px] lg:py-[12px]">
-      <p className="text-sm font-medium text-[#F04438]">Note:</p>
+    <div className="bg-warning-50 border-warning-100 flex flex-col gap-1 rounded-xl border px-3 py-2 lg:rounded-xl lg:px-4 lg:py-3">
+      <p className="text-error-500 text-sm font-medium">Note:</p>
       <p className="text-primary-500 text-sm leading-snug">
         Please ensure that the names you fill in match those provided in the
         document.
@@ -188,7 +188,7 @@ function RecipientRow({
     <div className="flex items-center gap-3 rounded-lg border border-gray-100 bg-white px-4 py-3">
       <span
         className={cn(
-          "inline-flex min-w-[72px] items-center justify-center rounded-md px-2 py-0.5 text-xs font-semibold",
+          "inline-flex min-w-18 items-center justify-center rounded-md px-2 py-0.5 text-xs font-semibold",
           className
         )}
       >
@@ -259,8 +259,8 @@ export function SendDocumentFlow({
   // ── Mutations ──────────────────────────────────────────────────────────────
   const { mutateAsync: sendEmail, isPending: isSending } =
     useSendDocumentEmail();
-  console.log("3333");
-  const { mutateAsync: assignRoles, isPending: isAssigning } =
+
+    const { mutateAsync: assignRoles, isPending: isAssigning } =
     useAssignDocumentRoles();
   const isBusy = isSending || isAssigning;
 
@@ -352,8 +352,8 @@ export function SendDocumentFlow({
           <>
             <FlowHeader step={1} onClose={handleClose} />
 
-            <div className="flex flex-col gap-[16px] lg:gap-[24px]">
-              <div className="flex flex-col gap-[20px] lg:gap-[28px]">
+            <div className="flex flex-col gap-4 lg:gap-4">
+              <div className="flex flex-col gap-5 lg:gap-7">
                 <Controller
                   name="originator"
                   control={form.control}
@@ -406,14 +406,14 @@ export function SendDocumentFlow({
               <YellowNote />
             </div>
 
-            <div className="flex w-full items-center justify-end gap-[8px] lg:gap-[10px]">
+            <div className="flex w-full items-center justify-end gap-2 lg:gap-2">
               {/* Save draft — no validation */}
               <button
                 type="button"
                 onClick={handleSaveDraft}
                 className={cn(
                   BTN_BASE,
-                  "border-primary-200 text-primary-200 hover:bg-grey-100 w-[90px] border lg:w-[112px]"
+                  "border-primary-200 text-primary-200 hover:bg-grey-100 w-23 border lg:w-28"
                 )}
               >
                 Save
@@ -424,7 +424,7 @@ export function SendDocumentFlow({
                 onClick={handleStep1Next}
                 className={cn(
                   BTN_BASE,
-                  "bg-primary-600 text-grey-50 hover:bg-primary-500 px-[12px] lg:px-[18px]"
+                  "bg-primary-600 text-grey-50 hover:bg-primary-500 px-3 lg:px-5"
                 )}
               >
                 Send To Checker
@@ -464,13 +464,13 @@ export function SendDocumentFlow({
               />
             </div>
 
-            <div className="flex w-full items-center justify-end gap-[8px] lg:gap-[10px]">
+            <div className="flex w-full items-center justify-end gap-2 lg:gap-2">
               <button
                 type="button"
                 onClick={() => setStep(1)}
                 className={cn(
                   BTN_BASE,
-                  "border-primary-200 text-primary-200 hover:bg-grey-100 w-[90px] border lg:w-[112px]"
+                  "border-primary-200 text-primary-200 hover:bg-grey-100 w-23 border lg:w-28"
                 )}
               >
                 Cancel
@@ -480,7 +480,7 @@ export function SendDocumentFlow({
                 onClick={() => setStep(3)}
                 className={cn(
                   BTN_BASE,
-                  "bg-primary-600 text-grey-50 hover:bg-primary-500 w-[90px] lg:w-[112px]"
+                  "bg-primary-600 text-grey-50 hover:bg-primary-500 w-23 lg:w-28"
                 )}
               >
                 Next
@@ -546,14 +546,14 @@ export function SendDocumentFlow({
               )}
             </div>
 
-            <div className="flex w-full items-center justify-end gap-[8px] lg:gap-[10px]">
+            <div className="flex w-full items-center justify-end gap-2 lg:gap-2">
               <button
                 type="button"
                 onClick={() => setStep(2)}
                 disabled={isBusy}
                 className={cn(
                   BTN_BASE,
-                  "border-primary-200 text-primary-200 hover:bg-grey-100 w-[90px] border lg:w-[112px]",
+                  "border-primary-200 text-primary-200 hover:bg-grey-100 w-23 border lg:w-28",
                   isBusy && "cursor-not-allowed opacity-50"
                 )}
               >
@@ -565,7 +565,7 @@ export function SendDocumentFlow({
                 disabled={isBusy}
                 className={cn(
                   BTN_BASE,
-                  "bg-primary-600 text-grey-50 hover:bg-primary-500 flex items-center gap-2 px-[12px] lg:px-[18px]",
+                  "bg-primary-600 text-grey-50 hover:bg-primary-500 flex items-center gap-2 px-3 lg:px-5",
                   isBusy && "cursor-not-allowed opacity-50"
                 )}
               >

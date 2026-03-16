@@ -42,7 +42,7 @@ function CheckButton({
       aria-label={`Mark as ${label}`}
       aria-pressed={active}
       className={cn(
-        "inline-flex h-8 min-w-[52px] items-center justify-center gap-1.5 rounded-md px-3",
+        "inline-flex h-8 min-w-13 items-center justify-center gap-1.5 rounded-md px-3",
         "border text-xs font-semibold tracking-wider uppercase transition-all duration-150",
         "focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none",
         (disabled || saving) && "cursor-not-allowed opacity-40",
@@ -73,15 +73,15 @@ function CheckButton({
 function SavedStamp({ signature }: { signature: string | null }) {
   const parsed = parseSignature(signature);
   if (!parsed) return null;
-const formatted = new Date(parsed.date).toLocaleString("en-IN", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-});
+  const formatted = new Date(parsed.date).toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
   return (
-    <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
+    <div className="flex items-center gap-1.5 text-xs text-gray-400">
       <Clock className="size-3 shrink-0" />
       <span>
         {parsed.name} · {formatted}
@@ -143,7 +143,7 @@ export function ChecklistItemRow({
             {item.qualityLevel.map((ql) => (
               <span
                 key={ql}
-                className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500"
+                className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500"
               >
                 {ql}
               </span>

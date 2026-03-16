@@ -29,7 +29,7 @@ export function DefineResponsibilitiesModal({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="gap-6 rounded-[24px] p-8 sm:max-w-120">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-[#1e293b]">
+          <DialogTitle className="text-primary-500 text-2xl font-bold">
             Define Responsibilities
           </DialogTitle>
         </DialogHeader>
@@ -91,9 +91,9 @@ export function DefineResponsibilitiesModal({
         </div>
 
         {/* Note Section */}
-        <div className="rounded-xl border border-[#fef3c7] bg-[#fffbeb] p-4">
-          <h4 className="mb-1 text-lg font-bold text-[#b45309]">Note:</h4>
-          <p className="text-sm leading-relaxed text-[#4b5563]">
+        <div className="bg-warning-50 border-warning-100 rounded-xl border p-4">
+          <h4 className="text-warning-700 mb-1 text-lg font-bold">Note:</h4>
+          <p className="text-primary-300 text-sm leading-relaxed">
             Please ensure that the names you fill in match those provided in the
             document
           </p>
@@ -102,7 +102,7 @@ export function DefineResponsibilitiesModal({
         <DialogFooter className="mt-2 flex gap-3 sm:justify-end">
           <Button
             variant="outline"
-            className="rounded-lg border-[#64748b] px-8 py-6 font-semibold tracking-wide text-[#64748b] uppercase hover:bg-slate-50"
+            className="text-primary-200 border-primary-200 rounded-lg px-8 py-6 font-semibold tracking-wide uppercase hover:bg-slate-50"
           >
             View Only
           </Button>

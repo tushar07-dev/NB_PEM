@@ -120,7 +120,7 @@ function WorkflowStepper({ status }: WorkflowStepperProps) {
             <div className="flex flex-col items-center gap-0.5">
               <div
                 className={cn(
-                  "flex h-6 w-6 items-center justify-center rounded-full border-2 text-[10px] font-semibold transition-colors",
+                  "flex h-6 w-6 items-center justify-center rounded-full border-2 text-xs font-semibold transition-colors",
                   isDone && "border-green-500 bg-green-500 text-white",
                   isActive &&
                     !isRejected &&
@@ -137,7 +137,7 @@ function WorkflowStepper({ status }: WorkflowStepperProps) {
               </div>
               <span
                 className={cn(
-                  "text-[9px] font-medium whitespace-nowrap",
+                  "text-xs font-medium whitespace-nowrap",
                   isDone && "text-green-600",
                   isActive && !isRejected && "text-blue-600",
                   isActive && isRejected && "text-red-600",
@@ -211,11 +211,9 @@ function AssignedRoles({ originator, checker, approver }: AssignedRolesProps) {
           )}
         >
           <User className="size-3 shrink-0 text-gray-300" />
-          <span className="text-[11px] text-gray-400">{label}:</span>
-          <span className="text-[11px] font-medium text-gray-600">
-            {value ?? (
-              <span className="italic text-gray-300">—</span>
-            )}
+          <span className="text-xs text-gray-400">{label}:</span>
+          <span className="text-xs font-medium text-gray-600">
+            {value ?? <span className="text-gray-300 italic">—</span>}
           </span>
         </div>
       ))}
@@ -332,19 +330,15 @@ export function ChecklistDetailPage() {
   return (
     /* ↓ tighter outer padding */
     <div className="flex flex-col gap-3 px-5 pb-8">
-
       {/* ── Header card — tighter p-4 ── */}
       <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-
         {/* Row 1: Title block + Stepper — break to column only on sm */}
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-
           {/* Left: doc number + badges + title + meta */}
           <div className="flex min-w-0 flex-col gap-1">
-
             {/* Doc No + badges */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+              <span className="text-xs font-semibold tracking-widest text-gray-400 uppercase">
                 Doc No
               </span>
               <span className="font-solutioneer text-base font-bold text-gray-800">
@@ -352,12 +346,12 @@ export function ChecklistDetailPage() {
               </span>
               <Badge
                 variant="outline"
-                className={cn("px-2 py-0 text-[10px]", badge.className)}
+                className={cn("px-2 py-0 text-xs", badge.className)}
               >
                 {badge.label}
               </Badge>
               {isLocked && (
-                <span className="flex items-center gap-1 rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px] text-gray-400">
+                <span className="flex items-center gap-1 rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-xs text-gray-400">
                   <Lock className="size-2.5" /> Locked
                 </span>
               )}
@@ -365,14 +359,14 @@ export function ChecklistDetailPage() {
 
             {/* Title — truncate on small screens with full text on hover */}
             <p
-              className="max-w-xl truncate text-sm font-medium leading-snug text-gray-700"
+              className="max-w-xl truncate text-sm leading-snug font-medium text-gray-700"
               title={document.title}
             >
               {document.title}
             </p>
 
             {/* Meta row — inline with mid-dots as dividers */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-gray-400">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-gray-400">
               {document.reasonForIssue && (
                 <span>
                   Reason:{" "}
@@ -414,7 +408,6 @@ export function ChecklistDetailPage() {
 
         {/* ── Divider + Row 2: Roles + Actions in one stripe ── */}
         <div className="mt-3 flex flex-col gap-2 border-t border-gray-100 pt-3 sm:flex-row sm:items-center sm:justify-between">
-
           {/* Assigned roles */}
           <AssignedRoles
             originator={document.originatorSelfCheck}
@@ -424,12 +417,11 @@ export function ChecklistDetailPage() {
 
           {/* Progress + action buttons — right-aligned */}
           <div className="flex flex-wrap items-center gap-2">
-
             {/* Progress bar — Originator only */}
             {role === "ORIGINATOR" && (
-              <div className="flex min-w-[160px] items-center gap-2">
+              <div className="flex min-w-40 items-center gap-2">
                 <Progress value={pct} className="h-1.5 flex-1" />
-                <span className="whitespace-nowrap text-[11px] font-semibold text-gray-600">
+                <span className="text-xs font-semibold whitespace-nowrap text-gray-600">
                   {done}/{total}
                   <span className="ml-0.5 font-normal text-gray-400">
                     ({pct}%)
@@ -444,10 +436,12 @@ export function ChecklistDetailPage() {
                 type="button"
                 onClick={() => setSendFlowOpen(true)}
                 disabled={!canSend}
-                title={!canSend ? "Complete all checklist items first" : undefined}
+                title={
+                  !canSend ? "Complete all checklist items first" : undefined
+                }
                 className={cn(
                   "flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-white transition-colors",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
                   canSend
                     ? "bg-primary-600 hover:bg-primary-500"
                     : "cursor-not-allowed bg-gray-300"
@@ -463,16 +457,20 @@ export function ChecklistDetailPage() {
               <>
                 <button
                   type="button"
-                  onClick={() => { /* open CheckerActionFlow reject */ }}
-                  className="flex h-8 items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-3 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() => {
+                    /* open CheckerActionFlow reject */
+                  }}
+                  className="focus-visible:ring-ring flex h-8 items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-3 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <XCircle className="size-3" />
                   Check Rejected
                 </button>
                 <button
                   type="button"
-                  onClick={() => { /* open CheckerActionFlow complete */ }}
-                  className="flex h-8 items-center gap-1.5 rounded-md bg-green-600 px-3 text-xs font-medium text-white transition-colors hover:bg-green-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() => {
+                    /* open CheckerActionFlow complete */
+                  }}
+                  className="focus-visible:ring-ring flex h-8 items-center gap-1.5 rounded-md bg-green-600 px-3 text-xs font-medium text-white transition-colors hover:bg-green-500 focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <CheckCircle2 className="size-3" />
                   Check Completed
@@ -485,16 +483,20 @@ export function ChecklistDetailPage() {
               <>
                 <button
                   type="button"
-                  onClick={() => { /* open ApproverActionFlow reject */ }}
-                  className="flex h-8 items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-3 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() => {
+                    /* open ApproverActionFlow reject */
+                  }}
+                  className="focus-visible:ring-ring flex h-8 items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-3 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <XCircle className="size-3" />
                   Reject
                 </button>
                 <button
                   type="button"
-                  onClick={() => { /* open ApproverActionFlow release */ }}
-                  className="flex h-8 items-center gap-1.5 rounded-md bg-primary-600 px-3 text-xs font-medium text-white transition-colors hover:bg-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() => {
+                    /* open ApproverActionFlow release */
+                  }}
+                  className="bg-primary-600 hover:bg-primary-500 focus-visible:ring-ring flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-white transition-colors focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <Rocket className="size-3" />
                   Approve & Release
@@ -506,7 +508,7 @@ export function ChecklistDetailPage() {
             {status === "COMPLETED" && (
               <Badge
                 variant="outline"
-                className="border-green-200 bg-green-50 px-2.5 py-0.5 text-[11px] text-green-700"
+                className="border-green-200 bg-green-50 px-2.5 py-0.5 text-xs text-green-700"
               >
                 ✓ Document Released
               </Badge>
@@ -516,7 +518,7 @@ export function ChecklistDetailPage() {
 
         {/* Progress hint — below the row, only when items incomplete */}
         {role === "ORIGINATOR" && !canSend && total > 0 && (
-          <p className="mt-1 text-[10px] text-amber-500">
+          <p className="mt-1 text-xs text-amber-500">
             Complete all {total} items to enable Send to Checker
           </p>
         )}

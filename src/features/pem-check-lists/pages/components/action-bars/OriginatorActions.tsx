@@ -29,7 +29,7 @@ export function OriginatorActions({
       title={!canSend ? "Sign all checklist items first" : undefined}
       className={cn(
         // "flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-white transition-colors",
-        "font-helvetica-now text-grey-50 flex h-8 items-center justify-center gap-1.5 rounded-[8px] px-3.5 text-[10px] lg:text-[12px] leading-[19px] font-medium tracking-normal uppercase transition-colors lg:h-10",
+        "font-helvetica-now text-grey-50 rounded-2 flex h-8 items-center justify-center gap-1.5 px-3.5 text-xs leading-(--line-height-300) font-medium tracking-normal uppercase transition-colors lg:h-10 lg:text-sm",
         "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
         canSend
           ? "bg-primary-600 hover:bg-primary-500"

@@ -11,17 +11,17 @@ export const SELECT_SIZE_CONFIG = {
   sm: {
     container: "gap-0.5",
     trigger:
-      "h-[40px] lg:h-[44px] px-[14px] lg:px-[20px] py-[10px] lg:py-[12px] gap-[10px] rounded-[12px]",
-    label: "text-base leading-[20px] tracking-[-0.56px] px-[14px] lg:px-[20px]",
+      "h-[40px] lg:h-[44px] px-[14px] lg:px-5 py-2 lg:py-3 gap-2 rounded-xl",
+    label: "text-base leading-5 tracking-[-0.56px] px-[14px] lg:px-5",
     input:
       "h-[36px] lg:h-[40px] rounded-[8px] text-base px-[36px] lg:px-[40px] pr-[36px] lg:pr-[40px]",
-    searchIcon: "size-3.5 lg:size-4 left-[10px] lg:left-[12px]",
+    searchIcon: "size-3.5 lg:size-4 left-2 lg:left-[12px]",
     clearIcon: "size-3.5 lg:size-4",
-    clearButton: "right-[10px] lg:right-[12px]",
-    item: "py-[6px] lg:py-[7px] px-[14px] lg:px-[16px] text-base leading-[20px] tracking-[-0.56px]",
+    clearButton: "right-2 lg:right-[12px]",
+    item: "py-[6px] lg:py-[7px] px-[14px] lg:px-4 text-base leading-5 tracking-[-0.56px]",
     maxHeight: "max-h-52 lg:max-h-56",
-    searchContainer: "p-[12px] lg:p-[16px]",
-    footer: "px-[12px] lg:px-[16px] py-[8px] lg:py-[10px] text-base",
+    searchContainer: "p-[12px] lg:p-4",
+    footer: "px-3 lg:px-4 py-2 lg:py-2 text-base",
     error: "text-sm",
     errorIcon: "size-3.5 lg:size-4",
     emptyIcon: "size-4 lg:size-5",
@@ -33,18 +33,17 @@ export const SELECT_SIZE_CONFIG = {
   // Default — md scaled → lg Figma exact
   md: {
     container: "gap-1",
-    trigger:
-      "h-[44px] lg:h-[48px] px-[16px] lg:px-[20px] py-[10px] lg:py-[12px] gap-[10px] rounded-[12px]",
-    label: "text-base leading-[20px] tracking-[-0.56px] px-[16px] lg:px-[20px]",
+    trigger: "h-[44px] lg:h-[48px] px-4 lg:px-5 py-2 lg:py-3 gap-2 rounded-xl",
+    label: "text-base leading-5 tracking-[-0.56px] px-4 lg:px-5",
     input:
       "h-[38px] lg:h-[40px] rounded-[8px] text-base px-[38px] lg:px-[40px] pr-[38px] lg:pr-[40px]",
     searchIcon: "size-4 left-[12px]",
     clearIcon: "size-4",
     clearButton: "right-[12px]",
-    item: "py-[6px] lg:py-[7px] px-[14px] lg:px-[16px] text-base leading-[20px] tracking-[-0.56px]",
+    item: "py-[6px] lg:py-[7px] px-[14px] lg:px-4 text-base leading-5 tracking-[-0.56px]",
     maxHeight: "max-h-56 lg:max-h-64",
-    searchContainer: "p-[14px] lg:p-[16px]",
-    footer: "px-[14px] lg:px-[16px] py-[9px] lg:py-[10px] text-base",
+    searchContainer: "p-[14px] lg:p-4",
+    footer: "px-[14px] lg:px-4 py-[9px] lg:py-2 text-base",
     error: "text-sm",
     errorIcon: "size-4",
     emptyIcon: "size-5 lg:size-6",
@@ -56,17 +55,16 @@ export const SELECT_SIZE_CONFIG = {
   // Large — for spacious layouts
   lg: {
     container: "gap-1.5",
-    trigger:
-      "h-[48px] lg:h-[54px] px-[18px] lg:px-[20px] py-[10px] lg:py-[12px] gap-[10px] rounded-[12px]",
-    label: "text-base leading-[20px] tracking-[-0.56px] px-[18px] lg:px-[20px]",
+    trigger: "h-[48px] lg:h-[54px] px-5 lg:px-5 py-2 lg:py-3 gap-2 rounded-xl",
+    label: "text-base leading-5 tracking-[-0.56px] px-5 lg:px-5",
     input: "h-[40px] rounded-[8px] text-base px-[40px] pr-[40px]",
     searchIcon: "size-4 left-[12px]",
     clearIcon: "size-4",
     clearButton: "right-[12px]",
-    item: "py-[7px] px-[16px] text-base leading-[20px] tracking-[-0.56px]",
+    item: "py-[7px] px-4 text-base leading-5 tracking-[-0.56px]",
     maxHeight: "max-h-64 lg:max-h-72",
-    searchContainer: "p-[16px]",
-    footer: "px-[16px] py-[10px] text-base",
+    searchContainer: "p-4",
+    footer: "px-4 py-2 text-base",
     error: "text-base",
     errorIcon: "size-4",
     emptyIcon: "size-6 lg:size-7",
@@ -81,17 +79,17 @@ export const SELECT_SIZE_CONFIG = {
 export const SELECT_AUTO_CONFIG = {
   container: "gap-1 lg:gap-1",
   trigger:
-    "h-[40px] lg:h-[44px] px-[14px] lg:px-[20px] py-[10px] lg:py-[12px] gap-[10px] rounded-[12px]",
-  label: "text-base leading-[20px] tracking-[-0.56px] px-[14px] lg:px-[20px]",
+    "h-[40px] lg:h-[44px] px-[14px] lg:px-5 py-2 lg:py-3 gap-2 rounded-xl",
+  label: "text-base leading-5 tracking-[-0.56px] px-[14px] lg:px-5",
   input:
     "h-[36px] lg:h-[40px] rounded-[8px] text-base px-[36px] lg:px-[40px] pr-[36px] lg:pr-[40px]",
-  searchIcon: "size-3.5 lg:size-4 left-[10px] lg:left-[12px]",
+  searchIcon: "size-3.5 lg:size-4 left-2 lg:left-[12px]",
   clearIcon: "size-3.5 lg:size-4",
-  clearButton: "right-[10px] lg:right-[12px]",
-  item: "py-[6px] lg:py-[7px] px-[14px] lg:px-[16px] text-base leading-[20px] tracking-[-0.56px]",
+  clearButton: "right-2 lg:right-[12px]",
+  item: "py-[6px] lg:py-[7px] px-[14px] lg:px-4 text-base leading-5 tracking-[-0.56px]",
   maxHeight: "max-h-52 lg:max-h-64",
-  searchContainer: "p-[12px] lg:p-[16px]",
-  footer: "px-[12px] lg:px-[16px] py-[8px] lg:py-[10px] text-base",
+  searchContainer: "p-[12px] lg:p-4",
+  footer: "px-3 lg:px-4 py-2 lg:py-2 text-base",
   error: "text-sm",
   errorIcon: "size-3.5 lg:size-4",
   emptyIcon: "size-5 lg:size-6",
@@ -113,7 +111,7 @@ export const SELECT_BASE_STYLES = {
   // label px is now in size config so it can scale with breakpoints
   label: [
     "font-medium capitalize",
-    "text-base leading-[20px] tracking-[-0.56px]",
+    "text-base leading-5 tracking-[-0.56px]",
     "text-primary-500 opacity-80",
   ].join(" "),
 
@@ -126,7 +124,7 @@ export const SELECT_BASE_STYLES = {
   ].join(" "),
 
   content: [
-    "overflow-hidden rounded-[12px]",
+    "overflow-hidden rounded-xl",
     "p-0 bg-white",
     "border border-grey-100",
     "shadow-[0px_11px_20px_0px_rgba(0,0,0,0.10)]",
@@ -163,7 +161,7 @@ export const SELECT_BASE_STYLES = {
   footer: "border-t border-grey-100 bg-white",
 
   emptyState:
-    "flex flex-col items-center justify-center gap-2.5 px-[16px] py-8 text-center",
+    "flex flex-col items-center justify-center gap-2.5 px-4 py-8 text-center",
   emptyIconWrapper: "rounded-full bg-grey-200",
   emptyIcon: "text-primary-100 size-full",
   emptyText: "font-medium text-primary-500",

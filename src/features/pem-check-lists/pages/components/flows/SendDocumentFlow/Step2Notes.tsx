@@ -11,10 +11,10 @@ import { cn } from "@/shared/lib/utils";
 import { FlowHeader, StepIndicator } from "../../_flow-shared";
 
 const BTN_BASE = cn(
-  "flex shrink-0 items-center justify-center gap-[8px]",
+  "flex shrink-0 items-center justify-center gap-2",
   "text-sm font-medium uppercase transition-colors",
   "h-[34px] lg:h-[40px]",
-  "px-[10px] lg:px-[14px]",
+  "px-2 lg:px-[14px]",
   "rounded-[7px] lg:rounded-[8px]"
 );
 
@@ -57,13 +57,13 @@ export function Step2Notes({
         />
       </div>
 
-      <div className="flex w-full items-center justify-end gap-[8px] lg:gap-[10px]">
+      <div className="flex w-full items-center justify-end gap-2 lg:gap-2">
         <button
           type="button"
           onClick={onBack}
           className={cn(
             BTN_BASE,
-            "border-primary-200 text-primary-200 hover:bg-grey-100 w-[90px] border lg:w-[112px]"
+            "border-primary-200 text-primary-200 hover:bg-grey-100 w-23 border lg:w-28"
           )}
         >
           Cancel
@@ -73,7 +73,7 @@ export function Step2Notes({
           onClick={onNext}
           className={cn(
             BTN_BASE,
-            "bg-primary-600 text-grey-50 hover:bg-primary-500 w-[90px] lg:w-[112px]"
+            "bg-primary-600 text-grey-50 hover:bg-primary-500 w-23 lg:w-28"
           )}
         >
           Next

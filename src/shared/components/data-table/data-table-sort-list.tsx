@@ -181,7 +181,7 @@ export function DataTableSortList<TData>({
             {sorting.length > 0 && (
               <Badge
                 variant="secondary"
-                className="h-[18.24px] rounded-[3.2px] px-[5.12px] font-mono text-[10.4px] font-normal"
+                className="h-5 rounded px-1.5 font-mono text-xs font-normal"
               >
                 {sorting.length}
               </Badge>

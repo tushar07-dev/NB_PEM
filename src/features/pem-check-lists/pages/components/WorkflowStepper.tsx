@@ -49,7 +49,7 @@ export function WorkflowStepper({ status }: WorkflowStepperProps) {
             <div className="flex flex-col items-center gap-0.5">
               <div
                 className={cn(
-                  "flex h-6 w-6 items-center justify-center rounded-full border-2 text-[10px] font-semibold transition-colors",
+                  "flex h-6 w-6 items-center justify-center rounded-full border-2 text-xs font-semibold transition-colors",
                   isDone && "border-green-500 bg-green-500 text-white",
                   isActive &&
                     !isRejected &&
@@ -66,7 +66,7 @@ export function WorkflowStepper({ status }: WorkflowStepperProps) {
               </div>
               <span
                 className={cn(
-                  "text-[9px] font-medium whitespace-nowrap",
+                  "text-xs font-medium whitespace-nowrap",
                   isDone && "text-green-600",
                   isActive && !isRejected && "text-blue-600",
                   isActive && isRejected && "text-red-600",

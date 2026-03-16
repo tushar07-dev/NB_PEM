@@ -46,7 +46,7 @@ export function FlowHeader({
           onClick={onClose}
           disabled={disabled}
           aria-label="Close dialog"
-          className="hover:bg-grey-100 flex size-[30px] items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          className="hover:bg-grey-100 flex size-8 items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         >
           <X className="text-primary-300 size-4" />
         </button>

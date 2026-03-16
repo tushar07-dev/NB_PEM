@@ -72,7 +72,7 @@ import type {
 import {
   useFiltersFromContext,
   useGlobalJoinOperatorFromContext,
-  useFilterActionsFromContext
+  useFilterActionsFromContext,
 } from "@/shared/context/FilterStoreContext";
 
 const DEBOUNCE_MS = 300;
@@ -230,7 +230,7 @@ export function DataTableFilterList<TData>({
             {filters.length > 0 && (
               <Badge
                 variant="secondary"
-                className="h-[18.24px] rounded-[3.2px] px-[5.12px] font-mono text-[10.4px] font-normal"
+                className="h-5 rounded px-1.5 font-mono text-xs font-normal"
               >
                 {filters.length}
               </Badge>

@@ -49,12 +49,14 @@ function SignatureCell({ signature }: { signature: string | null }) {
 
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-primary-700 text-sm lg:text-lg font-medium">
+      <span className="text-primary-700 text-sm font-medium lg:text-lg">
         {parsed.name}
       </span>
-      <div className="text-primary-400 flex items-center gap-1 text-[10px]">
+      <div className="text-primary-400 flex items-center gap-1 text-xs">
         <Clock className="size-2.5 shrink-0" />
-        <span className="text-primary-700 text-sm lg:text-base">{formatted}</span>
+        <span className="text-primary-700 text-sm lg:text-base">
+          {formatted}
+        </span>
       </div>
     </div>
   );
@@ -102,8 +104,8 @@ function CheckCell({ item, role, canEdit, onCheckResult }: CheckCellProps) {
         aria-pressed={active}
         data-no-row-click
         className={cn(
-          "inline-flex h-7 min-w-[52px] items-center justify-center gap-1 rounded-full px-3 lg:h-9 lg:min-w-[72px] lg:px-4",
-          "border-1 text-sm tracking-wide uppercase transition-all duration-150 lg:text-base",
+          "inline-flex h-7 min-w-13 items-center justify-center gap-1 rounded-full px-3 lg:h-9 lg:min-w-18 lg:px-4",
+          "border text-sm tracking-wide uppercase transition-all duration-150 lg:text-base",
           "focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none",
           (disabled || saving) && "cursor-not-allowed opacity-40",
           active

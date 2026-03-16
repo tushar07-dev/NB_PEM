@@ -27,10 +27,10 @@ const DIALOG_SHELL = cn(
   "gap-0 border-0 p-0 shadow-xl outline-none",
   "bg-grey-50 overflow-hidden",
   "rounded-[18px] lg:rounded-[24px]",
-  "px-[20px] pt-[16px] pb-[20px] lg:px-[30px] lg:pt-[24px] lg:pb-[30px]",
-  "w-[340px] lg:w-[500px]",
+  "px-5 pt-4 pb-5 lg:px-8 lg:pt-[24px] lg:pb-8",
+  "px-85 lg:px-125",
   "flex flex-col",
-  "gap-[16px] lg:gap-[24px]"
+  "gap-4 lg:gap-6"
 );
 
 type FlowStep = 1 | 2 | 3;
@@ -105,36 +105,36 @@ export function SendDocumentFlow({
   // ── SAVE (Step 1) ───────────────────────────────────────────────────────────
   // Partial assign — checker/approver may be null.
   // After success: notifies caller (store patchDocument) then closes.
-const handleSave = useCallback(
-  async (vals: ResponsibilityValues) => {
-    if (!document.projectDocumentId) return;
-    const checkerUnchanged = vals.checker === (document.checker ?? "");
-    const approverUnchanged = vals.approver === (document.approver ?? "");
+  const handleSave = useCallback(
+    async (vals: ResponsibilityValues) => {
+      if (!document.projectDocumentId) return;
+      const checkerUnchanged = vals.checker === (document.checker ?? "");
+      const approverUnchanged = vals.approver === (document.approver ?? "");
 
-    if (checkerUnchanged && approverUnchanged) {
+      if (checkerUnchanged && approverUnchanged) {
+        handleClose();
+        return;
+      }
+
+      await assignRoles({
+        projectDocumentId: document.projectDocumentId,
+        originator: originatorEmail,
+        checker: vals.checker || null,
+        approver: vals.approver || null,
+      });
+      onSaved?.(vals);
       handleClose();
-      return;
-    }
-
-    await assignRoles({
-      projectDocumentId: document.projectDocumentId,
-      originator: originatorEmail,
-      checker: vals.checker || null,
-      approver: vals.approver || null,
-    });
-    onSaved?.(vals);
-    handleClose();
-  },
-  [
-    assignRoles,
-    document.projectDocumentId,
-    document.checker,
-    document.approver,
-    originatorEmail,
-    onSaved,
-    handleClose,
-  ]
-);
+    },
+    [
+      assignRoles,
+      document.projectDocumentId,
+      document.checker,
+      document.approver,
+      originatorEmail,
+      onSaved,
+      handleClose,
+    ]
+  );
 
   // ── Step 1 → Step 2 ──────────────────────────────────────────────────────────
   const handleStep1Next = useCallback((vals: ResponsibilityValues) => {

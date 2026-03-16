@@ -41,17 +41,17 @@ const DIALOG_SHELL = cn(
   "gap-0 border-0 p-0 shadow-xl outline-none",
   "bg-grey-50 overflow-hidden",
   "rounded-[18px] lg:rounded-[24px]",
-  "px-[20px] pt-[16px] pb-[20px] lg:px-[30px] lg:pt-[24px] lg:pb-[30px]",
-  "w-[340px] lg:w-[480px]",
+  "px-5 pt-4 pb-5 lg:px-8 lg:pt-[24px] lg:pb-8",
+  "px-85 lg:w-[480px]",
   "flex flex-col",
-  "gap-[16px] lg:gap-[24px]"
+  "gap-4 lg:gap-6"
 );
 
 const BTN_BASE = cn(
-  "flex shrink-0 items-center justify-center gap-[8px]",
+  "flex shrink-0 items-center justify-center gap-2",
   "text-sm font-medium uppercase transition-colors",
   "h-[34px] lg:h-[40px]",
-  "px-[10px] lg:px-[14px]",
+  "px-2 lg:px-[14px]",
   "rounded-[7px] lg:rounded-[8px]"
 );
 
@@ -85,7 +85,7 @@ export function ConfirmActionDialog({
             onClick={onClose}
             disabled={isBusy}
             aria-label="Close dialog"
-            className="hover:bg-grey-100 flex size-[30px] items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            className="hover:bg-grey-100 flex size-8 items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X className="text-primary-300 size-4" />
           </button>
@@ -120,14 +120,14 @@ export function ConfirmActionDialog({
                 >
                   <span
                     className={cn(
-                      "inline-flex min-w-[40px] items-center justify-center rounded-md px-2 py-0.5 text-xs font-semibold",
+                      "min-w10 inline-flex items-center justify-center rounded-md px-2 py-0.5 text-xs font-semibold",
                       r.colorClass
                     )}
                   >
                     {r.type}
                   </span>
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] font-medium text-gray-400 uppercase">
+                    <span className="text-xs font-medium text-gray-400 uppercase">
                       {r.roleLabel}
                     </span>
                     <span className="text-primary-500 text-sm">{r.email}</span>
@@ -139,14 +139,14 @@ export function ConfirmActionDialog({
         </div>
 
         {/* Footer */}
-        <div className="flex w-full items-center justify-end gap-[8px] lg:gap-[10px]">
+        <div className="flex w-full items-center justify-end gap-2 lg:gap-2">
           <button
             type="button"
             onClick={onClose}
             disabled={isBusy}
             className={cn(
               BTN_BASE,
-              "border-primary-200 text-primary-200 hover:bg-grey-100 w-[90px] border lg:w-[112px]",
+              "border-primary-200 text-primary-200 hover:bg-grey-100 w-23 border lg:w-28",
               isBusy && "cursor-not-allowed opacity-50"
             )}
           >
@@ -158,7 +158,7 @@ export function ConfirmActionDialog({
             disabled={isBusy}
             className={cn(
               BTN_BASE,
-              "bg-primary-600 text-grey-50 hover:bg-primary-500 px-[12px] lg:px-[18px]",
+              "bg-primary-600 text-grey-50 hover:bg-primary-500 px-3 lg:px-5",
               isBusy && "cursor-not-allowed opacity-50"
             )}
           >

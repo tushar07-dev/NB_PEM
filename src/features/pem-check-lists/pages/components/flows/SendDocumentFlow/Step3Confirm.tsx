@@ -14,10 +14,10 @@ import { cn } from "@/shared/lib/utils";
 import { FlowHeader, StepIndicator } from "../../_flow-shared";
 
 const BTN_BASE = cn(
-  "flex shrink-0 items-center justify-center gap-[8px]",
+  "flex shrink-0 items-center justify-center gap-2",
   "text-sm font-medium uppercase transition-colors",
   "h-[34px] lg:h-[40px]",
-  "px-[10px] lg:px-[14px]",
+  "px-2 lg:px-[14px]",
   "rounded-[7px] lg:rounded-[8px]"
 );
 
@@ -29,13 +29,13 @@ function IllustrationPlaceholder() {
   return (
     <div className="flex flex-col items-center gap-5 py-2">
       {/* Asset slot — swap this div for your Lottie / img component */}
-      <div className="flex h-[180px] w-full items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50">
+      <div className="flex h-45 w-full items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50">
         <span className="text-sm text-gray-300 italic">
           [ Illustration — replace with asset ]
         </span>
       </div>
 
-      <p className="text-primary-600 max-w-[280px] text-center text-lg leading-snug font-semibold">
+      <p className="text-primary-600 max-w-70 text-center text-lg leading-snug font-semibold">
         Do you want to send the Document to the Checker?
       </p>
     </div>
@@ -72,14 +72,14 @@ export function Step3Confirm({
 
       <IllustrationPlaceholder />
 
-      <div className="flex w-full items-center justify-end gap-[8px] lg:gap-[10px]">
+      <div className="flex w-full items-center justify-end gap-2 lg:gap-2">
         <button
           type="button"
           onClick={onBack}
           disabled={isBusy}
           className={cn(
             BTN_BASE,
-            "border-primary-200 text-primary-200 hover:bg-grey-100 w-[90px] border lg:w-[112px]",
+            "border-primary-200 text-primary-200 hover:bg-grey-100 w-23 border lg:w-28",
             isBusy && "cursor-not-allowed opacity-50"
           )}
         >
@@ -91,7 +91,7 @@ export function Step3Confirm({
           disabled={isBusy}
           className={cn(
             BTN_BASE,
-            "bg-primary-600 text-grey-50 hover:bg-primary-500 flex items-center gap-2 px-[12px] lg:px-[18px]",
+            "bg-primary-600 text-grey-50 hover:bg-primary-500 flex items-center gap-2 px-3 lg:px-5",
             isBusy && "cursor-not-allowed opacity-50"
           )}
         >

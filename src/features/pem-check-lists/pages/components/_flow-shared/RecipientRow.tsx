@@ -25,7 +25,7 @@ export function RecipientRow({
     <div className="flex items-center gap-3 rounded-lg border border-gray-100 bg-white px-4 py-2.5">
       <span
         className={cn(
-          "inline-flex min-w-[40px] items-center justify-center rounded-md px-2 py-0.5 text-xs font-semibold",
+          "min-w10 inline-flex items-center justify-center rounded-md px-2 py-0.5 text-xs font-semibold",
           colorClass ?? "bg-gray-100 text-gray-600"
         )}
       >
@@ -33,7 +33,7 @@ export function RecipientRow({
       </span>
       <div className="flex flex-col gap-0.5">
         {roleLabel && (
-          <span className="text-[10px] font-medium tracking-wider text-gray-400 uppercase">
+          <span className="text-xs font-medium tracking-wider text-gray-400 uppercase">
             {roleLabel}
           </span>
         )}

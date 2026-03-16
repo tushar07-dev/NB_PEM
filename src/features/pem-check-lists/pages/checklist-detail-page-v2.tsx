@@ -63,8 +63,8 @@ function AssignedRoles({
           )}
         >
           <User className="size-3 shrink-0 text-gray-300" />
-          <span className="text-[11px] text-gray-400">{label}:</span>
-          <span className="text-[11px] font-medium text-gray-600">
+          <span className="text-xs text-gray-400">{label}:</span>
+          <span className="text-xs font-medium text-gray-600">
             {value ?? <span className="text-gray-300 italic">—</span>}
           </span>
         </div>
@@ -76,12 +76,12 @@ function AssignedRoles({
 function OriginatorProgress({ done, total }: { done: number; total: number }) {
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
   return (
-    <div className="flex min-w-[160px] flex-col gap-0 lg:min-w-[200px]">
+    <div className="flex min-w-40 flex-col gap-0 lg:min-w-50">
       <div className="flex items-baseline gap-0.5">
-        <span className="font-solutioneer text-primary-600 text-md font-semibold lg:text-md">
+        <span className="font-solutioneer text-primary-600 text-md lg:text-md font-semibold">
           {done}
         </span>
-        <span className="text-primary-300 lg:text-base text-sm font-medium">
+        <span className="text-primary-300 text-sm font-medium lg:text-base">
           /{total}
         </span>
       </div>
@@ -344,18 +344,18 @@ export function ChecklistDetailPage() {
               </span>
               <Badge
                 variant="outline"
-                className={cn("px-2 py-0 text-[10px]", roleBadge.className)}
+                className={cn("px-2 py-0 text-xs", roleBadge.className)}
               >
                 {roleBadge.label}
               </Badge>
               {permissions.isLocked && (
-                <span className="flex items-center gap-1 rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px] text-gray-400">
+                <span className="flex items-center gap-1 rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-xs text-gray-400">
                   <Lock className="size-2.5" /> Locked
                 </span>
               )}
             </div>
 
-            <div className="flex hidden flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-gray-400">
+            <div className="flex hidden flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-gray-400">
               {document.reasonForIssue && (
                 <span>
                   Reason:{" "}
@@ -428,7 +428,7 @@ export function ChecklistDetailPage() {
           permissions.canSend &&
           originatorDone < total &&
           total > 0 && (
-            <p className="mt-1 text-[10px] text-amber-500">
+            <p className="mt-1 text-xs text-amber-500">
               Complete all {total} checkpoints to enable Send to Checker
             </p>
           )} */}

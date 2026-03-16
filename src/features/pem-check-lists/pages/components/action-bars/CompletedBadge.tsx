@@ -5,7 +5,7 @@ export function CompletedBadge() {
   return (
     <Badge
       variant="outline"
-      className="border-green-200 bg-green-50 px-2.5 py-0.5 text-[11px] text-green-700"
+      className="border-green-200 bg-green-50 px-2.5 py-0.5 text-xs text-green-700"
     >
       ✓ Document Released
     </Badge>

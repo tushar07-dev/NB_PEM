@@ -54,13 +54,13 @@ function YellowNote() {
     <div
       className={cn(
         "flex w-full flex-col",
-        "gap-[3px] lg:gap-[4px]",
-        "border border-[#FFF3A7] bg-[#FFFED6]",
-        "rounded-[10px] lg:rounded-[12px]",
-        "px-[12px] py-[8px] lg:px-[16px] lg:py-[12px]"
+        "gap-1 lg:gap-1",
+        "bg-warning-50 border-warning-100 border",
+        "rounded-xl lg:rounded-xl",
+        "px-3 py-2 lg:px-4 lg:py-3"
       )}
     >
-      <p className="text-450 leading-none font-medium text-[#F04438]">Note:</p>
+      <p className="text-450 text-error-500 leading-none font-medium">Note:</p>
       <p className="text-md text-primary-500 leading-snug">
         Please ensure that the names you fill in match those provided in the
         document
@@ -90,10 +90,10 @@ function PopupHeader({
         className={cn(
           "flex shrink-0 items-center justify-center rounded-full",
           "hover:bg-grey-100 transition-colors",
-          "size-[24px] lg:size-[30px]"
+          "size-6 lg:size-7"
         )}
       >
-        <X className="text-primary-300 size-[13px] lg:size-[16px]" />
+        <X className="text-primary-300 size-4 lg:size-4" />
       </button>
     </div>
   );
@@ -119,23 +119,23 @@ function ActionButtons({
   rightAutoWidth = false,
 }: ActionButtonsProps) {
   const base = cn(
-    "flex shrink-0 items-center justify-center gap-[8px]",
+    "flex shrink-0 items-center justify-center gap-2",
     "text-sm font-medium uppercase",
     "leading-[--line-height-300]",
     "transition-colors",
     "h-[34px] lg:h-[40px]",
-    "px-[10px] lg:px-[14px]",
+    "px-2 lg:px-[14px]",
     "rounded-[7px] lg:rounded-[8px]"
   );
 
   return (
-    <div className="flex w-full items-center justify-end gap-[8px] lg:gap-[10px]">
+    <div className="flex w-full items-center justify-end gap-2 lg:gap-2">
       <button
         type="button"
         onClick={onLeft}
         className={cn(
           base,
-          "border-primary-200 text-primary-200 hover:bg-grey-100 w-[90px] border lg:w-[112px]"
+          "border-primary-200 text-primary-200 hover:bg-grey-100 w-23 border lg:w-28"
         )}
       >
         {leftLabel}
@@ -148,7 +148,7 @@ function ActionButtons({
           base,
           "bg-primary-600 text-grey-50 hover:bg-primary-500",
           rightDisabled && "cursor-not-allowed opacity-50",
-          rightAutoWidth ? "px-[12px] lg:px-[18px]" : "w-[90px] lg:w-[112px]"
+          rightAutoWidth ? "px-3 lg:px-5" : "w-23 lg:w-28"
         )}
       >
         {rightLabel}
@@ -262,10 +262,10 @@ export function DocumentWorkflowDialog({
           // Shell
           "bg-grey-50 overflow-hidden",
           "rounded-[18px] lg:rounded-[24px]",
-          "px-[20px] pt-[16px] pb-[20px] lg:px-[30px] lg:pt-[24px] lg:pb-[30px]",
-          "w-[340px] lg:w-[500px]",
+          "px-5 pt-4 pb-5 lg:px-8 lg:pt-6 lg:pb-7",
+          "px-85 lg:px-125",
           "flex flex-col",
-          "gap-[16px] lg:gap-[24px]"
+          "gap-4 lg:gap-6"
         )}
       >
         {/* Visually hidden — satisfies Radix a11y requirement. Visual title is in PopupHeader. */}
@@ -276,9 +276,9 @@ export function DocumentWorkflowDialog({
 
         <PopupHeader title={title} onClose={handleClose} />
 
-        <div className="flex w-full flex-col gap-[16px] lg:gap-[24px]">
+        <div className="flex w-full flex-col gap-4 lg:gap-6">
           {/* ── Fields ── */}
-          <div className="flex w-full flex-col gap-[20px] lg:gap-[30px]">
+          <div className="flex w-full flex-col gap-5 lg:gap-8">
             <Controller
               name="originator"
               control={form.control}

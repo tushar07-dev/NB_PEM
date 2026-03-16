@@ -1,3 +1,9 @@
+// src/shared/hooks/data-table/use-data-table.ts
+//
+// Reads filter state from FilterStoreContext (isolated per table instance)
+// instead of the global useFilterStore singleton.
+// Every other piece of logic is unchanged.
+
 import {
   type ColumnFiltersState,
   getCoreRowModel,
@@ -19,12 +25,18 @@ import {
 import * as React from "react";
 
 import { useDebouncedCallback } from "@/shared/hooks/data-table/use-debounced-callback";
-import { useFilterStore } from "@/shared/store/filter-store";
 import { applyFilterOperator } from "@/shared/lib/data-table/data-table";
 import type {
   ExtendedColumnFilter,
   ExtendedColumnSort,
 } from "@/shared/types/data-table";
+import {
+  useFiltersFromContext,
+  useGlobalJoinOperatorFromContext,
+  useColumnJoinOperatorsFromContext,
+  useFilterActionsFromContext,
+  useGlobalSearchTermFromContext,
+} from "@/shared/context/FilterStoreContext";
 
 const DEBOUNCE_MS = 300;
 
@@ -44,6 +56,12 @@ interface UseDataTableProps<TData>
     sorting?: ExtendedColumnSort<TData>[];
   };
   debounceMs?: number;
+  /**
+   * Column accessorKeys to include in global text search.
+   * Each table controls which columns are searched.
+   * Example: ["description", "category", "checkResult"]
+   */
+  searchableColumns?: Extract<keyof TData, string>[];
 }
 
 export function useDataTable<TData>(props: UseDataTableProps<TData>) {
@@ -52,64 +70,74 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
     pageCount = -1,
     initialState,
     debounceMs = DEBOUNCE_MS,
+    searchableColumns = [],
     ...tableProps
   } = props;
 
-  // Get filters from Zustand store
-  const advancedFilters = useFilterStore(
-    (state) => state.filters
-  ) as ExtendedColumnFilter<TData>[];
-  const globalJoinOperator = useFilterStore(
-    (state) => state.globalJoinOperator
-  );
-  const columnJoinOperators = useFilterStore(
-    (state) => state.columnJoinOperators
-  );
-  const resetFilters = useFilterStore((state) => state.resetFilters);
+  // ── Filter state from isolated context store ─────────────────────────────
+  const advancedFilters =
+    useFiltersFromContext() as ExtendedColumnFilter<TData>[];
+  const globalJoinOperator = useGlobalJoinOperatorFromContext();
+  const columnJoinOperators = useColumnJoinOperatorsFromContext();
+  const { resetFilters } = useFilterActionsFromContext();
+  const { globalSearchTerm } = useGlobalSearchTermFromContext();
 
-  // Pagination state
+  // ── Local table state ────────────────────────────────────────────────────
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: initialState?.pagination?.pageIndex ?? 0,
     pageSize: initialState?.pagination?.pageSize ?? 10,
   });
 
-  // Sorting state
   const [sorting, setSorting] = React.useState<SortingState>(
     initialState?.sorting ?? []
   );
 
-  // Column filters state (for basic toolbar filters)
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     initialState?.columnFilters ?? []
   );
 
-  // Column visibility state
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>(initialState?.columnVisibility ?? {});
 
-  // Row selection state
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>(
     initialState?.rowSelection ?? {}
   );
 
-  // Debounced filter setter
   const debouncedSetColumnFilters = useDebouncedCallback(
     setColumnFilters,
     debounceMs
   );
 
-  // Clear all filters handler
   const clearFilters = React.useCallback(() => {
     setColumnFilters([]);
     resetFilters();
   }, [resetFilters]);
 
-  // Global filter function that applies advanced filters from Zustand
+  // ── Combined filter function ─────────────────────────────────────────────
+  // Checks both advanced column filters AND global search term.
+  // Both must pass (AND logic between them).
   const globalFilterFn = React.useCallback(
     (row: Row<TData>) => {
+      // 1. Global text search — check searchableColumns if term is set
+      if (globalSearchTerm.trim() && searchableColumns.length > 0) {
+        const term = globalSearchTerm.toLowerCase().trim();
+        const matchesSearch = searchableColumns.some((colId) => {
+          const cellValue = row.getValue(colId as string);
+          if (cellValue == null) return false;
+          // Handle arrays (e.g. qualityLevel: string[])
+          if (Array.isArray(cellValue)) {
+            return cellValue.some((v) =>
+              String(v).toLowerCase().includes(term)
+            );
+          }
+          return String(cellValue).toLowerCase().includes(term);
+        });
+        if (!matchesSearch) return false;
+      }
+
+      // 2. Advanced column filters
       if (advancedFilters.length === 0) return true;
 
-      // Group filters by column
       const filtersByColumn = advancedFilters.reduce(
         (acc, filter) => {
           const columnId = filter.id;
@@ -120,33 +148,30 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
         {} as Record<string, ExtendedColumnFilter<TData>[]>
       );
 
-      // Evaluate each column's filters with per-column join operator
       const columnResults = Object.entries(filtersByColumn).map(
         ([columnId, columnFilters]) => {
           const cellValue = row.getValue(columnId);
           const columnJoinOp = columnJoinOperators[columnId] ?? "and";
-
           const filterResults = columnFilters.map((filter) =>
             applyFilterOperator(cellValue, filter.value, filter.operator)
           );
-
-          // Apply per-column join operator
-          if (columnJoinOp === "and") {
-            return filterResults.every(Boolean);
-          } else {
-            return filterResults.some(Boolean);
-          }
+          return columnJoinOp === "and"
+            ? filterResults.every(Boolean)
+            : filterResults.some(Boolean);
         }
       );
 
-      // Combine column results with global join operator
-      if (globalJoinOperator === "and") {
-        return columnResults.every(Boolean);
-      } else {
-        return columnResults.some(Boolean);
-      }
+      return globalJoinOperator === "and"
+        ? columnResults.every(Boolean)
+        : columnResults.some(Boolean);
     },
-    [advancedFilters, globalJoinOperator, columnJoinOperators]
+    [
+      advancedFilters,
+      globalJoinOperator,
+      columnJoinOperators,
+      globalSearchTerm,
+      searchableColumns,
+    ]
   );
 
   const table = useReactTable({

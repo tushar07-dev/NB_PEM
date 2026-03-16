@@ -134,7 +134,7 @@ export function Step1Roles({
 
   return (
     <>
-      <FlowHeader title="Send Document X" onClose={onClose} disabled={isSaving}>
+      <FlowHeader title="Send Document" onClose={onClose} disabled={isSaving}>
         <StepIndicator total={3} current={1} />
       </FlowHeader>
 

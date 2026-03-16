@@ -120,7 +120,7 @@ export function DataTable<TData>({
   return (
     <div
       className={cn(
-        "bg-grey-50 flex w-full flex-col gap-2.5 overflow-auto rounded-sm",
+        "bg-grey-50 flex w-full flex-col gap-0  bg-grey-200 overflow-auto rounded-sm",
         className
       )}
       {...props}

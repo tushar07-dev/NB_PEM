@@ -63,12 +63,17 @@ import {
 import { formatDate } from "@/shared/lib/data-table/format";
 import { generateId } from "@/shared/lib/data-table/id";
 import { cn } from "@/shared/lib/utils";
-import { useFilterStore } from "@/shared/store/filter-store";
+// import { useFilterStore } from "@/shared/store/filter-store";
 import type {
   ExtendedColumnFilter,
   FilterOperator,
   JoinOperator,
 } from "@/shared/types/data-table";
+import {
+  useFiltersFromContext,
+  useGlobalJoinOperatorFromContext,
+  useFilterActionsFromContext
+} from "@/shared/context/FilterStoreContext";
 
 const DEBOUNCE_MS = 300;
 const FILTER_SHORTCUT_KEY = "f";
@@ -95,15 +100,13 @@ export function DataTableFilterList<TData>({
   const addButtonRef = React.useRef<HTMLButtonElement>(null);
 
   // Use Zustand store instead of nuqs
-  const filters = useFilterStore(
-    (state) => state.filters
-  ) as ExtendedColumnFilter<TData>[];
-  const joinOperator = useFilterStore((state) => state.globalJoinOperator);
-  const setFilters = useFilterStore((state) => state.setFilters);
-  const setJoinOperator = useFilterStore(
-    (state) => state.setGlobalJoinOperator
-  );
-  const resetFilters = useFilterStore((state) => state.resetFilters);
+  const filters = useFiltersFromContext() as ExtendedColumnFilter<TData>[];
+  const joinOperator = useGlobalJoinOperatorFromContext();
+  const {
+    setFilters,
+    setGlobalJoinOperator: setJoinOperator,
+    resetFilters,
+  } = useFilterActionsFromContext();
 
   const debouncedSetFilters = useDebouncedCallback(setFilters, debounceMs);
 

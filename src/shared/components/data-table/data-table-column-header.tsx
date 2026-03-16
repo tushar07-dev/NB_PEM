@@ -41,11 +41,11 @@ export function DataTableColumnHeader<TData, TValue>({
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center justify-between gap-1">
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
-            "hover:bg-accent focus:ring-ring data-[state=open]:bg-accent [&_svg]:text-muted-foreground -ml-1.5 flex h-8 items-center gap-1.5 rounded-md px-2 py-1.5 focus:ring-1 focus:outline-none [&_svg]:size-4 [&_svg]:shrink-0",
+            "hover:bg-accent focus:ring-ring data-[state=open]:bg-accent [&_svg]:text-muted-foreground text-primary-400 font-helvetica-now -ml-1.5 flex h-8 items-center gap-1.5 rounded-md px-2 py-1.5 text-base font-medium capitalize focus:ring-1 focus:outline-none [&_svg]:size-4 [&_svg]:shrink-0",
             hasFilter && "text-primary",
             className
           )}

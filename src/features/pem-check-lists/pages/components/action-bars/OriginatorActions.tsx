@@ -4,7 +4,7 @@
 // Progress bar has been intentionally removed — it now lives in the page
 // header so all roles can always see originator completion.
 
-import { Send } from "lucide-react";
+// import { Send } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 interface OriginatorActionsProps {
@@ -14,11 +14,11 @@ interface OriginatorActionsProps {
 }
 
 export function OriginatorActions({
-//   done,
-//   total,
+  //   done,
+  //   total,
   onSend,
 }: OriginatorActionsProps) {
-//   const canSend = done === total && total > 0;
+  //   const canSend = done === total && total > 0;
   const canSend = true;
 
   return (
@@ -28,14 +28,15 @@ export function OriginatorActions({
       disabled={!canSend}
       title={!canSend ? "Sign all checklist items first" : undefined}
       className={cn(
-        "flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-white transition-colors",
+        // "flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-white transition-colors",
+        "font-helvetica-now text-grey-50 flex h-8 items-center justify-center gap-1.5 rounded-[8px] px-3.5 text-[10px] lg:text-[12px] leading-[19px] font-medium tracking-normal uppercase transition-colors lg:h-10",
         "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
         canSend
           ? "bg-primary-600 hover:bg-primary-500"
           : "cursor-not-allowed bg-gray-300"
       )}
     >
-      <Send className="size-3" />
+      {/* <Send className="size-3" /> */}
       Send to Checker
     </button>
   );

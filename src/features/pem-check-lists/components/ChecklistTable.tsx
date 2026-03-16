@@ -1,15 +1,19 @@
 // src/features/pem-check-lists/components/ChecklistTable.tsx
 //
-// Uses the shared DataTable (visual layer) with a plain useReactTable instance
-// (no useDataTable hook — checklist items are client-side, no server pagination/filter).
+// Migrated from plain useReactTable → useDataTable so it gets the full
+// shared table feature set: column filters, sorting, pagination, show/hide
+// columns — all isolated via FilterStoreProvider (no bleed with DocumentTable).
 
-import { useMemo, useCallback } from "react";
-import {
-  useReactTable,
-  getCoreRowModel,
-  type ColumnDef,
-} from "@tanstack/react-table";
+import { useMemo, useCallback, useState } from "react";
+import { type ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/shared/components/data-table/data-table";
+import { DataTableAdvancedToolbar } from "@/shared/components/data-table/data-table-advanced-toolbar";
+import { DataTableFilterList } from "@/shared/components/data-table/data-table-filter-list";
+import { DataTableSortList } from "@/shared/components/data-table/data-table-sort-list";
+import { DataTableColumnHeader } from "@/shared/components/data-table/data-table-column-header";
+import { DataTableGlobalSearch } from "@/shared/components/data-table/data-table-global-search";
+import { useDataTable } from "@/shared/hooks/data-table/use-data-table";
+import { FilterStoreProvider } from "@/shared/context/FilterStoreContext";
 import { Check, Minus, Clock, Loader2, FileX } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { parseSignature } from "../types/checklist";
@@ -18,7 +22,14 @@ import type {
   CheckResult,
   DocumentRole,
 } from "../types/checklist";
-import { useState } from "react";
+
+// ─── Filter options ────────────────────────────────────────────────────────────
+
+const CHECK_RESULT_OPTIONS = [
+  { label: "OK", value: "OK" },
+  { label: "NA", value: "NA" },
+  { label: "Not Set", value: "NOT_SET" },
+];
 
 // ─── Signature cell ────────────────────────────────────────────────────────────
 
@@ -26,27 +37,30 @@ function SignatureCell({ signature }: { signature: string | null }) {
   const parsed = parseSignature(signature);
   if (!parsed) return <span className="text-xs text-gray-300">—</span>;
 
-  const formatted = new Date(parsed.date).toLocaleString("en-IN", {
+  const formatted = parsed.date.toLocaleString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
+    timeZoneName: "short",
   });
 
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs font-medium text-gray-700">{parsed.name}</span>
-      <div className="flex items-center gap-1 text-[10px] text-gray-400">
+      <span className="text-primary-700 text-sm lg:text-lg font-medium">
+        {parsed.name}
+      </span>
+      <div className="text-primary-400 flex items-center gap-1 text-[10px]">
         <Clock className="size-2.5 shrink-0" />
-        <span>{formatted}</span>
+        <span className="text-primary-700 text-sm lg:text-base">{formatted}</span>
       </div>
     </div>
   );
 }
 
-// ─── Check buttons cell (rendered inline, not as a separate component with state,
-//      so each row's saving state lives in a wrapper below) ─────────────────────
+// ─── Check cell ───────────────────────────────────────────────────────────────
 
 interface CheckCellProps {
   item: ChecklistItem;
@@ -57,16 +71,15 @@ interface CheckCellProps {
 
 function CheckCell({ item, role, canEdit, onCheckResult }: CheckCellProps) {
   const [saving, setSaving] = useState(false);
-  // If canEdit is explicitly provided, use it. Otherwise fall back to old behavior.
   const isEditable = canEdit ?? role === "ORIGINATOR";
 
   const handleToggle = useCallback(
     async (result: CheckResult) => {
       if (!isEditable || saving) return;
-      if (item.checkResult === result) return; // same value — do nothing
+      if (item.checkResult === result) return;
       setSaving(true);
       try {
-        await onCheckResult(item.checkpointId, result); // always OK or NA, never null
+        await onCheckResult(item.checkpointId, result);
       } finally {
         setSaving(false);
       }
@@ -75,7 +88,7 @@ function CheckCell({ item, role, canEdit, onCheckResult }: CheckCellProps) {
   );
 
   const btn = (label: "OK" | "NA") => {
-    const isOK = label === "OK";
+    // const isOK = label === "OK";
     const active = item.checkResult === label;
     const disabled = !isEditable;
     const showSpinner = saving && item.checkResult !== label;
@@ -89,29 +102,16 @@ function CheckCell({ item, role, canEdit, onCheckResult }: CheckCellProps) {
         aria-pressed={active}
         data-no-row-click
         className={cn(
-          "inline-flex h-7 min-w-[46px] items-center justify-center gap-1 rounded px-2.5",
-          "border text-[11px] font-semibold tracking-wide uppercase transition-all duration-150",
+          "inline-flex h-7 min-w-[52px] items-center justify-center gap-1 rounded-full px-3 lg:h-9 lg:min-w-[72px] lg:px-4",
+          "border-1 text-sm tracking-wide uppercase transition-all duration-150 lg:text-base",
           "focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none",
           (disabled || saving) && "cursor-not-allowed opacity-40",
-          isOK &&
-            !active &&
-            "border-green-300 bg-white text-green-600 hover:bg-green-50",
-          isOK &&
-            active &&
-            "border-green-500 bg-green-500 text-white shadow-sm",
-          !isOK &&
-            !active &&
-            "border-gray-300 bg-white text-gray-500 hover:bg-gray-50",
-          !isOK && active && "border-gray-500 bg-gray-500 text-white shadow-sm"
+          active
+            ? "border-primary-600 text-primary-600 bg-white"
+            : "bg-grey-200 text-grey-600 hover:bg-grey-275 border-transparent"
         )}
       >
-        {showSpinner ? (
-          <Loader2 className="size-3 animate-spin" />
-        ) : isOK ? (
-          <Check className="size-3" />
-        ) : (
-          <Minus className="size-3" />
-        )}
+        {showSpinner && <Loader2 className="size-3 animate-spin" />}
         {label}
       </button>
     );
@@ -135,63 +135,109 @@ interface ChecklistTableProps {
   onCheckResult: (checkpointId: number, result: CheckResult) => Promise<void>;
 }
 
-export function ChecklistTable({
+function ChecklistTableInner({
   items,
   role,
   canEdit,
   loading = false,
   onCheckResult,
 }: ChecklistTableProps) {
+  // Derive unique category + qualityLevel options from current data
+  const categoryOptions = useMemo(() => {
+    const unique = [...new Set(items.map((i) => i.category).filter(Boolean))];
+    return unique.map((v) => ({ label: v, value: v }));
+  }, [items]);
+
+  const qualityLevelOptions = useMemo(() => {
+    const unique = [...new Set(items.flatMap((i) => i.qualityLevel))].filter(
+      Boolean
+    );
+    return unique.map((v) => ({ label: v, value: v }));
+  }, [items]);
+
   const columns = useMemo<ColumnDef<ChecklistItem>[]>(
     () => [
       {
         accessorKey: "serialNo",
-        header: "#",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="ID" />
+        ),
         size: 48,
         cell: ({ getValue }) => (
-          <span className="text-primary-300 text-xs font-medium tabular-nums">
+          <span className="font-helvetica-now text-primary-500 lg:text-md text-base leading-snug font-medium capitalize">
             {String(getValue<number>()).padStart(2, "0")}
           </span>
         ),
-      },
-      {
-        accessorKey: "category",
-        header: "Category",
-        size: 120,
-        cell: ({ getValue, row }) => (
-          <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-gray-700">
-              {getValue<string>() || "—"}
-            </span>
-            {row.original.qualityLevel.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {row.original.qualityLevel.map((ql) => {
-                  const qlShort = `QL${ql.split(" ")[2]}`; // Extract number
-
-                  return (
-                    <span key={ql} className="px-0.5 py-0.5 text-[10px]">
-                      {qlShort}
-                    </span>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        ),
+        meta: { label: "ID" },
       },
       {
         accessorKey: "description",
-        header: "Checkpoint",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Checkpoint" />
+        ),
         cell: ({ getValue }) => (
-          <p className="text-primary-500 text-sm leading-snug">
+          <p className="font-helvetica-now text-primary-500 lg:text-md text-base leading-snug font-medium capitalize">
             {getValue<string>()}
           </p>
         ),
+        meta: {
+          label: "Checkpoint",
+          placeholder: "Search checkpoint...",
+          variant: "text",
+        },
       },
       {
-        id: "checkResult",
-        header: "Check",
-        size: 130,
+        accessorKey: "category",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Category" />
+        ),
+        size: 140,
+        cell: ({ getValue }) => (
+          <span className="font-helvetica-now text-primary-500 lg:text-md text-base leading-snug font-medium capitalize">
+            {getValue<string>() || "—"}
+          </span>
+        ),
+        meta: {
+          label: "Category",
+          variant: "multiSelect",
+          options: categoryOptions,
+        },
+        filterFn: (row, id, value: string[]) =>
+          value.includes(row.getValue(id)),
+      },
+      {
+        accessorKey: "qualityLevel",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Quality Level" />
+        ),
+        size: 180,
+        cell: ({ getValue }) => {
+          const levels = getValue<string[]>();
+          if (!levels.length)
+            return <span className="text-primary-300 text-xs">—</span>;
+          return (
+            <span className="font-helvetica-now text-primary-500 lg:text-md text-base leading-snug font-medium capitalize">
+              {levels.join("; ")}
+            </span>
+          );
+        },
+        meta: {
+          label: "Quality Level",
+          variant: "multiSelect",
+          options: qualityLevelOptions,
+        },
+        // qualityLevel is string[] — match if row array contains any selected value
+        filterFn: (row, id, value: string[]) => {
+          const cellLevels = row.getValue<string[]>(id);
+          return value.some((v) => cellLevels.includes(v));
+        },
+      },
+      {
+        accessorKey: "checkResult",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Check Result" />
+        ),
+        size: 150,
         cell: ({ row }) => (
           <CheckCell
             item={row.original}
@@ -200,32 +246,53 @@ export function ChecklistTable({
             onCheckResult={onCheckResult}
           />
         ),
+        meta: {
+          label: "Check Result",
+          variant: "multiSelect",
+          options: CHECK_RESULT_OPTIONS,
+        },
+        // null maps to "NOT_SET" for filter comparison
+        filterFn: (row, id, value: string[]) => {
+          const cellVal = row.getValue<string | null>(id);
+          const normalized = cellVal ?? "NOT_SET";
+          return value.includes(normalized);
+        },
       },
       {
         accessorKey: "originatorSignature",
-        header: "Originator",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Originator signature" />
+        ),
         size: 160,
         cell: ({ getValue }) => (
           <SignatureCell signature={getValue<string | null>()} />
         ),
+        meta: { label: "Originator signature" },
       },
       {
         accessorKey: "checkerSignature",
-        header: "Checker",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Checker signature" />
+        ),
         size: 160,
         cell: ({ getValue }) => (
           <SignatureCell signature={getValue<string | null>()} />
         ),
+        meta: { label: "Checker signature" },
       },
     ],
-    [role, canEdit, onCheckResult]
+    [role, canEdit, onCheckResult, categoryOptions, qualityLevelOptions]
   );
 
-  const table = useReactTable({
+  const { table } = useDataTable({
     data: items,
     columns,
-    getCoreRowModel: getCoreRowModel(),
+    pageCount: -1,
     getRowId: (row) => row.id,
+    initialState: {
+      pagination: { pageIndex: 0, pageSize: 10 },
+    },
+    searchableColumns: ["description", "category", "qualityLevel"],
   });
 
   return (
@@ -234,21 +301,38 @@ export function ChecklistTable({
       loading={loading}
       loadingRowCount={8}
       emptyState={
-        <div className="flex flex-col items-center gap-2 py-8 text-gray-400">
+        <div className="text-primary-400 flex flex-col items-center gap-2 py-8">
           <FileX className="size-10 opacity-40" />
           <p className="text-sm">No checklist items found for this document.</p>
         </div>
       }
-      rowClassName={(row) =>
-        row.checkResult === "OK"
-          ? "border-l-4 border-l-green-400 bg-green-50/40"
-          : row.checkResult === "NA"
-            ? "border-l-4 border-l-gray-400 bg-gray-50/40"
-            : "border-l-4 border-l-transparent"
-      }
-      showRowsPerPage={false}
-      showPageNumbers={false}
+      //   rowClassName={(row) =>
+      //     row.checkResult === "OK"
+      //       ? "border-l-4 border-l-primary-400 bg-primary-50/40"
+      //       : row.checkResult === "NA"
+      //         ? "border-l-4 border-l-primary-400 bg-primary-50/40"
+      //         : "border-l-4 border-l-transparent"
+      //   }
+      showRowsPerPage
+      showPageNumbers
       showSelectedCount={false}
-    />
+      paginationVariant="simple"
+    >
+      {/* <DataTableAdvancedToolbar table={table}>
+        <DataTableGlobalSearch placeholder="Search checkpoints..." />
+        <DataTableFilterList table={table} />
+        <DataTableSortList table={table} />
+      </DataTableAdvancedToolbar> */}
+    </DataTable>
+  );
+}
+
+// ─── Public export — wraps inner component with isolated filter store ──────────
+
+export function ChecklistTable(props: ChecklistTableProps) {
+  return (
+    <FilterStoreProvider name="checklist">
+      <ChecklistTableInner {...props} />
+    </FilterStoreProvider>
   );
 }

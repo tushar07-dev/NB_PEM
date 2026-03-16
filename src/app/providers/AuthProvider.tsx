@@ -18,7 +18,7 @@ import { useDocumentFilterStore } from "@/shared/store/documentFilterStore";
 import { AuthContext } from "./AuthContext";
 import { ROLES } from "@/shared/types/roles";
 import type { User } from "@/shared/types/user";
-import { useActiveDocumentStore } from "@/shared/store/ActiveDocumentStore";
+import { useActiveDocumentStore } from "@/shared/store/activeDocumentStore";
 
 // TODO: Replace with MSAL token claims (account.idTokenClaims?.roles) once
 // Azure AD App Roles are configured in the app manifest by the backend team.

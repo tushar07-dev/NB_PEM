@@ -12,7 +12,7 @@ import { ALL_USERS } from "@/shared/config/users";
 import { useAuth } from "@/app/providers/useAuth";
 import { useProjectStore } from "@/shared/store/projectStore";
 import { useGenericPEMStore } from "@/shared/store/genericPemStore";
-import { useActiveDocumentStore } from "@/shared/store/ActiveDocumentStore";
+import { useActiveDocumentStore } from "@/shared/store/activeDocumentStore";
 
 import type { CheckResult } from "../types/checklist";
 import { buildSignature } from "../types/checklist";
@@ -76,12 +76,16 @@ function AssignedRoles({
 function OriginatorProgress({ done, total }: { done: number; total: number }) {
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
   return (
-    <div className="flex min-w-[160px] items-center gap-2">
-      <Progress value={pct} className="h-1.5 flex-1" />
-      <span className="text-[11px] font-semibold whitespace-nowrap text-gray-600">
-        {done}/{total}
-        <span className="ml-0.5 font-normal text-gray-400">({pct}%)</span>
-      </span>
+    <div className="flex min-w-[160px] flex-col gap-0 lg:min-w-[200px]">
+      <div className="flex items-baseline gap-0.5">
+        <span className="font-solutioneer text-primary-600 text-md font-semibold lg:text-md">
+          {done}
+        </span>
+        <span className="text-primary-300 lg:text-base text-sm font-medium">
+          /{total}
+        </span>
+      </div>
+      <Progress value={pct} />
     </div>
   );
 }
@@ -147,25 +151,27 @@ export function ChecklistDetailPage() {
   // Role-aware auto-save:
   //   ORIGINATOR → writes originatorSignature, preserves checkerSignature
   //   CHECKER    → writes checkerSignature,    preserves originatorSignature
-const handleCheckResult = useCallback(
-  async (checkpointId: number, result: CheckResult) => {
-    const item = checklistItems.find((i) => i.checkpointId === checkpointId);
-    if (item?.checkResult === result) return; // same value — do nothing
-    const name = currentUser?.name ?? "";
-    const isOriginator = role === "ORIGINATOR";
-    const newSig = buildSignature(name); // result is always OK or NA
+  const handleCheckResult = useCallback(
+    async (checkpointId: number, result: CheckResult) => {
+      const item = checklistItems.find((i) => i.checkpointId === checkpointId);
+      if (item?.checkResult === result) return; // same value — do nothing
+      const name = currentUser?.name ?? "";
+      const isOriginator = role === "ORIGINATOR";
+      const newSig = buildSignature(name); // result is always OK or NA
 
-    await saveCheckResult({
-      checkpointId,
-      checkResult: result,
-      originatorSignature: isOriginator
-        ? newSig
-        : item?.originatorSignature || null,
-      checkerSignature: !isOriginator ? newSig : item?.checkerSignature || null,
-    });
-  },
-  [saveCheckResult, currentUser, role, checklistItems]
-);
+      await saveCheckResult({
+        checkpointId,
+        checkResult: result,
+        originatorSignature: isOriginator
+          ? newSig
+          : item?.originatorSignature || null,
+        checkerSignature: !isOriginator
+          ? newSig
+          : item?.checkerSignature || null,
+      });
+    },
+    [saveCheckResult, currentUser, role, checklistItems]
+  );
 
   // Progress counts items where any value (OK/NA) has been selected — visible to all roles
   const originatorDone = checklistItems.filter(
@@ -173,7 +179,7 @@ const handleCheckResult = useCallback(
   ).length;
 
   const total = checklistItems.length;
-  console.log(checklistItems, total, originatorDone);
+
   // Dialog open states
   const [sendFlowOpen, setSendFlowOpen] = useState(false);
   const [checkerCompleteOpen, setCheckerCompleteOpen] = useState(false);
@@ -326,15 +332,15 @@ const handleCheckResult = useCallback(
     });
 
   return (
-    <div className="flex flex-col gap-3 px-5 pb-8">
+    <div className="flex flex-col gap-3 px-5 pb-8 lg:px-8">
       {/* Header card */}
-      <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+      <div>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           {/* Document identity */}
           <div className="flex min-w-0 flex-col gap-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[13px] font-semibold text-gray-800">
-                {document.documentNo} — {document.title}
+              <span className="font-solutioneer text-primary-500 text-lg font-semibold lg:text-xl">
+                Document Check List ({document.documentNo}_{document.title})
               </span>
               <Badge
                 variant="outline"
@@ -349,7 +355,7 @@ const handleCheckResult = useCallback(
               )}
             </div>
 
-            <div className="hidden flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-gray-400">
+            <div className="flex hidden flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-gray-400">
               {document.reasonForIssue && (
                 <span>
                   Reason:{" "}
@@ -384,7 +390,7 @@ const handleCheckResult = useCallback(
           </div>
 
           {/* Progress + action buttons */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 lg:gap-6">
             {total > 0 && (
               <OriginatorProgress done={originatorDone} total={total} />
             )}
@@ -407,7 +413,7 @@ const handleCheckResult = useCallback(
         </div>
 
         {/* Assigned roles + workflow stepper */}
-        <div className="mt-3 flex flex-col gap-2 border-t border-gray-100 pt-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="mt-3 flex hidden flex-col gap-2 border-t border-gray-100 pt-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <AssignedRoles
             originator={document.originatorSelfCheck}
             checker={document.checker}

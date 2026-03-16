@@ -39,10 +39,13 @@ import {
 import { formatDate } from "@/shared/lib/data-table/format";
 import { generateId } from "@/shared/lib/data-table/id";
 import { cn } from "@/shared/lib/utils";
+
+// ✅ CHANGED: replaced useFilterStore/useFiltersByColumn with context hooks
 import {
-  useFilterStore,
-  useFiltersByColumn,
-} from "@/shared/store/filter-store";
+  useFiltersByColumnFromContext,
+  useFilterActionsFromContext,
+} from "@/shared/context/FilterStoreContext";
+
 import type {
   ExtendedColumnFilter,
   FilterOperator,
@@ -66,13 +69,12 @@ export function DataTableColumnFilter<TData, TValue>({
   const variant = columnMeta?.variant ?? "text";
   const label = columnMeta?.label ?? columnId;
 
-  // Get filters for this specific column
-  const columnFilters = useFiltersByColumn(
+  // ✅ CHANGED: read from context store, not global singleton
+  const columnFilters = useFiltersByColumnFromContext(
     columnId
   ) as ExtendedColumnFilter<TData>[];
-  const addFilter = useFilterStore((state) => state.addFilter);
-  const updateFilter = useFilterStore((state) => state.updateFilter);
-  const removeFilter = useFilterStore((state) => state.removeFilter);
+  const { addFilter, updateFilter, removeFilter } =
+    useFilterActionsFromContext();
 
   const debouncedUpdateFilter = useDebouncedCallback(updateFilter, debounceMs);
 
@@ -89,11 +91,9 @@ export function DataTableColumnFilter<TData, TValue>({
     [debouncedUpdateFilter]
   );
 
-  // Close popover if last filter is removed
   const handleFilterRemove = React.useCallback(
     (filterId: string) => {
       removeFilter(filterId);
-      // After removal, check if there are any filters left for this column
       const remaining = columnFilters.filter((f) => f.filterId !== filterId);
       if (remaining.length === 0) {
         setOpen(false);
@@ -102,7 +102,6 @@ export function DataTableColumnFilter<TData, TValue>({
     [removeFilter, columnFilters]
   );
 
-  // Auto-add first filter when popover opens with no filters
   const handleOpenChange = React.useCallback(
     (newOpen: boolean) => {
       setOpen(newOpen);
@@ -120,7 +119,6 @@ export function DataTableColumnFilter<TData, TValue>({
     [columnFilters.length, columnId, variant, addFilter]
   );
 
-  // Don't render if column filtering is disabled
   if (column.columnDef.enableColumnFilter === false) {
     return null;
   }
@@ -132,8 +130,8 @@ export function DataTableColumnFilter<TData, TValue>({
           variant="ghost"
           size="icon"
           className={cn(
-            "size-6 shrink-0",
-            columnFilters.length > 0 && "font-semibold text-warning-900"
+            "size-6 shrink-0 text-primary-100",
+            columnFilters.length > 0 && "text-blue-900 font-semibold"
           )}
           aria-label={`Filter ${label}`}
         >
@@ -159,6 +157,8 @@ export function DataTableColumnFilter<TData, TValue>({
   );
 }
 
+// ── ColumnFilterItem — unchanged ──────────────────────────────────────────────
+
 interface ColumnFilterItemProps<TData, TValue> {
   filter: ExtendedColumnFilter<TData>;
   column: Column<TData, TValue>;
@@ -179,7 +179,6 @@ function ColumnFilterItem<TData, TValue>({
 }: ColumnFilterItemProps<TData, TValue>) {
   const [showValueSelector, setShowValueSelector] = React.useState(false);
   const inputId = React.useId();
-
   const filterOperators = getFilterOperators(filter.variant);
 
   return (
@@ -195,8 +194,6 @@ function ColumnFilterItem<TData, TValue>({
           <Trash2 className="size-3" />
         </Button>
       </div>
-
-      {/* Operator selector */}
       <Select
         value={filter.operator}
         onValueChange={(value: FilterOperator) =>
@@ -222,8 +219,6 @@ function ColumnFilterItem<TData, TValue>({
           ))}
         </SelectContent>
       </Select>
-
-      {/* Value input based on variant */}
       <FilterValueInput
         filter={filter}
         inputId={inputId}
@@ -236,6 +231,8 @@ function ColumnFilterItem<TData, TValue>({
     </div>
   );
 }
+
+// ── FilterValueInput — unchanged ──────────────────────────────────────────────
 
 interface FilterValueInputProps<TData, TValue> {
   filter: ExtendedColumnFilter<TData>;
@@ -286,10 +283,8 @@ function FilterValueInput<TData, TValue>({
           />
         );
       }
-
       const isNumber =
         filter.variant === "number" || filter.variant === "range";
-
       return (
         <Input
           id={inputId}
@@ -309,7 +304,6 @@ function FilterValueInput<TData, TValue>({
 
     case "boolean": {
       if (Array.isArray(filter.value)) return null;
-
       return (
         <Select
           open={showValueSelector}
@@ -338,7 +332,6 @@ function FilterValueInput<TData, TValue>({
         : typeof filter.value === "string"
           ? filter.value
           : undefined;
-
       return (
         <Faceted
           open={showValueSelector}
@@ -382,24 +375,20 @@ function FilterValueInput<TData, TValue>({
       const dateValue = Array.isArray(filter.value)
         ? filter.value.filter(Boolean)
         : [filter.value, filter.value].filter(Boolean);
-
       const startDate = dateValue[0]
         ? new Date(Number(dateValue[0]))
         : undefined;
       const endDate = dateValue[1] ? new Date(Number(dateValue[1])) : undefined;
-
       const isSameDate =
         startDate &&
         endDate &&
         startDate.toDateString() === endDate.toDateString();
-
       const displayValue =
         filter.operator === "isBetween" && dateValue.length === 2 && !isSameDate
           ? `${formatDate(startDate, { month: "short" })} - ${formatDate(endDate, { month: "short" })}`
           : startDate
             ? formatDate(startDate, { month: "short" })
             : "Pick a date";
-
       return (
         <Popover open={showValueSelector} onOpenChange={setShowValueSelector}>
           <PopoverTrigger asChild>

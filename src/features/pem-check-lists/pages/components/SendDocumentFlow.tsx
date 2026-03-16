@@ -141,7 +141,7 @@ function FlowHeader({
               <ChevronLeft className="text-primary-300 size-4" />
             </button>
           )}
-          <h2 className="font-solutioneer text-primary-600 text-xl leading-none">
+          <h2 className="font-helvetica-now text-primary-600 text-xl leading-none">
             {STEP_LABELS[step]}
           </h2>
         </div>

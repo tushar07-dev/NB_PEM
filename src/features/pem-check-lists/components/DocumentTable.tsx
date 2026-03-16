@@ -11,12 +11,14 @@ import { useDataTable } from "@/shared/hooks/data-table/use-data-table";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Clock, X, AlertCircle, FileSearch, FileX } from "lucide-react";
+import { FilterStoreProvider } from "@/shared/context/FilterStoreContext";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
+import { DataTableGlobalSearch } from "@/shared/components/data-table/data-table-global-search";
 import {
   useProjectDocuments,
   useAssignDocumentRoles,
@@ -32,7 +34,7 @@ import {
   type ResponsibilityValues,
 } from "../pages/components/DocumentWorkflowDialog";
 import { ALL_USERS } from "@/shared/config/users";
-import { useActiveDocumentStore } from "@/shared/store/ActiveDocumentStore";
+import { useActiveDocumentStore } from "@/shared/store/activeDocumentStore";
 
 // ============================================
 // Types
@@ -213,7 +215,7 @@ const WORKFLOW_STATUS_CONFIG: Record<
 // Component
 // ============================================
 
-export function DocumentTable({ enabled, filters }: DocumentTableProps) {
+function DocumentTableInner({ enabled, filters }: DocumentTableProps) {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   void filters;
@@ -610,6 +612,13 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
     columns,
     pageCount,
     initialState: { pagination: { pageIndex: 0, pageSize: 10 } },
+    searchableColumns: [
+      "title",
+      "documentNo",
+      "originatorSelfCheck",
+      "checker",
+      "approver",
+    ],
   });
 
   // ── Empty / error states ──────────────────────────────────────────────────
@@ -664,13 +673,13 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
         loading={isLoading}
         loadingRowCount={8}
       >
-        <DataTableAdvancedToolbar table={table}>
+        {/* <DataTableAdvancedToolbar table={table}>
+          <DataTableGlobalSearch placeholder="Search documents..." />
           <DataTableFilterList table={table} />
           <DataTableSortList table={table} />
-        </DataTableAdvancedToolbar>
+        </DataTableAdvancedToolbar> */}
       </DataTable>
 
-      {/* Define Responsibilities dialog */}
       <DocumentWorkflowDialog
         key={workflowRow?.id ?? "no-row"}
         {...dialogState}
@@ -683,7 +692,6 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
         isSaving={isSaving}
       />
 
-      {/* Revision History dialog */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         {isModalOpen && (
           <DialogContent className="m-0 h-screen w-screen max-w-none rounded-none p-0 [&>button:last-child]:hidden">
@@ -700,7 +708,6 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
                   <X className="h-6 w-6" />
                 </Button>
               </DialogHeader>
-
               <div className="flex-1 overflow-auto p-6">
                 {selectedRow && (
                   <div className="space-y-6">
@@ -739,7 +746,6 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
                         </div>
                       </div>
                     </div>
-
                     <div className="bg-muted/50 rounded-lg p-6">
                       <h3 className="mb-4 text-lg font-semibold">
                         Current Revision Details
@@ -785,7 +791,6 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
                         </div>
                       </div>
                     </div>
-
                     <div className="bg-muted/50 rounded-lg p-6">
                       <h3 className="mb-4 text-lg font-semibold">
                         Revision Timeline
@@ -810,5 +815,15 @@ export function DocumentTable({ enabled, filters }: DocumentTableProps) {
         )}
       </Dialog>
     </div>
+  );
+}
+
+// ✅ NEW: exported shell — provider wraps the inner component so all hooks
+//         called inside DocumentTableInner are already inside the context tree
+export function DocumentTable(props: DocumentTableProps) {
+  return (
+    <FilterStoreProvider name="documents">
+      <DocumentTableInner {...props} />
+    </FilterStoreProvider>
   );
 }

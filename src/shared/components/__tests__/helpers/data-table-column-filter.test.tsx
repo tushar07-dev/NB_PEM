@@ -1,19 +1,61 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import * as React from "react";
 import { DataTableColumnFilter } from "@/shared/components/data-table/data-table-column-filter";
 import { createMockColumn } from "@/shared/components/__tests__/helpers/create-mock-table";
-import { useFilterStore } from "@/shared/store/filter-store";
+import { createFilterStore } from "@/shared/store/create-filter-store";
+import { FilterStoreContext } from "@/shared/context/FilterStoreContext";
+import type { FilterStore } from "@/shared/store/create-filter-store";
 
-// Reset Zustand store before each test to prevent bleed-through
-beforeEach(() => {
-  useFilterStore.getState().resetFilters();
-});
-
-// useDebouncedCallback — use real hook but with delay=0 so updates are immediate in tests
+// useDebouncedCallback — bypass debounce so store updates are synchronous in tests
 vi.mock("@/shared/hooks/data-table/use-debounced-callback", () => ({
   useDebouncedCallback: (fn: (...args: unknown[]) => unknown) => fn,
 }));
+
+// ── Per-test isolated store ───────────────────────────────────────────────────
+// Each helper creates a FRESH store so tests never bleed into each other.
+
+let testStore: FilterStore;
+
+/**
+ * Renders the component wrapped in its own isolated FilterStoreContext.
+ * Always call this instead of bare render() so the component reads from
+ * testStore, not the (non-existent) global singleton.
+ */
+function renderWithStore(ui: React.ReactElement) {
+  testStore = createFilterStore("test");
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return (
+      <FilterStoreContext.Provider value={testStore}>
+        {children}
+      </FilterStoreContext.Provider>
+    );
+  }
+  return render(ui, { wrapper: Wrapper });
+}
+
+/**
+ * Seed state BEFORE render when a test needs pre-existing filters.
+ * Create the store first, seed it, then render manually with the same store.
+ */
+function renderWithSeededStore(
+  ui: React.ReactElement,
+  seed: (store: FilterStore) => void
+) {
+  testStore = createFilterStore("test");
+  seed(testStore);
+  return render(
+    <FilterStoreContext.Provider value={testStore}>
+      {ui}
+    </FilterStoreContext.Provider>
+  );
+}
+
+// Reset testStore reference between tests (store itself is always fresh via helpers above)
+beforeEach(() => {
+  testStore = createFilterStore("test");
+});
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -32,8 +74,7 @@ function makeColumn(variant: string, extra: Record<string, unknown> = {}) {
 
 describe("DataTableColumnFilter — rendering", () => {
   it("renders filter icon button", () => {
-    const column = makeColumn("text");
-    render(<DataTableColumnFilter column={column} />);
+    renderWithStore(<DataTableColumnFilter column={makeColumn("text")} />);
     expect(
       screen.getByRole("button", { name: /filter name/i })
     ).toBeInTheDocument();
@@ -47,23 +88,27 @@ describe("DataTableColumnFilter — rendering", () => {
         enableColumnFilter: false,
       },
     });
-    const { container } = render(<DataTableColumnFilter column={column} />);
+    const { container } = renderWithStore(
+      <DataTableColumnFilter column={column} />
+    );
     expect(container.firstChild).toBeNull();
   });
 
-  it("filter icon button has 'text-primary' class when column has active filters", () => {
-    // Pre-seed the store with a filter for this column
-    useFilterStore.getState().addFilter({
-      id: "name" as never,
-      value: "alice",
-      variant: "text",
-      operator: "iLike",
-      filterId: "f1",
-    });
-    const column = makeColumn("text");
-    render(<DataTableColumnFilter column={column} />);
+  it("filter icon button has active class when column has filters", () => {
+    renderWithSeededStore(
+      <DataTableColumnFilter column={makeColumn("text")} />,
+      (store) =>
+        store.getState().addFilter({
+          id: "name" as never,
+          value: "alice",
+          variant: "text",
+          operator: "iLike",
+          filterId: "f1",
+        })
+    );
     const btn = screen.getByRole("button", { name: /filter name/i });
-    expect(btn).toHaveClass("text-primary");
+    // The component uses "text-warning-900" when filters are active
+    expect(btn).toHaveClass("text-warning-900");
   });
 });
 
@@ -71,51 +116,50 @@ describe("DataTableColumnFilter — rendering", () => {
 
 describe("DataTableColumnFilter — popover behavior", () => {
   it("opens popover when filter button clicked", async () => {
-    const column = makeColumn("text");
-    render(<DataTableColumnFilter column={column} />);
+    renderWithStore(<DataTableColumnFilter column={makeColumn("text")} />);
     await userEvent.click(screen.getByRole("button", { name: /filter name/i }));
     expect(screen.getByText(/filter name/i)).toBeInTheDocument();
   });
 
   it("auto-adds a filter to store when popover opens with no existing filters", async () => {
-    const column = makeColumn("text");
-    render(<DataTableColumnFilter column={column} />);
+    renderWithStore(<DataTableColumnFilter column={makeColumn("text")} />);
 
-    expect(useFilterStore.getState().filters).toHaveLength(0);
+    expect(testStore.getState().filters).toHaveLength(0);
     await userEvent.click(screen.getByRole("button", { name: /filter name/i }));
 
     await waitFor(() => {
-      expect(useFilterStore.getState().filters).toHaveLength(1);
+      expect(testStore.getState().filters).toHaveLength(1);
     });
   });
 
   it("newly auto-added filter has correct column id and default operator", async () => {
-    const column = makeColumn("text");
-    render(<DataTableColumnFilter column={column} />);
+    renderWithStore(<DataTableColumnFilter column={makeColumn("text")} />);
     await userEvent.click(screen.getByRole("button", { name: /filter name/i }));
 
     await waitFor(() => {
-      const filters = useFilterStore.getState().filters;
+      const filters = testStore.getState().filters;
       expect(filters[0].id).toBe("name");
       expect(filters[0].variant).toBe("text");
-      expect(filters[0].operator).toBe("iLike"); // default for text
+      expect(filters[0].operator).toBe("iLike");
     });
   });
 
   it("does not add duplicate filter when popover is opened while filters exist", async () => {
-    useFilterStore.getState().addFilter({
-      id: "name" as never,
-      value: "existing",
-      variant: "text",
-      operator: "iLike",
-      filterId: "existing-f",
-    });
-    const column = makeColumn("text");
-    render(<DataTableColumnFilter column={column} />);
+    renderWithSeededStore(
+      <DataTableColumnFilter column={makeColumn("text")} />,
+      (store) =>
+        store.getState().addFilter({
+          id: "name" as never,
+          value: "existing",
+          variant: "text",
+          operator: "iLike",
+          filterId: "existing-f",
+        })
+    );
     await userEvent.click(screen.getByRole("button", { name: /filter name/i }));
 
     await waitFor(() => {
-      expect(useFilterStore.getState().filters).toHaveLength(1);
+      expect(testStore.getState().filters).toHaveLength(1);
     });
   });
 });
@@ -124,26 +168,26 @@ describe("DataTableColumnFilter — popover behavior", () => {
 
 describe("DataTableColumnFilter — operator selector", () => {
   it("renders operator select dropdown inside popover", async () => {
-    const column = makeColumn("text");
-    render(<DataTableColumnFilter column={column} />);
+    renderWithStore(<DataTableColumnFilter column={makeColumn("text")} />);
     await userEvent.click(screen.getByRole("button", { name: /filter name/i }));
 
     await waitFor(() => {
-      // Operator dropdown shows current operator label — for text, default is "iLike" → "Contains"
       expect(screen.getByRole("combobox")).toBeInTheDocument();
     });
   });
 
   it("shows isEmpty placeholder when isEmpty operator is selected", async () => {
-    useFilterStore.getState().addFilter({
-      id: "name" as never,
-      value: "",
-      variant: "text",
-      operator: "isEmpty",
-      filterId: "f1",
-    });
-    const column = makeColumn("text");
-    render(<DataTableColumnFilter column={column} />);
+    renderWithSeededStore(
+      <DataTableColumnFilter column={makeColumn("text")} />,
+      (store) =>
+        store.getState().addFilter({
+          id: "name" as never,
+          value: "",
+          variant: "text",
+          operator: "isEmpty",
+          filterId: "f1",
+        })
+    );
     await userEvent.click(screen.getByRole("button", { name: /filter name/i }));
 
     await waitFor(() => {
@@ -156,22 +200,24 @@ describe("DataTableColumnFilter — operator selector", () => {
 
 describe("DataTableColumnFilter — removing filters", () => {
   it("removes filter from store when trash button clicked", async () => {
-    useFilterStore.getState().addFilter({
-      id: "name" as never,
-      value: "test",
-      variant: "text",
-      operator: "iLike",
-      filterId: "f-remove",
-    });
-    const column = makeColumn("text");
-    render(<DataTableColumnFilter column={column} />);
+    renderWithSeededStore(
+      <DataTableColumnFilter column={makeColumn("text")} />,
+      (store) =>
+        store.getState().addFilter({
+          id: "name" as never,
+          value: "test",
+          variant: "text",
+          operator: "iLike",
+          filterId: "f-remove",
+        })
+    );
     await userEvent.click(screen.getByRole("button", { name: /filter name/i }));
 
-    const trashBtn = await screen.findByRole("button", { name: "" }); // Trash2 icon button
+    const trashBtn = await screen.findByRole("button", { name: "" });
     await userEvent.click(trashBtn);
 
     await waitFor(() => {
-      expect(useFilterStore.getState().filters).toHaveLength(0);
+      expect(testStore.getState().filters).toHaveLength(0);
     });
   });
 });
@@ -180,8 +226,7 @@ describe("DataTableColumnFilter — removing filters", () => {
 
 describe("DataTableColumnFilter — text variant", () => {
   it("renders text input for text variant", async () => {
-    const column = makeColumn("text");
-    render(<DataTableColumnFilter column={column} />);
+    renderWithStore(<DataTableColumnFilter column={makeColumn("text")} />);
     await userEvent.click(screen.getByRole("button", { name: /filter name/i }));
 
     await waitFor(() => {
@@ -190,15 +235,14 @@ describe("DataTableColumnFilter — text variant", () => {
   });
 
   it("updates filter value in store when typing in text input", async () => {
-    const column = makeColumn("text");
-    render(<DataTableColumnFilter column={column} />);
+    renderWithStore(<DataTableColumnFilter column={makeColumn("text")} />);
     await userEvent.click(screen.getByRole("button", { name: /filter name/i }));
 
     await waitFor(() => screen.getByRole("textbox"));
     await userEvent.type(screen.getByRole("textbox"), "alice");
 
     await waitFor(() => {
-      const filter = useFilterStore.getState().filters[0];
+      const filter = testStore.getState().filters[0];
       expect(filter.value).toBe("alice");
     });
   });
@@ -206,12 +250,10 @@ describe("DataTableColumnFilter — text variant", () => {
 
 describe("DataTableColumnFilter — boolean variant", () => {
   it("renders select (True/False) for boolean variant", async () => {
-    const column = makeColumn("boolean");
-    render(<DataTableColumnFilter column={column} />);
+    renderWithStore(<DataTableColumnFilter column={makeColumn("boolean")} />);
     await userEvent.click(screen.getByRole("button", { name: /filter name/i }));
 
     await waitFor(() => {
-      // Boolean renders a Select component
       expect(screen.getAllByRole("combobox").length).toBeGreaterThan(0);
     });
   });
@@ -219,13 +261,16 @@ describe("DataTableColumnFilter — boolean variant", () => {
 
 describe("DataTableColumnFilter — select variant", () => {
   it("renders faceted option list for select variant", async () => {
-    const column = makeColumn("select", {
-      options: [
-        { label: "Active", value: "active" },
-        { label: "Inactive", value: "inactive" },
-      ],
-    });
-    render(<DataTableColumnFilter column={column} />);
+    renderWithStore(
+      <DataTableColumnFilter
+        column={makeColumn("select", {
+          options: [
+            { label: "Active", value: "active" },
+            { label: "Inactive", value: "inactive" },
+          ],
+        })}
+      />
+    );
     await userEvent.click(screen.getByRole("button", { name: /filter name/i }));
 
     await waitFor(() => {
@@ -236,28 +281,30 @@ describe("DataTableColumnFilter — select variant", () => {
 
 describe("DataTableColumnFilter — number variant with isBetween", () => {
   it("renders range inputs when operator is isBetween", async () => {
-    useFilterStore.getState().addFilter({
-      id: "name" as never,
-      value: ["", ""],
-      variant: "number",
-      operator: "isBetween",
-      filterId: "f-between",
-    });
     const column = createMockColumn({
       id: "name",
       columnDef: {
         meta: { label: "Amount", variant: "number" },
         enableColumnFilter: true,
-        accessorFn: () => undefined, // Fix: add dummy accessorFn
+        accessorFn: () => undefined,
       },
     });
-    render(<DataTableColumnFilter column={column} />);
+
+    renderWithSeededStore(<DataTableColumnFilter column={column} />, (store) =>
+      store.getState().addFilter({
+        id: "name" as never,
+        value: ["", ""],
+        variant: "number",
+        operator: "isBetween",
+        filterId: "f-between",
+      })
+    );
+
     await userEvent.click(
       screen.getByRole("button", { name: /filter amount/i })
     );
 
     await waitFor(() => {
-      // DataTableRangeFilter renders two number inputs with aria-label
       expect(
         screen.getByRole("spinbutton", { name: /minimum/i })
       ).toBeInTheDocument();

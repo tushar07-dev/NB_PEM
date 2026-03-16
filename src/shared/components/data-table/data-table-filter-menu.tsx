@@ -24,6 +24,10 @@ import {
 } from "@/shared/components/ui/command";
 import { Input } from "@/shared/components/ui/input";
 import {
+  useFiltersFromContext,
+  useFilterActionsFromContext,
+} from "@/shared/context/FilterStoreContext";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -45,7 +49,7 @@ import { generateId } from "@/shared/lib/data-table/id";
 import { cn } from "@/shared/lib/utils";
 // ✅ FIX: Removed nuqs import (useQueryState, getFiltersStateParser)
 //         Now using Zustand as the single source of truth
-import { useFilterStore } from "@/shared/store/filter-store";
+// import { useFilterStore } from "@/shared/store/filter-store";
 // import type { ExtendedColumnFilter, FilterOperator } from "@/shared/types/data-table";
 import type {
   ExtendedColumnFilter,
@@ -90,11 +94,8 @@ export function DataTableFilterMenu<TData>({
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   // ✅ FIX: Replaced useQueryState (nuqs) with Zustand store selectors
-  const filters = useFilterStore(
-    (state) => state.filters
-  ) as ExtendedColumnFilter<TData>[];
-  const setFilters = useFilterStore((state) => state.setFilters);
-  const resetFilters = useFilterStore((state) => state.resetFilters);
+const filters = useFiltersFromContext() as ExtendedColumnFilter<TData>[];
+const { setFilters, resetFilters } = useFilterActionsFromContext();
 
   const debouncedSetFilters = useDebouncedCallback(setFilters, debounceMs);
 

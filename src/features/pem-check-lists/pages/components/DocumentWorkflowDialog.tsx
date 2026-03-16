@@ -80,7 +80,7 @@ function PopupHeader({
 }) {
   return (
     <div className="flex w-full items-center justify-between">
-      <h2 className="font-solutioneer text-primary-600 text-xl leading-none">
+      <h2 className="font-helvetica-now text-primary-600 text-xl leading-none">
         {title}
       </h2>
       <button

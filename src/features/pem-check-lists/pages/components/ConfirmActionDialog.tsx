@@ -77,7 +77,7 @@ export function ConfirmActionDialog({
 
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h2 className="font-solutioneer text-primary-600 text-xl leading-none">
+          <h2 className="font-helvetica-now text-primary-600 text-xl leading-none">
             {title}
           </h2>
           <button

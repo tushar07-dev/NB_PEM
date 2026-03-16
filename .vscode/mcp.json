@@ -1,0 +1,38 @@
+{
+	"servers": {
+		"Figma": {
+			"url": "https://mcp.figma.com/mcp",
+			"type": "http"
+		},
+		"shadcn": {
+			"command": "npx",
+			"args": [
+				"shadcn@latest",
+				"mcp"
+			],
+			"type": "stdio"
+		},
+		"io.github.github/github-mcp-server": {
+			"type": "stdio",
+			"command": "docker",
+			"args": [
+				"run",
+				"-i",
+				"--rm",
+				"-e",
+				"GITHUB_PERSONAL_ACCESS_TOKEN=${input:token}",
+				"ghcr.io/github/github-mcp-server:0.29.0"
+			],
+			"gallery": "https://api.mcp.github.com",
+			"version": "0.29.0"
+		}
+	},
+	"inputs": [
+		{
+			"id": "token",
+			"type": "promptString",
+			"description": "",
+			"password": true
+		}
+	]
+}

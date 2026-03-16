@@ -1,0 +1,19 @@
+{
+  "docwriter.style": "JSDoc",
+  "css.lint.unknownAtRules": "ignore",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "tailwindCSS.lint.suggestCanonicalClasses": "warning",
+
+  // ✅ Add these for IntelliSense
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ],
+  "editor.quickSuggestions": {
+    "strings": true
+  }
+}

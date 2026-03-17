@@ -4,7 +4,7 @@
 // Add/remove capabilities here — the rest of the app reads from this map.
 
 import type { DocumentRole } from "../types/checklist";
-import type { DocumentWorkflowStatus } from "../components/DocumentTable";
+import type { DocumentWorkflowStatus } from "../types/document";
 
 // ─── Permission flags ─────────────────────────────────────────────────────────
 

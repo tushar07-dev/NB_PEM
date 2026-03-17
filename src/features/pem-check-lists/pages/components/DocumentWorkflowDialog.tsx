@@ -15,7 +15,7 @@ import {
   defineSchema,
   sendSchema,
   type ResponsibilityValues,
-} from "../../types/DocumentWorkflowSchema";
+} from "./DocumentWorkflowSchema";
 
 // ─── Re-export so existing imports from this file keep working ─────────────────
 export type { ResponsibilityValues };
@@ -263,7 +263,7 @@ export function DocumentWorkflowDialog({
           "bg-grey-50 overflow-hidden",
           "rounded-[18px] lg:rounded-[24px]",
           "px-5 pt-4 pb-5 lg:px-8 lg:pt-6 lg:pb-7",
-          "px-85 lg:px-125",
+          "w-85 lg:w-125",
           "flex flex-col",
           "gap-4 lg:gap-6"
         )}

@@ -1,12 +1,8 @@
 "use client";
 
 import type { Column } from "@tanstack/react-table";
-import {
-  ChevronDown,
-  ChevronUp,
-  EyeOff,
-  X,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, EyeOff, X } from "lucide-react";
+import * as React from "react";
 
 import { DataTableColumnFilter } from "@/shared/components/data-table/data-table-column-filter";
 import {
@@ -17,12 +13,10 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import { cn } from "@/shared/lib/utils";
-import { useHasColumnFilter } from "@/shared/store/filter-store";
+import { useHasColumnFilterFromContext } from "@/shared/context/FilterStoreContext";
 
-interface DataTableColumnHeaderProps<
-  TData,
-  TValue,
-> extends React.ComponentProps<typeof DropdownMenuTrigger> {
+interface DataTableColumnHeaderProps<TData, TValue>
+  extends React.ComponentProps<typeof DropdownMenuTrigger> {
   column: Column<TData, TValue>;
   label: string;
 }
@@ -33,7 +27,8 @@ export function DataTableColumnHeader<TData, TValue>({
   className,
   ...props
 }: DataTableColumnHeaderProps<TData, TValue>) {
-  const hasFilter = useHasColumnFilter(column.id);
+  // ✅ called inside the component, using context hook
+  const hasFilter = useHasColumnFilterFromContext(column.id);
   const canFilter = column.columnDef.enableColumnFilter !== false;
 
   if (!column.getCanSort() && !column.getCanHide() && !canFilter) {

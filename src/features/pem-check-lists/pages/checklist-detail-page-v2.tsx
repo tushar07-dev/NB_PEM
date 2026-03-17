@@ -8,7 +8,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { cn } from "@/shared/lib/utils";
 
 import { ROUTES } from "@/shared/config/routes";
-import { ALL_USERS } from "@/shared/config/users";
+import { ALL_USERS, getDisplayName } from "@/shared/config/users";
 import { useAuth } from "@/app/providers/useAuth";
 import { useProjectStore } from "@/shared/store/projectStore";
 import { useGenericPEMStore } from "@/shared/store/genericPemStore";
@@ -16,7 +16,7 @@ import { useActiveDocumentStore } from "@/shared/store/activeDocumentStore";
 
 import type { CheckResult } from "../types/checklist";
 import { buildSignature } from "../types/checklist";
-import type { ResponsibilityValues } from "../types/DocumentWorkflowSchema";
+import type { ResponsibilityValues } from "./components/DocumentWorkflowSchema";
 
 import {
   useChecklistItems,
@@ -64,7 +64,7 @@ function AssignedRoles({
         >
           <User className="size-3 shrink-0 text-gray-300" />
           <span className="text-xs text-gray-400">{label}:</span>
-          <span className="text-xs font-medium text-gray-600">
+          <span className="block max-w-35 truncate text-xs font-medium text-gray-600">
             {value ?? <span className="text-gray-300 italic">—</span>}
           </span>
         </div>
@@ -226,13 +226,22 @@ export function ChecklistDetailPage() {
       await sendEmail({
         to: toList,
         cc: ccList,
-        subject: `Document Ready for Approval: ${document.documentNo}`,
+        subject: `[PEM] Document Ready for Approval: ${document.documentNo}`,
         body: [
-          `Document ${document.documentNo} — ${document.title} has been reviewed by the checker and is ready for your approval.`,
-          "",
-          `Originator: ${document.originatorSelfCheck ?? "—"}`,
-          `Checker:    ${document.checker ?? "—"}`,
-          `Approver:   ${document.approver ?? "—"}`,
+          `Hello ${getDisplayName(document.approver)},`,
+          ``,
+          `The following document has been reviewed by the checker and is ready for your approval.`,
+          ``,
+          `──────────────────────────────`,
+          `Document No : ${document.documentNo}`,
+          `Title       : ${document.title}`,
+          `──────────────────────────────`,
+          `Originator  : ${getDisplayName(document.originatorSelfCheck)}`,
+          `Checker     : ${getDisplayName(document.checker)}`,
+          `Approver    : ${getDisplayName(document.approver)}`,
+          `──────────────────────────────`,
+          ``,
+          `Please log in to PEM Digital to approve this document.`,
         ].join("\n"),
       });
     }
@@ -259,13 +268,22 @@ export function ChecklistDetailPage() {
       await sendEmail({
         to: allParties,
         cc: [],
-        subject: `Document Approved & Released: ${document.documentNo}`,
+        subject: `[PEM] Document Approved & Released: ${document.documentNo}`,
         body: [
-          `Document ${document.documentNo} — ${document.title} has been approved and officially released.`,
-          "",
-          `Originator: ${document.originatorSelfCheck ?? "—"}`,
-          `Checker:    ${document.checker ?? "—"}`,
-          `Approver:   ${document.approver ?? "—"}`,
+          `Hello,`,
+          ``,
+          `The following document has been approved and officially released.`,
+          ``,
+          `──────────────────────────────`,
+          `Document No : ${document.documentNo}`,
+          `Title       : ${document.title}`,
+          `──────────────────────────────`,
+          `Originator  : ${getDisplayName(document.originatorSelfCheck)}`,
+          `Checker     : ${getDisplayName(document.checker)}`,
+          `Approver    : ${getDisplayName(document.approver)}`,
+          `──────────────────────────────`,
+          ``,
+          `No further action is required.`,
         ].join("\n"),
       });
     }
@@ -335,17 +353,14 @@ export function ChecklistDetailPage() {
     <div className="flex flex-col gap-3 px-5 pb-8 lg:px-8">
       {/* Header card */}
       <div>
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex gap-3 flex-row items-center justify-between">
           {/* Document identity */}
           <div className="flex min-w-0 flex-col gap-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-solutioneer text-primary-500 text-lg font-semibold lg:text-xl">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="font-solutioneer text-primary-500 min-w-0 shrink truncate text-lg font-semibold lg:text-xl">
                 Document Check List ({document.documentNo}_{document.title})
               </span>
-              <Badge
-                variant="outline"
-                className={cn("px-2 py-0 text-xs", roleBadge.className)}
-              >
+              <Badge variant="outline" className={cn("max-w-30 truncate px-1.5 py-1 text-xs", roleBadge.className)}>
                 {roleBadge.label}
               </Badge>
               {permissions.isLocked && (
@@ -390,7 +405,7 @@ export function ChecklistDetailPage() {
           </div>
 
           {/* Progress + action buttons */}
-          <div className="flex flex-wrap items-center gap-3 lg:gap-6">
+          <div className="flex items-center gap-3 lg:gap-6">
             {total > 0 && (
               <OriginatorProgress done={originatorDone} total={total} />
             )}

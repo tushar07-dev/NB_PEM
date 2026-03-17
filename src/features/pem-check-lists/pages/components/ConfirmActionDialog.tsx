@@ -42,7 +42,7 @@ const DIALOG_SHELL = cn(
   "bg-grey-50 overflow-hidden",
   "rounded-[18px] lg:rounded-[24px]",
   "px-5 pt-4 pb-5 lg:px-8 lg:pt-[24px] lg:pb-8",
-  "px-85 lg:w-[480px]",
+  "w-85 lg:w-[480px]",
   "flex flex-col",
   "gap-4 lg:gap-6"
 );

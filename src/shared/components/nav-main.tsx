@@ -109,7 +109,7 @@ export function NavMain({ items, className }: NavMainProps) {
                       tooltip={item.title}
                       isActive={isParentActive || hasActiveChild || isMenuOpen}
                       className={cn(
-                        "group",
+                        "group flex w-full items-center",
                         "data-[active=true]:bg-transparent",
                         "data-[active=true]:border-transparent",
                         "data-[active=true]:text-grey-700",
@@ -194,15 +194,18 @@ export function NavMain({ items, className }: NavMainProps) {
                       )}
                       onClick={() => handleCollapsedClick(item)}
                     >
-                      {item.icon && (
-                        <item.icon className="h-5 w-5 shrink-0 md:h-6 md:w-6" />
-                      )}
-                      <span className="truncate text-sm group-data-[state=collapsed]:hidden md:text-base">
+                      <span className="p-2 lg:px-3.5 lg:py-2.5 shrink-0 items-center justify-center">
+                        {item.icon && (
+                          <item.icon className="h-5 w-4 shrink-0 lg:h-8 lg:w-6" />
+                        )}
+                      </span>
+                      <span className="truncate text-sm font-normal group-data-[state=collapsed]:hidden md:text-base">
                         {item.title}
                       </span>
                       <ChevronRight
                         className={cn(
-                          "ml-auto h-4 w-4 shrink-0 rotate-90 transition-transform duration-200",
+                          "ml-auto mr-3",
+                          "h-4 w-4 shrink-0 rotate-90 transition-transform duration-200",
                           "group-data-[state=collapsed]:hidden",
                           "group-data-[state=open]/collapsible:rotate-270"
                         )}
@@ -243,10 +246,12 @@ export function NavMain({ items, className }: NavMainProps) {
                     onClick={() => handleCollapsedClick(item)}
                   >
                     <NavLink to={item.url}>
-                      {item.icon && (
-                        <item.icon className="h-5 w-5 shrink-0 md:h-6 md:w-6" />
-                      )}
-                      <span className="truncate text-sm group-data-[state=collapsed]:hidden md:text-base">
+                      <span className="p-2 lg:px-3.5 lg:py-2.5 shrink-0 items-center justify-center">
+                          {item.icon && (
+                          <item.icon className="h-5 w-4 shrink-0 lg:h-8 lg:w-6" />
+                        )}
+                      </span>
+                      <span className="truncate text-sm font-normal group-data-[state=collapsed]:hidden md:text-base">
                         {item.title}
                       </span>
                     </NavLink>
@@ -265,7 +270,7 @@ export function NavMain({ items, className }: NavMainProps) {
                               "relative -ml-px rounded-none border-l-2 border-transparent pl-2 transition-all",
                               "hover:border-grey-700/40",
                               pathname.startsWith(subItem.url) &&
-                                "border-grey-900 text-grey-900 bg-transparent font-semibold"
+                                "border-grey-900 text-grey-900 bg-transparent font-medium"
                             )}
                           >
                             <NavLink to={subItem.url}>

@@ -10,16 +10,22 @@ interface AppShellProps {
   children: ReactNode;
 }
 
+// src/app/components/AppShell.tsx
 const AppShell = ({ children }: AppShellProps) => {
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden">
       <TopHeader />
-      <SidebarProvider defaultOpen={true} className="flex flex-1">
+      <SidebarProvider
+        defaultOpen={true}
+        className="flex flex-1 min-h-0 overflow-hidden"
+      >
         <AppSidebar />
-        <SidebarInset className="overflow-y-auto">
+        <SidebarInset className="flex flex-col flex-1 min-h-0 overflow-y-auto"> {/* ← flex flex-col flex-1 */}
           <DynamicBreadcrumb />
           <ErrorBoundary>
-            {children}
+            <div className="flex flex-col flex-1"> {/* ← wrap children */}
+              {children}
+            </div>
           </ErrorBoundary>
         </SidebarInset>
       </SidebarProvider>

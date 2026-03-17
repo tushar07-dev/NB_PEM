@@ -11,7 +11,7 @@
 
 import { Send, Loader2 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { FlowHeader, StepIndicator } from "../../_flow-shared";
+import { FlowHeader } from "../../_flow-shared";
 
 const BTN_BASE = cn(
   "flex shrink-0 items-center justify-center gap-2",
@@ -28,16 +28,47 @@ const BTN_BASE = cn(
 function IllustrationPlaceholder() {
   return (
     <div className="flex flex-col items-center gap-5 py-2">
-      {/* Asset slot — swap this div for your Lottie / img component */}
       <div className="flex h-45 w-full items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50">
         <span className="text-sm text-gray-300 italic">
-          [ Illustration — replace with asset ]
+          <svg
+            width="440"
+            height="393"
+            viewBox="0 0 440 393"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlnsXlink="http://www.w3.org/1999/xlink"
+          >
+            <rect
+              width="440"
+              height="275"
+              fill="url(#pattern0_11260_2702)"
+              style={{ mixBlendMode: "luminosity" }}
+            />
+            {/* ... all the path elements unchanged ... */}
+            <defs>
+              <pattern
+                id="pattern0_11260_2702"
+                patternContentUnits="objectBoundingBox"
+                width="1"
+                height="1"
+              >
+                <use
+                  xlinkHref="#image0_11260_2702"
+                  transform="matrix(0.000625 0 0 0.001 0 -0.316364)"
+                />
+              </pattern>
+              <image
+                id="image0_11260_2702"
+                width="1600"
+                height="1600"
+                preserveAspectRatio="none"
+                xlinkHref="data:image/png;base64,..."
+              />
+            </defs>
+          </svg>
         </span>
       </div>
-
-      <p className="text-primary-600 max-w-70 text-center text-lg leading-snug font-semibold">
-        Do you want to send the Document to the Checker?
-      </p>
+      {/* ... */}
     </div>
   );
 }
@@ -67,10 +98,12 @@ export function Step3Confirm({
         onBack={!isBusy ? onBack : undefined}
         disabled={isBusy}
       >
-        <StepIndicator total={3} current={3} />
+        {/* <StepIndicator total={3} current={3} /> */}
       </FlowHeader>
 
-      <IllustrationPlaceholder />
+      <div className="flex flex-1 flex-col items-center justify-center">
+        <IllustrationPlaceholder />
+      </div>
 
       <div className="flex w-full items-center justify-end gap-2 lg:gap-2">
         <button

@@ -18,4 +18,17 @@ export const ALL_USERS: Option[] = [
   { label: "Tushar Shelke", value: "tushar.shelke@akersolutions.com" },
   { label: "Shiv Kumar", value: "shiv.kumar@akersolutions.com" },
   { label: "Rohit Shelar", value: "rohit.shelar@akersolutions.com" },
+  { label: "Amir Ashtari", value:  "amir.h.ashtari@akersolutions.com"}
 ];
+
+// Email → display name lookup
+// O(1) lookup, built once at module level
+const USER_NAME_BY_EMAIL = new Map(
+  ALL_USERS.map((u) => [u.value.toLowerCase(), u.label])
+);
+
+// Helper
+export function getDisplayName(email: string | null | undefined): string {
+  if (!email?.trim()) return "—";
+  return USER_NAME_BY_EMAIL.get(email.toLowerCase()) ?? email;
+}

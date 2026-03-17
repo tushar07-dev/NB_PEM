@@ -32,13 +32,13 @@ import type { Option } from "@/shared/components/ui/SearchableFilterSelect";
 import {
   sendSchema,
   type ResponsibilityValues,
-} from "../../types/DocumentWorkflowSchema";
+} from "./DocumentWorkflowSchema";
 
 import {
   useSendDocumentEmail,
   useAssignDocumentRoles,
 } from "../../api/queries";
-import type { DocumentEntry } from "../../components/DocumentTable";
+import type { DocumentEntry } from "../../types/document";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -70,7 +70,7 @@ const DIALOG_SHELL = cn(
   "bg-grey-50 overflow-hidden",
   "rounded-[18px] lg:rounded-[24px]",
   "px-5 pt-4 pb-5 lg:px-8 lg:pt-[24px] lg:pb-8",
-  "px-85 lg:px-125",
+  "w-85 lg:w-125",
   "flex flex-col",
   "gap-4 lg:gap-4"
 );

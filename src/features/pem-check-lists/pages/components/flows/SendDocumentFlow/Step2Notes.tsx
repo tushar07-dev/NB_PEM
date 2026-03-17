@@ -8,7 +8,7 @@
 // Next   → step 3
 
 import { cn } from "@/shared/lib/utils";
-import { FlowHeader, StepIndicator } from "../../_flow-shared";
+import { FlowHeader } from "../../_flow-shared";
 
 const BTN_BASE = cn(
   "flex shrink-0 items-center justify-center gap-2",
@@ -36,25 +36,32 @@ export function Step2Notes({
   return (
     <>
       <FlowHeader title="Send Document" onClose={onClose} onBack={onBack}>
-        <StepIndicator total={3} current={2} />
+        {/* <StepIndicator total={3} current={2} /> */}
       </FlowHeader>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-1 flex-col gap-1.5">
         <label className="text-primary-400 text-sm font-medium">
           Notes Or Comments
         </label>
-        <textarea
-          value={notes}
-          onChange={(e) => onNotesChange(e.target.value)}
-          placeholder="Enter Any Comments Or Notes You Want To Share With The Recipient"
-          rows={8}
-          className={cn(
-            "w-full resize-none rounded-lg border border-gray-200 bg-gray-50",
-            "px-3 py-2.5 text-sm text-gray-700 placeholder:text-gray-400",
-            "focus:border-primary-400 focus:ring-primary-400 focus:ring-1 focus:outline-none",
-            "transition-colors"
-          )}
-        />
+        <div className="relative flex flex-col">
+          <textarea
+            value={notes}
+            onChange={(e) => onNotesChange(e.target.value)}
+            placeholder="Enter Any Comments Or Notes You Want To Share With The Recipient"
+            maxLength={1500}
+            rows={8}
+            className={cn(
+              "w-full flex-1 resize-none rounded-sm border border-gray-200 bg-grey-100",
+              "min-h-0",
+              "px-3 py-2.5 text-sm text-gray-700 placeholder:text-gray-400",
+              "focus:border-primary-400 focus:ring-primary-400 focus:ring-1 focus:outline-none",
+              "transition-colors"
+            )}
+          />
+          <span className="text-primary-300 mt-1 self-end text-xs">
+            {notes.length}/1500 Characters
+          </span>
+        </div>
       </div>
 
       <div className="flex w-full items-center justify-end gap-2 lg:gap-2">

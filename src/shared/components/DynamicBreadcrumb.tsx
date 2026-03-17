@@ -77,14 +77,14 @@ export function DynamicBreadcrumb() {
     isRedirectOnly: false,
   };
 
-  const routeCrumbs = pathnames.map((segment, index) => {
-    const url = `/${pathnames.slice(0, index + 1).join("/")}`;
-    const isLast = index === pathnames.length - 1;
-    const label = ROUTE_NAMES[segment] ?? slugToLabel(segment);
-    const isRedirectOnly = REDIRECT_ONLY_SEGMENTS.has(segment);
+    const routeCrumbs = pathnames.slice(1).map((segment, index) => {
+      const url = `/${pathnames.slice(0, index + 2).join("/")}`;
+      const isLast = index === pathnames.slice(1).length - 1;
+      const label = ROUTE_NAMES[segment] ?? slugToLabel(segment);
+      const isRedirectOnly = REDIRECT_ONLY_SEGMENTS.has(segment);
 
-    return { url, label, isLast, isRedirectOnly };
-  });
+      return { url, label, isLast, isRedirectOnly };
+    });
 
   const allCrumbs = [homeCrumb, ...routeCrumbs];
 

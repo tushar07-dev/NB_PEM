@@ -1,6 +1,6 @@
 // src/features/pem-check-lists/pages/components/flows/SendDocumentFlow/index.tsx
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -9,8 +9,8 @@ import {
 } from "@/shared/components/ui/dialog";
 import { cn } from "@/shared/lib/utils";
 import type { Option } from "@/shared/components/ui/SearchableFilterSelect";
-import type { ResponsibilityValues } from "@/features/pem-check-lists/types/DocumentWorkflowSchema";
-import type { DocumentEntry } from "@/features/pem-check-lists/components/DocumentTable";
+import type { ResponsibilityValues } from "@/features/pem-check-lists/pages/components/DocumentWorkflowSchema";
+import type { DocumentEntry } from "@/features/pem-check-lists/types/document";
 import {
   useAssignDocumentRoles,
   useSendDocumentEmail,
@@ -19,6 +19,7 @@ import {
 import { Step1Roles } from "./Step1Roles";
 import { Step2Notes } from "./Step2Notes";
 import { Step3Confirm } from "./Step3Confirm";
+import { getDisplayName } from "@/shared/config/users";
 
 // ─── Dialog shell ─────────────────────────────────────────────────────────────
 
@@ -28,7 +29,8 @@ const DIALOG_SHELL = cn(
   "bg-grey-50 overflow-hidden",
   "rounded-[18px] lg:rounded-[24px]",
   "px-5 pt-4 pb-5 lg:px-8 lg:pt-[24px] lg:pb-8",
-  "px-85 lg:px-125",
+  "w-85 lg:w-125",
+  "h-[460px] lg:h-[540px]",
   "flex flex-col",
   "gap-4 lg:gap-6"
 );
@@ -77,11 +79,14 @@ export function SendDocumentFlow({
   );
 
   // Falls back to document props if user skips Step 1 (shouldn't happen, but safe)
-  const resolved: ResponsibilityValues = roleValues ?? {
-    originator: originatorEmail,
-    checker: document.checker ?? "",
-    approver: document.approver ?? "",
-  };
+  const resolved = useMemo<ResponsibilityValues>(
+    () => roleValues ?? {
+      originator: originatorEmail,
+      checker: document.checker ?? "",
+      approver: document.approver ?? "",
+    },
+    [roleValues, originatorEmail, document.checker, document.approver]
+  );
 
   // ── Mutations ───────────────────────────────────────────────────────────────
   const { mutateAsync: assignRoles, isPending: isAssigning } =
@@ -112,6 +117,7 @@ export function SendDocumentFlow({
       const approverUnchanged = vals.approver === (document.approver ?? "");
 
       if (checkerUnchanged && approverUnchanged) {
+        onSaved?.(vals); // ← notify caller even if no API call needed
         handleClose();
         return;
       }
@@ -162,19 +168,30 @@ export function SendDocumentFlow({
           checker: resolved.checker || null,
           approver: resolved.approver || null,
         }),
+        
+        // ── 1. SEND TO CHECKER (SendDocumentFlow Step 3) ──────────────────────────────
         sendEmail({
-          to: [resolved.checker].filter(Boolean),
-          cc: [originatorEmail, resolved.approver].filter(Boolean),
-          subject: `Document Sent for Review: ${document.documentNo}`,
+          to: [resolved.checker].filter((v): v is string => !!v?.trim()),
+          cc: [originatorEmail, resolved.approver].filter((v): v is string => !!v?.trim()),
+          subject: `[PEM] Document Sent for Review: ${document.documentNo}`,
           body: [
-            `Document ${document.documentNo} — ${document.title} has been sent to you for review.`,
-            "",
-            `Originator: ${originatorName}`,
-            `Checker:     ${resolved.checker}`,
-            `Approver:    ${resolved.approver}`,
-            notes.trim() ? `\nNotes:\n${notes.trim()}` : "",
+            `Hello ${getDisplayName(resolved.checker)},`,
+            ``,
+            `The following document has been assigned to you for review.`,
+            ``,
+            `──────────────────────────────`,
+            `Document No : ${document.documentNo}`,
+            `Title       : ${document.title}`,
+            `──────────────────────────────`,
+            `Originator  : ${getDisplayName(originatorEmail)}`,
+            `Checker     : ${getDisplayName(resolved.checker)}`,
+            `Approver    : ${getDisplayName(resolved.approver)}`,
+            `──────────────────────────────`,
+            notes.trim() ? `Notes:\n${notes.trim()}` : "",
+            ``,
+            `Please log in to PEM Digital to review this document.`,
           ]
-            .filter(Boolean)
+            .filter((l) => l !== undefined && l !== null)
             .join("\n"),
         }),
       ]);

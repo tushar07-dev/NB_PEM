@@ -112,6 +112,11 @@
   --color-success-800: #05603a;
   --color-success-900: #054f31;
 
+  /* yellow */
+  --color-yellow-50: #FFFED6;
+  --color-yellow-100: #FFF3A7;
+
+
   /* --- Error (Red) --- */
   --color-error-50: #fef2f2;
   --color-error-100: #fee2e2;
@@ -467,6 +472,7 @@
   /* Table Row Styles */
   .data-table-row {
     background-color: var(--color-grey-50);
+    /* height: 2.5rem; */
   }
 
   .data-table-row:hover {

@@ -1,5 +1,5 @@
 // src/features/pem-check-lists/pages/document-checklist-page.tsx
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { DocumentFilters } from "./components/DocumentFilters";
 import { DocumentTable } from "../components/DocumentTable";
 import { useProjectStore } from "@/shared/store/projectStore";
@@ -8,8 +8,7 @@ import type { DocumentFiltersType } from "../types/document";
 
 export default function DocumentChecklistPage() {
   const selectedProject = useProjectStore((state) => state.selectedProject);
-
-  const { filters, setFilter, resetDocumentFilters } = useDocumentFilterStore();
+  const { filters: storeFilters, setFilter, resetDocumentFilters } = useDocumentFilterStore();
 
   const handleFilterChange = useCallback(
     (updates: Partial<DocumentFiltersType>) => {
@@ -18,11 +17,24 @@ export default function DocumentChecklistPage() {
     [setFilter]
   );
 
+  // Merge projectId from selectedProject into the filters object.
+  // projectId lives in projectStore (not documentFilterStore) so it must
+  // be injected here before passing to DocumentTable → useDocumentTable → API.
+  const filters = useMemo<DocumentFiltersType>(
+    () => ({
+      ...storeFilters,
+      rojectId: selectedProject?.id ?? null,
+    }),
+    [storeFilters, selectedProject?.id]
+  );
+
+  // All 4 mandatory filters must be selected before firing the API call.
+  // documentGroupId gates documentTypeId in the UI but is not sent to the API.
   const areMandatoryFiltersSelected =
     !!selectedProject &&
-    !!filters.discipline &&
-    !!filters.documentGroup &&
-    !!filters.documentType;
+    !!filters.discipline &&      // ← correct
+    !!filters.documentGroup &&   // ← correct
+    !!filters.documentType; 
 
   return (
     <div className="space-y-6 px-7.5">

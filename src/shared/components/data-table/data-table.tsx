@@ -128,12 +128,12 @@ export function DataTable<TData>({
       {children}
       <div
         className={cn(
-          "data-table-scroll-wrapper overflow-hidden rounded-md",
+          "data-table-scroll-wrapper overflow-x-auto overflow-y-hidden rounded-md",
           stickyHeader && "max-h-[70vh] overflow-auto"
         )}
       >
         <Table
-          className={tableClassName}
+          className={cn("min-w-full table-fixed", tableClassName)}
           role="grid"
           aria-rowcount={table.getFilteredRowModel().rows.length}
           aria-colcount={table.getAllColumns().length}
@@ -152,6 +152,8 @@ export function DataTable<TData>({
                     key={header.id}
                     colSpan={header.colSpan}
                     style={{
+                      width: `${header.getSize()}px`,       // ✅ apply tanstack size
+                      maxWidth: `${header.getSize()}px`,    // ✅ enforce max
                       ...getColumnPinningStyle({ column: header.column }),
                     }}
                   >
@@ -176,7 +178,7 @@ export function DataTable<TData>({
                   data-state={row.getIsSelected() && "selected"}
                   className={cn(
                     onRowClick
-                      ? "hover:bg-muted/50 focus-visible:ring-ring cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
+                      ? "h-12 lg:h-14 hover:bg-muted/50 focus-visible:ring-ring cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
                       : "",
                     getRowClassName(row.original)
                   )}
@@ -210,8 +212,10 @@ export function DataTable<TData>({
                     <TableCell
                       key={cell.id}
                       style={{
-                        ...getColumnPinningStyle({ column: cell.column }),
-                      }}
+                      width: `${cell.column.getSize()}px`,     // ✅
+                      maxWidth: `${cell.column.getSize()}px`,  // ✅
+                      ...getColumnPinningStyle({ column: cell.column }),
+                    }}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,

@@ -6,7 +6,7 @@
 // No role checks in calling code — permissions drive everything.
 
 import type { DocumentPermissions } from "../../../permissions";
-import type { DocumentWorkflowStatus } from "../../../components/DocumentTable";
+import type { DocumentWorkflowStatus } from "../../../types/document";
 import { OriginatorActions } from "./OriginatorActions";
 import { CheckerActions } from "./CheckerActions";
 import { ApproverActions } from "./ApproverActions";

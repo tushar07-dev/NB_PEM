@@ -26,7 +26,7 @@
 
 import { create } from "zustand";
 import { persist, devtools, createJSONStorage } from "zustand/middleware";
-import type { DocumentEntry } from "@/features/pem-check-lists/components/DocumentTable";
+import type { DocumentEntry } from "@/features/pem-check-lists/types/document";
 
 // Only these fields change after the document is opened
 type MutableDocumentFields = Pick<

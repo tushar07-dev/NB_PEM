@@ -79,7 +79,7 @@ export const SELECT_SIZE_CONFIG = {
 export const SELECT_AUTO_CONFIG = {
   container: "gap-1 lg:gap-1",
   trigger:
-    "h-[40px] lg:h-[44px] px-[14px] lg:px-5 py-2 lg:py-3 gap-2 rounded-xl",
+    "h-[40px] lg:h-[44px] px-[14px] lg:px-5 py-2 lg:py-3 gap-2 rounded-sm lg:rounded-md",
   label: "text-base leading-5 tracking-[-0.56px] px-[14px] lg:px-5",
   input:
     "h-[36px] lg:h-[40px] rounded-[8px] text-base px-[36px] lg:px-[40px] pr-[36px] lg:pr-[40px]",

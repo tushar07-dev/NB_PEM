@@ -46,15 +46,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className={cn(
                 "border-grey-275 bg-grey-100 hover:bg-grey-200",
                 "transition-all duration-200",
-                "justify-center md:justify-start",
+                "justify-center lg:justify-start",
                 !isCollapsed && "justify-between"
               )}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center">
                 <div
                   className={cn(
                     "flex h-8 w-8 shrink-0 items-center justify-center",
-                    "md:h-9 md:w-9"
+                    " lg:h-9 lg:w-9 text-primary-400"
                   )}
                 >
                   {isCollapsed ? (
@@ -64,7 +64,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   )}
                 </div>
                 {!isCollapsed && (
-                  <span className="text-grey-700 text-sm font-medium md:text-base">
+                  <span className="text-primary-400 text-sm font-medium lg:text-base">
                     Collapse
                   </span>
                 )}

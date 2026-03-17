@@ -148,20 +148,19 @@ export const Icons = {
   // Icon 7: Sidebar Toggle with rotation
   SidebarToggle: ({
     className,
-    size,
     isCollapsed = false,
     ...props
   }: SidebarToggleProps) => {
-    const iconSize = getSize(size);
 
     return (
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        width={iconSize}
-        height={iconSize}
+        // width="18px lg:26px"
+        // height={iconSize}
         viewBox="0 0 26 26"
         fill="none"
         className={cn(
+           "w-[18px] h-[18px] lg:w-[26px] lg:h-[26px]",
           "shrink-0 transition-transform duration-200",
           isCollapsed ? "rotate-180" : "rotate-0",
           className

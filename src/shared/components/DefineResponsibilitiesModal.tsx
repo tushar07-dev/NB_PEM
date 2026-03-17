@@ -14,7 +14,7 @@ import {
 } from "@/shared/components/ui/select";
 import { Label } from "@/shared/components/ui/label";
 import { Button } from "./ui/button";
-import type { DocumentEntry } from "@/features/pem-check-lists/components/DocumentTable";
+import type { DocumentEntry } from "@/features/pem-check-lists/types/document";
 
 interface ModalProps {
   isOpen: boolean;

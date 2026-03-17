@@ -7,14 +7,10 @@
 import { useMemo, useCallback, useState } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/shared/components/data-table/data-table";
-import { DataTableAdvancedToolbar } from "@/shared/components/data-table/data-table-advanced-toolbar";
-import { DataTableFilterList } from "@/shared/components/data-table/data-table-filter-list";
-import { DataTableSortList } from "@/shared/components/data-table/data-table-sort-list";
 import { DataTableColumnHeader } from "@/shared/components/data-table/data-table-column-header";
-import { DataTableGlobalSearch } from "@/shared/components/data-table/data-table-global-search";
 import { useDataTable } from "@/shared/hooks/data-table/use-data-table";
 import { FilterStoreProvider } from "@/shared/context/FilterStoreContext";
-import { Check, Minus, Clock, Loader2, FileX } from "lucide-react";
+import { Loader2, FileX } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { parseSignature } from "../types/checklist";
 import type {
@@ -41,20 +37,19 @@ function SignatureCell({ signature }: { signature: string | null }) {
     day: "2-digit",
     month: "short",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    // hour: "2-digit",
+    // minute: "2-digit",
     hour12: false,
-    timeZoneName: "short",
+    // timeZoneName: "short",
   });
 
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-primary-700 text-sm font-medium lg:text-lg">
+      <span className="text-primary-500 text-base font-medium leading-normal capitalize">
         {parsed.name}
       </span>
-      <div className="text-primary-400 flex items-center gap-1 text-xs">
-        <Clock className="size-2.5 shrink-0" />
-        <span className="text-primary-700 text-sm lg:text-base">
+      <div className="flex items-center gap-1">
+        <span className="text-primary-500 text-base font-medium leading-normal capitalize leading-normal">
           {formatted}
         </span>
       </div>
@@ -109,8 +104,8 @@ function CheckCell({ item, role, canEdit, onCheckResult }: CheckCellProps) {
           "focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none",
           (disabled || saving) && "cursor-not-allowed opacity-40",
           active
-            ? "border-primary-600 text-primary-600 bg-white"
-            : "bg-grey-200 text-grey-600 hover:bg-grey-275 border-transparent"
+            ? "border-primary-600 text-primary-500 bg-white hover:bg-grey-200 hover:border-primary-300"
+            : "bg-grey-200 text-primary-200 rounded-3xl hover:bg-grey-200 hover:border-primary-300 border-transparent"
         )}
       >
         {showSpinner && <Loader2 className="size-3 animate-spin" />}
@@ -171,6 +166,9 @@ function ChecklistTableInner({
           </span>
         ),
         meta: { label: "ID" },
+        enableSorting: false,
+        enableHiding: false,
+        enableColumnFilter: false,
       },
       {
         accessorKey: "description",

@@ -1,9 +1,14 @@
 "use client";
 
-import type * as React from "react";
+import * as React from "react";
 
 import { cn } from "@/shared/lib/utils";
-
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/components/ui/tooltip";
 import { useRef } from "react";
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
@@ -50,7 +55,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
     >
       <table
         data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
+        className={cn("w-max min-w-full caption-bottom text-sm", className)}
         {...props}
       />
     </div>
@@ -108,8 +113,16 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        className,
-        "table-header-cell h-10 px-2 text-left align-middle  whitespace-nowrap [&:has([role=checkbox])]:pr-0 *:[[role=checkbox]]:translate-y-0.5"
+        "table-header-cell",
+        "h-10 px-[14px] py-2",
+        "text-left align-middle",
+        "text-xs font-medium capitalize",
+        "font-helvetica-now text-primary-400",
+        "lg:h-[53px] lg:px-5 lg:pt-5 lg:pb-[18px] lg:text-sm",
+        // ✅ remove whitespace-nowrap, add overflow control
+        "overflow-hidden",                               
+        "[&:has([role=checkbox])]:pr-0 *:[[role=checkbox]]:translate-y-0.5",
+        className
       )}
       {...props}
     />
@@ -121,7 +134,15 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "table-cell-text p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 *:[[role=checkbox]]:translate-y-0.5",
+        "table-cell-text",
+        "h-12 px-[14px] py-[13px]",
+        "align-middle",
+        "text-xs font-medium capitalize",
+        "font-helvetica-now text-primary-500",
+        "lg:h-14 lg:px-5 lg:py-[17px] lg:text-sm lg:gap-[30px]",
+        // ✅ remove whitespace-nowrap, add overflow control
+        "overflow-hidden",                               
+        "[&:has([role=checkbox])]:pr-0 *:[[role=checkbox]]:translate-y-0.5",
         className
       )}
       {...props}
@@ -142,6 +163,50 @@ function TableCaption({
   );
 }
 
+function TableCellContent({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const ref = React.useRef<HTMLSpanElement>(null);
+  const [isTruncated, setIsTruncated] = React.useState(false);
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    setIsTruncated(el.scrollWidth > el.clientWidth);
+    const observer = new ResizeObserver(() => {
+      setIsTruncated(el.scrollWidth > el.clientWidth);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [children]);
+
+  const span = (
+    <span
+      ref={ref}
+      className={cn("block truncate", className)}
+    >
+      {children}
+    </span>
+  );
+
+  if (!isTruncated) return span;
+
+  return (
+    <TooltipProvider delayDuration={300}>
+      <Tooltip>
+        <TooltipTrigger asChild>{span}</TooltipTrigger>
+        <TooltipContent side="top" className="max-w-[300px] break-words text-xs">
+          {children}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 export {
   Table,
   TableHeader,
@@ -151,4 +216,5 @@ export {
   TableRow,
   TableCell,
   TableCaption,
+  TableCellContent
 };

@@ -60,10 +60,12 @@ export const SidebarProvider = React.forwardRef<
         <div
           style={
             {
-              "--sidebar-width": "280px", // 800-1500px expanded
-              "--sidebar-width-lg": "330px", // 1500px+ expanded
-              "--sidebar-width-icon": "90px", // 800-1500px collapsed
+              "--sidebar-width": "222px", // 800-1500px expanded
+              "--sidebar-width-lg": "270px", // 1500px+ expanded
+              "--sidebar-width-icon": "60px", // 800-1500px collapsed
               "--sidebar-width-icon-lg": "90px", // 1500px+ collapsed
+              "--sidebar-menu-item-height": "2.5rem",        // ← 40px for laptop
+              "--sidebar-menu-item-height-lg": "3.75rem", // ← 60px for desktop
               ...style,
             } as React.CSSProperties
           }
@@ -130,7 +132,7 @@ export const SidebarGroup = React.forwardRef<
   <div
     ref={ref}
     data-sidebar="group"
-    className={cn("relative flex w-full min-w-0 flex-col gap-1 p-2", className)}
+    className={cn("relative flex w-full min-w-0 flex-col gap-1 p-1 lg:p-2", className)}
     {...props}
   />
 ));
@@ -203,7 +205,7 @@ export const SidebarFooter = ({
 }: React.ComponentProps<"div">) => (
   <div
     className={cn(
-      "border-grey-200 mt-auto flex w-full flex-col items-start gap-2 p-3 md:p-4",
+      "border-grey-200 mt-auto flex w-full flex-col items-start gap-2 p-1.5 lg:p-2",
       className
     )}
     {...props}
@@ -216,7 +218,7 @@ export const SidebarMenu = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ul
     ref={ref}
-    className={cn("flex w-full list-none flex-col gap-2", className)}
+    className={cn("flex w-full list-none flex-col gap-1 lg:gap-2", className)}
     {...props}
   />
 ));
@@ -236,14 +238,14 @@ SidebarMenuItem.displayName = "SidebarMenuItem";
 
 // --- BUTTON LOGIC ---
 const sidebarMenuButtonVariants = cva(
-  "flex w-full items-center gap-3 transition-all duration-200 outline-none disabled:opacity-50 disabled:cursor-not-allowed",
+  "flex w-full items-center transition-all duration-200 outline-none disabled:opacity-50 disabled:cursor-not-allowed",
   {
     variants: {
       variant: {
         default: [
           "bg-transparent text-grey-700 font-medium",
           "hover:bg-grey-100 hover:text-grey-900",
-          "rounded-lg px-3 py-2.5 md:py-3",
+          "rounded-[5.333px] lg:rounded-[12px] p-[2.66px] lg:p-1",
           // Active state - dark background like in the image
           // "data-[active=true]:bg-primary-600 data-[active=true]:border-primary-600 data-[active=true]:text-white",
           // "data-[active=true]:[&_svg]:text-white",
@@ -252,7 +254,7 @@ const sidebarMenuButtonVariants = cva(
         ].join(" "),
       },
       size: {
-        default: "h-15",
+          default: "h-[var(--sidebar-menu-item-height)] 2xl:h-[var(--sidebar-menu-item-height-lg)]",
       },
     },
     defaultVariants: { variant: "default", size: "default" },

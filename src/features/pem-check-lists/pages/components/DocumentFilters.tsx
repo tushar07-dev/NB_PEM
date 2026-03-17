@@ -190,7 +190,7 @@ export function DocumentFilters({
             variant="outline"
             size="sm"
             onClick={onClearAll}
-            className="border-primary-200 text-primary-200 hover:bg-grey-100 hover:border-primary-300 hover:text-primary-300 shrink-0 gap-2 rounded-4 px-3 py-2 text-xs leading-4 font-medium uppercase"
+            className="border-primary-200 text-primary-200 hover:bg-grey-100 hover:border-primary-300 hover:text-primary-300 shrink-0 gap-2 rounded-sm px-3 py-2 text-xs leading-4 font-medium uppercase"
           >
             <Trash2 className="h-4 w-4" />
             CLEAR ALL

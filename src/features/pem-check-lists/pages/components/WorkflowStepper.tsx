@@ -4,7 +4,7 @@
 // Pure presentational component — no permissions logic.
 
 import { cn } from "@/shared/lib/utils";
-import type { DocumentWorkflowStatus } from "../../components/DocumentTable";
+import type { DocumentWorkflowStatus } from "../../types/document";
 
 const WORKFLOW_STEPS: { status: DocumentWorkflowStatus[]; label: string }[] = [
   {

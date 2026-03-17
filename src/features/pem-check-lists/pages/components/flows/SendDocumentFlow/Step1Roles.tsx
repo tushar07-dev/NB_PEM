@@ -26,12 +26,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo, useCallback } from "react";
 import { cn } from "@/shared/lib/utils";
 import { SearchableFilterSelect } from "@/shared/components/ui/SearchableFilterSelect";
-import { FlowHeader, StepIndicator, YellowNote } from "../../_flow-shared";
+import { FlowHeader, YellowNote } from "../../_flow-shared";
 import {
   sendSchema,
   type ResponsibilityValues,
-} from "@/features/pem-check-lists/types/DocumentWorkflowSchema";
+} from "@/features/pem-check-lists/pages/components/DocumentWorkflowSchema";
 import type { Option } from "@/shared/components/ui/SearchableFilterSelect";
+import { getDisplayName } from "@/shared/config/users";
 
 // ─── Shared button base (local constant — not exported) ───────────────────────
 
@@ -135,7 +136,7 @@ export function Step1Roles({
   return (
     <>
       <FlowHeader title="Send Document" onClose={onClose} disabled={isSaving}>
-        <StepIndicator total={3} current={1} />
+        {/* <StepIndicator total={3} current={1} /> */}
       </FlowHeader>
 
       <div className="flex flex-col gap-4 lg:gap-5">
@@ -145,8 +146,8 @@ export function Step1Roles({
             <label className="text-primary-400 text-sm font-medium">
               Originator (Responsible) <span className="text-red-500">*</span>
             </label>
-            <div className="bg-grey-100 flex h-11 cursor-not-allowed items-center rounded-2 border border-gray-200 px-3 text-sm text-gray-400 opacity-70 select-none">
-              {originatorEmail}
+            <div className="bg-grey-100 flex h-11 cursor-not-allowed items-center rounded-sm border border-gray-200 px-3 text-sm text-gray-400 opacity-70 select-none">
+              {getDisplayName(originatorEmail)}
             </div>
           </div>
 

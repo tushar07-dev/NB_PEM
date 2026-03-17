@@ -85,7 +85,7 @@ export function DynamicBreadcrumb() {
 
       return { url, label, isLast, isRedirectOnly };
     });
-
+console.log("Breadcrumb segments:", [homeCrumb, ...routeCrumbs]);
   const allCrumbs = [homeCrumb, ...routeCrumbs];
 
   return (
